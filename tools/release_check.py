@@ -36,6 +36,17 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "qwen_attention_native",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_scores.py"),
+                    "--output",
+                    str(report.with_name(report.stem + "-attention.json")),
+                ],
+            )
+        )
     for name, cmd in commands:
         left = until - time.time() - 3
         if left < 1:

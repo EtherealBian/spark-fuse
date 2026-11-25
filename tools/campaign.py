@@ -70,6 +70,31 @@ def queue():
             yield j
 
 
+def attention_queue():
+    """Finite compute-budgeted panel: long-key decode-like and short/medium prefill-like scores."""
+    spans = []
+    for rows in (12, 24, 96, 384, 1164, 1536):
+        for keys in (97, 128, 257, 512, 769, 1024, 2048, 4096, 8192):
+            if rows * keys > 4 * 1024**2:
+                continue
+            for name in ("scores", "scores2"):
+                for dt in ("bfloat16", "float16", "float32"):
+                    spans.append((name, rows, keys, dt))
+    random.Random(814).shuffle(spans)
+    for idx, (name, rows, keys, dt) in enumerate(spans):
+        yield dict(
+            id=f"{name}-{rows}x{keys}-{dt}",
+            case=name,
+            rows=rows,
+            width=keys,
+            dtype=dt,
+            budget=16,
+            phase="score-decode-like" if rows <= 24 else "score-prefill-like",
+            seed=31001 + 17 * idx,
+            profile=idx in (0, 1),
+        )
+
+
 def utc():
     return datetime.datetime.now(datetime.timezone.utc).isoformat()
 
@@ -102,6 +127,7 @@ def main():
     p.add_argument("--until", required=True)
     p.add_argument("--max-cases", type=int)
     p.add_argument("--run", required=True)
+    p.add_argument("--panel", choices=("general", "attention"), default="general")
     a = p.parse_args()
     until = datetime.datetime.fromisoformat(a.until)
     if until.tzinfo is None or not a.run.replace("-", "").isalnum():
@@ -112,7 +138,9 @@ def main():
     raw.mkdir(exist_ok=True)
     index = folder / "index.jsonl"
     sumpath = REPORT / f"{a.run}-status.json"
-    mutex = (LOCAL / "gpu-campaign.lock").open("a")
+    mutex = (
+        LOCAL / ("gpu-campaign.lock" if a.panel == "general" else "attention-campaign.lock")
+    ).open("a")
     fcntl.flock(mutex, fcntl.LOCK_EX | fcntl.LOCK_NB)
     records = (
         [json.loads(line) for line in index.read_text().splitlines()] if index.exists() else []
@@ -121,7 +149,7 @@ def main():
     stop = "worklist exhausted"
     streak = 0
     final_checks = REPORT / f"{a.run}-acceptance.json"
-    for j in queue():
+    for j in queue() if a.panel == "general" else attention_queue():
         if j["id"] in done:
             continue
         left = until.timestamp() - time.time()
