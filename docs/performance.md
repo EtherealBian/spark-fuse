@@ -1189,3 +1189,19 @@ The reduced request time is a host dispatch result, not a faster attention kerne
 Only the attention subgraph is replaced. The long-context device win did **not** make ordinary rotating requests faster than HF eager or Inductor. Four dependent decode steps, the other layer operators, Python submission, allocation and synchronization are inside the request timer. Not a pretrained-model throughput or accuracy claim.
 
 [Strict export and benchmark](../tools/symbolic_qwen_panel.py) · [raw steps, hashes, FP64 checks and timing windows](../reports/symbolic-qwen-gb10.json) · [sanitizers](../reports/symbolic-qwen-sanitizer-gb10.txt). Reproduce with the optional Transformers environment: `python tools/symbolic_qwen_panel.py --output /tmp/symbolic-qwen.json`.
+
+<a id="hybrid-qwen"></a>
+### 动态注意力与静态融合区一起执行 / Static islands in a dynamic layer
+
+KV 长度是符号，单 token 的隐藏维度却是静态的。`partition_hybrid_decode` 只为形状和步幅都不依赖符号的算子块生成 CUDA；在两次独立请求中，逐个核对每个离开算子块的张量的字节、步幅和存储关系。跨不过下游 GEMM 的残差组件可以拆分：在同一个 kernel 中返回**残差和归一化结果**，让两条下游路径都拿到所需的值。校验失败的候选保留原 ATen 运算；抽样通过不等于对所有输入的数值证明。
+
+| BF16 Qwen2，带 mask，首套种子，四步合计 | HF eager | 仅动态注意力 | + 静态融合 | + 残差拆分 | + 主机调用简化 | dynamic Inductor |
+|---|---:|---:|---:|---:|---:|---:|
+| 初始 2 token，GPU launches | 176 | 160 | 112 | 80 | 80 | 72 |
+| 初始 2045 token，设备重放 µs | 819.55 | 342.00 | 283.22 | 246.74 | 246.98 | 688.70 |
+| 八种初始长度轮换，同步 µs | 1271.37 | 1441.61 | 1144.77 | 889.95 | 851.33 | **712.92** |
+| 八请求排队，每请求 µs | 1260.75 | 1435.52 | 1136.31 | 885.18 | 841.92 | **705.92** |
+
+Across two weight seeds and both mask modes, six escaping static outputs per step were byte-identical to the attention-only path on all 128 held-out steps; every SparkFuse variant also returned the exact HF K/V caches. Dynamic Inductor passed the numerical and prefix contract but not exact new-cache bytes. The last optimization specializes 14 literal ATen host call sites; it does **not** reduce the launch count again. At initial length 2 the fastest SparkFuse variant still lost on device (159.92 vs 144.21 µs for Inductor). Each timing is for four autoregressive cache updates with fresh outputs, not for a whole model or a single token.
+
+[Static-island pass](../sparkfuse/hybrid_decode.py) · [raw ablations, boundary bytes and clocks](../reports/hybrid-qwen-gb10.json) · [negative and public-residual tests](../tests/test_hybrid_decode.py) · [sanitizers](../reports/hybrid-qwen-sanitizer-gb10.txt). Reproduce: `python tools/hybrid_qwen_panel.py --output /tmp/hybrid-qwen.json`.

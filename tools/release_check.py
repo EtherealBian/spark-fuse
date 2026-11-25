@@ -210,6 +210,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "hybrid_qwen_decode",
+                [
+                    opt,
+                    str(ROOT / "tools/hybrid_qwen_panel.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-hybrid-qwen.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "symbolic_qwen_decode",
                 [
                     opt,
