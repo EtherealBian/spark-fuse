@@ -219,11 +219,11 @@ def partition_export(
     ordered_scores=None,
 ):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
-    if ordered_scores not in (None, "loop", "slots") or (
+    if ordered_scores not in (None, "loop", "slots", "guarded") or (
         framework_softmax and ordered_scores is not None
     ):
         raise ValueError(
-            "choose one softmax policy: framework_softmax or ordered_scores='loop'/'slots'"
+            "choose one softmax policy: framework_softmax or ordered_scores='loop'/'slots'/'guarded'"
         )
     if host_backend not in ("python", "native"):
         raise ValueError("unknown host backend")
@@ -326,9 +326,15 @@ def partition_export(
                 and plan.red is not None
                 and plan.vals[plan.red].op == "softmax"
             ):
-                layout = (
-                    "warp_slots" if ordered_scores == "slots" and plan.width > 1024 else "warp_xor"
-                )
+                from .score_rounding import only_bf16_probability
+
+                layout = "warp_xor"
+                if plan.width > 1024 and ordered_scores != "loop":
+                    layout = (
+                        "warp_bf16_guard"
+                        if ordered_scores == "guarded" and only_bf16_probability(plan)
+                        else "warp_slots"
+                    )
                 override = Schedule(128, layout, True)
             else:
                 override = schedule_policy(plan) if schedule_policy is not None else None

@@ -67,6 +67,7 @@ def main(argv=None):
             "flat",
             "warp_xor",
             "warp_slots",
+            "warp_bf16_guard",
             "block_welford",
             "compact_mean",
             "mean_tree",

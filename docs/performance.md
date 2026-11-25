@@ -375,3 +375,30 @@ python tools/qwen_cached_decode.py --score-panel --past 1024 1535 2047 --seed-of
 python tools/qwen_cached_decode.py --score-panel --past 1024 2046 --seed-offset 44234 \
   --verify-only --output /tmp/old-weights.json
 ```
+
+### BF16 概率舍入：什么时候值得省下除法？ / Guarded BF16 division
+
+若 FP32 Softmax 概率只经过立即 BF16 转换才可见，`ordered_scores="guarded"` 可以先乘舍入后的倒数，再转 BF16。接近 BF16 舍入中点、非正规乘积或非有限行仍按原方式除。若图还返回 FP32 概率、转 FP16 或在转换之前做运算，这条策略不适用。普通 `slots` 和默认调度不变。[舍入压力测试](../reports/bf16-quotient-rounding-gb10.json)对比实际生成的 helper：24,095,493 个中点附近的样本中，直接乘倒数有 609,628 个 BF16 位差，带保护的版本为 0；另有 6,291,456 个随机编码和 18 个特殊值。这些样本不是穷举，比较的是 **BF16 输出**，不是中间 FP32 值。
+
+[从真实导出图截取的分数子图](../reports/qwen-score-slice-guarded-gb10.json)：对一个随机权重 Qwen2 层先做预填，截取第一步解码的 QK 结果和每个 batch 的实际掩码。用五个留出种子核对 HF 概率及整层四个输出，再对通过的后端交错计时。每个序列只屏蔽一个位置时，结果如下（GB10，设备时间 µs）。Inductor 在这三个子图上均有 BF16 位差，未进入计时。
+
+| 键长度 | eager（5 个 kernel） | 精确 slots（1 个） | guarded（1 个） |
+|---:|---:|---:|---:|
+| 1025 | 7.987 | 3.121 | 3.233 |
+| 1536 | 8.844 | 3.804 | 4.061 |
+| 2048 | 9.360 | 4.659 | 4.744 |
+
+**掩码的位置影响结论。** 保持同一份 QK 和相同的 CUDA 二进制，仅替换掩码。宽 1536 时，每条序列屏蔽 25 个分散的位置，slots / guarded 为 **5.937 / 3.889 µs**；屏蔽连续的前 24 个位置时则是 **3.785 / 3.805 µs**。这些是受控的替换输入，不代表原模型跑出了这个收益。
+
+[真实两步整层](../reports/qwen-decode-guarded-scores-gb10.json)使用同一权重和轨迹。预填 1535 时，slots / guarded 第一步 **616.547 / 616.859 µs**，第二步 **623.515 / 624.485 µs**。三个前缀均未观察到整层加速，宽 2049 时两者都保留 ATen。策略保持显式选择，不根据这组数据变更默认值。参见[生成的 CUDA](../examples/generated/guarded-scores)、[三项 sanitizer](../reports/bf16-quotient-sanitizer-gb10.txt)与[独立权重验收](../reports/guarded-score-stage-acceptance.json)。
+
+**English.** The opt-in schedule exploits BF16-only observability; it does not preserve approximate FP32 quotients for other uses. The isolated benchmark extracts the original score operators and captures real post-matmul operands; its emitted CUDA hashes match the whole-layer experiment. With the observed masks, guarded division was slower than exact slots at all three widths. Changing only mask positions can reverse that comparison. Neither the mask controls nor the rounding stress distribution establish a full-layer speedup.
+
+```bash
+source tools/env.sh
+python tools/bf16_quotient_audit.py --output /tmp/quotient.json
+python tools/qwen_score_slice.py --output /tmp/slice.json
+python tools/qwen_cached_decode.py --score-panel --guard-panel --past 1024 1535 2047 \
+  --seed-offset 64219 --profile --emit-dir /tmp/guarded-cuda --output /tmp/whole-layer.json
+bash tools/sanitize_bf16_quotient.sh
+```

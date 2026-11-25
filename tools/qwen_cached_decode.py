@@ -162,6 +162,7 @@ def run(
     head_repeats=False,
     framework_softmax=False,
     score_panel=False,
+    guard_panel=False,
 ):
     export = trajectory(model, rope, length, 60401 + offset)
     graphs = []
@@ -182,6 +183,8 @@ def run(
                 ("loop", True, True, False, "loop"),
                 ("slots", True, True, False, "slots"),
             ]
+        if guard_panel:
+            variants.append(("guarded", True, True, False, "guarded"))
         for name, enable, repeat, keep, order in variants:
             gm, records = partition_export(
                 ep,
@@ -213,7 +216,11 @@ def run(
                 if score:
                     (r,) = score
                     assert r["schedule"]["layout"] == (
-                        "warp_slots" if order == "slots" and keys > 1024 else "warp_xor"
+                        "warp_bf16_guard"
+                        if order == "guarded" and keys > 1024
+                        else "warp_slots"
+                        if order == "slots" and keys > 1024
+                        else "warp_xor"
                     )
                     src = gm.get_submodule(r["module"]).kernel.source
                     r["cuda_sha256"] = sha256(src.encode()).hexdigest()
@@ -352,12 +359,17 @@ def main():
         action="store_true",
         help="compare framework softmax, ordered loop and register slots; all three fuse head copies",
     )
+    p.add_argument(
+        "--guard-panel", action="store_true", help="add guarded BF16 rounding to the score panel"
+    )
     p.add_argument("--profile", action="store_true")
     p.add_argument("--emit-dir", type=Path)
     p.add_argument("--output", type=Path, required=True)
     a = p.parse_args()
     if min(a.past) < 2 or len(set(a.past)) != len(a.past):
         p.error("distinct prefix lengths >=2 required")
+    if a.guard_panel and not a.score_panel:
+        p.error("--guard-panel requires --score-panel")
     if a.score_panel and (a.head_repeats or a.framework_softmax):
         p.error("--score-panel defines its own ablation variants")
     if a.profile and a.verify_only:
@@ -377,6 +389,7 @@ def main():
         head_repeats=a.head_repeats,
         framework_softmax=a.framework_softmax,
         score_panel=a.score_panel,
+        guard_panel=a.guard_panel,
         profile=a.profile,
         provenance=capture(ROOT / ".runtime/decode-audit/sources"),
         cases=[],
@@ -393,6 +406,7 @@ def main():
             a.head_repeats,
             a.framework_softmax,
             a.score_panel,
+            a.guard_panel,
         )
         doc["cases"].append(c)
         print(

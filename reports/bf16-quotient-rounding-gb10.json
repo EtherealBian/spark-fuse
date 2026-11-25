@@ -1,0 +1,120 @@
+{
+  "scope": "The exact production helper on nonnegative Softmax terms and positive row sums; compares BF16 encodings, not FP32 quotients. Midpoint-centered stress samples are not a performance distribution. Counts include repeated boundary values.",
+  "seed": 82913,
+  "device": "NVIDIA GB10",
+  "torch": "2.13.0+cu130",
+  "source_sha256": "06b74330f5eff6457b19d9adc9c06688f6a4945a65f51a8f9508872553b17bbe",
+  "provenance": {
+    "git_head_at_capture": "09c44a6b84d1cab4398207400e92f1de2b730230",
+    "source_tree_sha256": "18432cc5227ea0f8d45ff87d3f114543d0c4e5a5f836d4542ef3f764878eda1f",
+    "archive": "sources/18432cc5227ea0f8d45ff87d3f114543d0c4e5a5f836d4542ef3f764878eda1f.tar.gz"
+  },
+  "cases": {
+    "bf16_midpoints": {
+      "elements": 24095493,
+      "eager_reference_differences": 0,
+      "unguarded_differences": 609628,
+      "guarded_differences": 0,
+      "branches": [
+        0,
+        198144,
+        21174104,
+        2723245
+      ],
+      "witness": [
+        {
+          "n": "00803fff",
+          "den": "3fc00000",
+          "exact": "0055",
+          "mul": "0056",
+          "guard": "0055",
+          "branch": 1
+        },
+        {
+          "n": "00833fff",
+          "den": "3fc00000",
+          "exact": "0057",
+          "mul": "0058",
+          "guard": "0057",
+          "branch": 1
+        },
+        {
+          "n": "00863fff",
+          "den": "3fc00000",
+          "exact": "0059",
+          "mul": "005a",
+          "guard": "0059",
+          "branch": 1
+        },
+        {
+          "n": "00893fff",
+          "den": "3fc00000",
+          "exact": "005b",
+          "mul": "005c",
+          "guard": "005b",
+          "branch": 1
+        }
+      ]
+    },
+    "random_positive_bits": {
+      "elements": 6291456,
+      "eager_reference_differences": 0,
+      "unguarded_differences": 19,
+      "guarded_differences": 0,
+      "branches": [
+        0,
+        318795,
+        833,
+        5971828
+      ],
+      "witness": [
+        {
+          "n": "1d7efca6",
+          "den": "42dbc964",
+          "exact": "1a15",
+          "mul": "1a14",
+          "guard": "1a15",
+          "branch": 2
+        },
+        {
+          "n": "08fb7627",
+          "den": "43007dc7",
+          "exact": "057b",
+          "mul": "057a",
+          "guard": "057b",
+          "branch": 2
+        },
+        {
+          "n": "2bcdeb59",
+          "den": "41487048",
+          "exact": "2a03",
+          "mul": "2a04",
+          "guard": "2a03",
+          "branch": 2
+        },
+        {
+          "n": "3a9ad25e",
+          "den": "4080443d",
+          "exact": "399a",
+          "mul": "399b",
+          "guard": "399a",
+          "branch": 2
+        }
+      ]
+    },
+    "special": {
+      "elements": 18,
+      "eager_reference_differences": 0,
+      "unguarded_differences": 0,
+      "guarded_differences": 0,
+      "branches": [
+        4,
+        11,
+        0,
+        3
+      ],
+      "witness": []
+    }
+  },
+  "passed": true
+}

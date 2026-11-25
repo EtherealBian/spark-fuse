@@ -7,7 +7,8 @@ def generate_rowwise(p, s, emit, index):
     h = p.width
     t = s.threads
     online = s.layout == "block_welford"
-    slots = s.layout == "warp_slots"
+    guarded = s.layout == "warp_bf16_guard"
+    slots = guarded or s.layout == "warp_slots"
     xor = slots or s.layout == "warp_xor"
     warp = xor or s.layout == "warp"
     stride = 32 if warp else t
@@ -23,6 +24,10 @@ def generate_rowwise(p, s, emit, index):
         "#include <math.h>",
         "__global__ void fused(" + ", ".join(params + ["int rows"]) + ") {",
     ]
+    if guarded:
+        from .score_rounding import GUARDED_QUOTIENT
+
+        src.insert(4, GUARDED_QUOTIENT)
     row = f"blockIdx.x*{t // 32}+(threadIdx.x>>5)" if warp else "blockIdx.x"
     lane = "(threadIdx.x&31)" if warp else "threadIdx.x"
     src += [f"const int row={row}; if(row>=rows)return; const int lane={lane};"]
@@ -171,7 +176,7 @@ def generate_rowwise(p, s, emit, index):
             "float mass=0.f;",
             *phase([] if s.cache else [inp], {}, sumbody),
             *collective("mass", "sum", "rowsum"),
-            "const float inv=1.f/rowsum;",
+            "const float inv=__frcp_rn(rowsum);" if guarded else "const float inv=1.f/rowsum;",
         ]
     full = [(k, i) for k, i in enumerate(p.outputs) if p.vals[i].shape == p.domain]
     small = [(k, i) for k, i in enumerate(p.outputs) if p.vals[i].shape != p.domain]
@@ -199,7 +204,11 @@ def generate_rowwise(p, s, emit, index):
                 prob = f"({sample}-center)*inv"
             if xor:
                 numerator = f"held[{off}]" if s.cache else "expf(logit-rowmax)"
-                prob = f"__fdiv_rn({numerator},rowsum)"
+                prob = (
+                    f"bf16_quotient({numerator},rowsum,inv)"
+                    if guarded
+                    else f"__fdiv_rn({numerator},rowsum)"
+                )
             dt = p.vals[p.red].dt
             out += ["const float prob=" + LOAD[dt](STORE[dt](prob)) + ";"]
             known[p.red] = "prob"
