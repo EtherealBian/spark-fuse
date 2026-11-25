@@ -27,6 +27,21 @@ def eligible(p):
     )
 
 
+def cohort_eligible(p):
+    # For this range the eager tree consists of 128 independent accumulator chains.
+    return eligible(p) and 1024 <= p.width <= 8160
+
+
+def ordered_default(p):
+    from .codegen import Schedule
+
+    return (
+        Schedule(256, "mean_cohort", True, 4)
+        if cohort_eligible(p)
+        else Schedule(512, "mean_tree", False, 4)
+    )
+
+
 def sensitive(p):
     if not eligible(p):
         return False

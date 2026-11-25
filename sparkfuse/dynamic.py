@@ -80,7 +80,7 @@ class DynamicRows:
             constants=ep.constants,
         )
         # A tree-matched mean is validated for a bounded total extent, not just the representative rows.
-        if schedule is None or schedule.layout == "mean_tree":
+        if schedule is None or schedule.layout in ("mean_tree", "mean_cohort"):
             from .codegen import Schedule
             from .ir import lower
             from .mean_tree import sensitive

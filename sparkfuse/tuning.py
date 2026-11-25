@@ -21,6 +21,7 @@ def backend_id():
         "vector.py",
         "compact_mean.py",
         "mean_tree.py",
+        "mean_cohort.py",
         "softmax.py",
         "layernorm.py",
         "runtime.py",
@@ -76,13 +77,18 @@ def compact_eligible(p):
 
 
 def candidates(p):
-    from .mean_tree import eligible, sensitive
+    from .mean_tree import cohort_eligible, eligible, sensitive
 
     ordered = (
         [Schedule(t, "mean_tree", cache, 4) for t in (128, 256, 512) for cache in (False, True)]
         if eligible(p)
         else []
     )
+    if cohort_eligible(p):
+        ordered += [
+            Schedule(t, "mean_cohort", cache, 4)
+            for t, cache in ((128, False), (128, True), (256, True), (512, True))
+        ]
     if sensitive(p):
         return ordered
     choices = list(ordered)

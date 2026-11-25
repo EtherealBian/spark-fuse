@@ -67,6 +67,7 @@ def audit():
         cases=[],
     )
     base = Schedule(128, "block", True, 1)
+    fixed = Schedule(512, "mean_tree", False, 4)  # Freeze the original fixed-order baseline.
     oracle = Boundaries()
     rng = random.Random(19341)
     for rows, width, dt in [
@@ -80,9 +81,9 @@ def audit():
         ep = torch.export.export(m, a)
         traced = {
             key: compile_export(trace_ep, schedule=s)
-            for key, s in [("old", base), ("ordered", None)]
+            for key, s in [("old", base), ("ordered", fixed)]
         }
-        native = compile_export(ep)
+        native = compile_export(ep, schedule=fixed)
         ordinary = compile_export(ep, schedule=base)
         block = dict(
             rows=rows,

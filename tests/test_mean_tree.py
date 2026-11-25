@@ -49,7 +49,9 @@ def test_order_and_observability(rows, width, dt, t, cache):
     _, a = case("decomp", rows, width, dt, 1753)
     ep = torch.export.export(m, a)
     k = compile_export(ep, schedule=Schedule(t, "mean_tree", cache, 4))
-    assert sensitive(k.plan) and all(s.layout == "mean_tree" for s in candidates(k.plan))
+    assert sensitive(k.plan) and all(
+        s.layout in ("mean_tree", "mean_cohort") for s in candidates(k.plan)
+    )
     for seed, offsets in [(1753, (0, 0, 0)), (29172, (1, 2, 3))]:
         _, v = case("decomp", rows, width, dt, seed)
         v = tuple(shifted(x, off) for x, off in zip(v, offsets))

@@ -255,3 +255,23 @@ Native had the lower median than each other frontend in 9/9 windows on these wor
 [原生产任务重放](../reports/mean-tree-replay.json.gz)复用了原任务的三个种子和预算上限 24，实际测试全部六种有序布局（128/256/512 线程，各含缓存和重算）。SparkFuse 在留出输入与第三个输入均逐元素一致。第三个种子 3752 上，Inductor 在 `[43,4916]` 有一个值未通过相同门槛；未为它计时，整个重放按失败保存，空数据库未发布任何选型。这个结果不能算三后端通过，亦不代表 Inductor 在其他种子上不正确。
 
 **English.** A one-element BF16 error motivated matching the observed eager FP32 reduction order, rather than relaxing parity tolerances. The six tapped results matched bitwise on the 24 sampled requests, including shifted inputs. The untapped seventh request demonstrates both gains and regressions relative to the previous schedule. Reproduce with `python tools/mean_tree_audit.py --output /tmp/mean-tree.json`; the report includes the installed PyTorch CUDA reduction-header digest, profiler geometry, raw timings and source snapshot.
+
+### 保留加法次序，重排物理线程 / One thread per accumulation chain
+
+上节的修复在 `17 × 8160` 上付出了明显的性能代价。对这一段宽度，eager 每行有 32 个逻辑 lane，各自维护 4 个有先后顺序的 FP32 累加器。[旧有序内核](../examples/generated/mean-cohort/mean_tree.cu)把一行交给一个 warp；[新有序内核](../examples/generated/mean-cohort/mean_cohort.cu)用一整个线程块处理一行，前 128 个线程各承担一条独立递推链，之后严格按原先的次序合并。缓存版本让整个 CTA 协作把可复用的逐元素值写进共享内存，并在后处理中复用；无缓存版本重算。这个选择只对原固定次序路径的子集开放：宽 1024–8160、四元素对齐的**行宽**，不要求输入基地址对齐。8164 及以上仍使用原宽行算法，低于 1024 的默认也未改。
+
+[五形状独立对照](../reports/mean-cohort-panel-gb10.json)中，旧布局的六种配置和新布局的四种配置都在发现输入上计时，然后冻结各自最快配置。下表只比较两条**固定默认**路径；报告同时列出两类各自选出的最快配置、普通同步主机调用、每个输入的 6 个可见边界和七轮原始设备采样。对齐与偏移用了相同的留出数值，`1/2/3` 分别是三个输入以元素为单位的偏移。单位 µs，七轮交错 CUDA Graph 设备时间的中位数。
+
+| 行 × 宽 / 类型 | 对齐：旧 → 新 | 偏移：旧 → 新 | Inductor：对齐 / 偏移 |
+|---|---:|---:|---:|
+| 17 × 8160 FP16 | 31.136 → 4.712 | 32.544 → 4.710 | 3.298 / 6.631 |
+| 32 × 1536 BF16 | 7.205 → 3.109 | 7.398 → 3.109 | 未通过 / 未通过 |
+| 128 × 4096 BF16 | 16.223 → 6.630 | 16.165 → 6.694 | 未通过 / 未通过 |
+| 31 × 1024 FP16 | 4.864 → 2.341 | 5.093 → 2.341 | 1.254 / 3.429 |
+| 63 × 4100 BF16 | 17.445 → 6.693 | 18.725 → 6.687 | 2.853 / 7.461 |
+
+十个请求上，SparkFuse 两类默认及选出的布局在六个边界都与 eager 逐位一致。Inductor 的两种 BF16 形状没有通过原有容差，两个地址布局均未计时；不能把缺测当成速度优势。在 `17 × 8160` 的对齐输入上，新默认仍慢于 Inductor。[编译器资源报告](../reports/mean-cohort-binaries-gb10.json)记录该形状：旧默认为每线程 40 个寄存器、静态共享内存为 0；新默认为 23 个寄存器、每 CTA 33,796 字节静态共享内存。它们是 `cuobjdump --dump-resource-usage` 的结果，不是运行时占用率或访存计数。
+
+[独立生产回放](../reports/mean-cohort-replay.json.gz)使用新种子 64333 和空数据库，遍历全部十种有序布局，留出复测保留 256 线程缓存默认配置；无额外调参收益。第三种子上 eager / Inductor / SparkFuse 分别为 **21.409 / 3.094 / 4.622 µs**，三者通过同一容差，SparkFuse 与 eager 逐元素一致。
+
+**English.** `mean_cohort` changes which physical threads perform the 128 independent scalar recurrence chains, not the FP32 addition tree. For the formerly slow `17 × 8160` FP16 case the fixed default went from 31.136 to 4.712 µs on aligned inputs. Inductor remained faster on that aligned request. The ten held-out requests cover five shapes and two address layouts, not ten independent value seeds. Reproduce with `python tools/mean_cohort_panel.py --output /tmp/mean-cohort.json`.

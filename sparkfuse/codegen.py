@@ -36,9 +36,22 @@ class Schedule:
             "block_welford",
             "compact_mean",
             "mean_tree",
+            "mean_cohort",
             "flat",
         ):
             raise Unsupported("unknown schedule")
+        if self.layout == "mean_cohort":
+            from .mean_tree import cohort_eligible
+
+            if (
+                not cohort_eligible(p)
+                or self.vec != 4
+                or self.threads not in (128, 256, 512)
+                or (not self.cache and self.threads != 128)
+            ):
+                raise Unsupported(
+                    "mean_cohort requires a narrow, materialized FP32 mean and a supported CTA"
+                )
         if self.layout == "mean_tree":
             from .mean_tree import eligible
 
@@ -160,6 +173,11 @@ def generate(p, s):
 
         names = [rec(i) for i in targets]
         return "\n".join(lines), names
+
+    if s.layout == "mean_cohort":
+        from .mean_cohort import generate_cohort
+
+        return generate_cohort(p, s, emit)
 
     if s.layout == "mean_tree":
         from .mean_tree import generate_tree

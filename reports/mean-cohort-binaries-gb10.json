@@ -1,0 +1,37 @@
+{
+  "panel_sha256": "997c47afd1c9bc03672d28d03f248dd4a15e1bc297885615a11a168593fdae90",
+  "shape": [
+    17,
+    8160
+  ],
+  "dtype": "torch.float16",
+  "cuobjdump": "cuobjdump: NVIDIA (R) fat binary listing tool\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Thu_Aug_14_07:31:26_PM_PDT_2025\nCuda compilation tools, release 13.0, V13.0.85\nBuild cuda_13.0.r13.0/compiler.36400806_0",
+  "layouts": {
+    "tree_default": {
+      "schedule": {
+        "threads": 512,
+        "layout": "mean_tree",
+        "cache": false,
+        "vec": 4
+      },
+      "kernel": "8fa5e28bc3e7c22c856dee91ddeeb8574398221627516e9a04bd7e11a4e550c0",
+      "source": "examples/generated/mean-cohort/mean_tree.cu",
+      "source_sha256": "5a1e59fcc30cc6a492f48d2d7c170f2f34c027fdfcb69fd9c683b42e1553ce10",
+      "binary_sha256": "cad3e0e98e41829be99b7bb20c03690f1b2dcac63f74cd05aa6f6132d04a953b",
+      "resource_dump": "\nFatbin elf code:\n================\narch = sm_121\ncode version = [1,8]\nhost = linux\ncompile_size = 64bit\n\nResource usage:\n Common:\n  GLOBAL:0\n\nFatbin elf code:\n================\narch = sm_121\ncode version = [1,8]\nhost = linux\ncompile_size = 64bit\n\nResource usage:\n Common:\n  GLOBAL:0\n Function _Z15fused_mean_treePK6__halfS1_S1_PS_i:\n  REG:40 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:932 TEXTURE:0 SURFACE:0 SAMPLER:0\n\nFatbin ptx code:\n================\narch = sm_121\ncode version = [9,0]\nhost = linux\ncompile_size = 64bit\ncompressed\nptxasOptions =  --fmad false \n"
+    },
+    "cohort_default": {
+      "schedule": {
+        "threads": 256,
+        "layout": "mean_cohort",
+        "cache": true,
+        "vec": 4
+      },
+      "kernel": "6f9c1ad665c464aea5fa9a0c7c4e7ce64c93f2c676cc471d4ef30d73a4923f5d",
+      "source": "examples/generated/mean-cohort/mean_cohort.cu",
+      "source_sha256": "e9a5fe2cd3f70700f5e89fe31ccb9db003fc81afdd9f510ebb365051dc586fa8",
+      "binary_sha256": "16d6b96b9b0474a35ccc94be23232814254dc5e5b1befc5b31cc11b44ca1a53a",
+      "resource_dump": "\nFatbin elf code:\n================\narch = sm_121\ncode version = [1,8]\nhost = linux\ncompile_size = 64bit\n\nResource usage:\n Common:\n  GLOBAL:0\n\nFatbin elf code:\n================\narch = sm_121\ncode version = [1,8]\nhost = linux\ncompile_size = 64bit\n\nResource usage:\n Common:\n  GLOBAL:0\n Function _Z17fused_mean_cohortPK6__halfS1_S1_PS_i:\n  REG:23 STACK:0 SHARED:33796 LOCAL:0 CONSTANT[0]:932 TEXTURE:0 SURFACE:0 SAMPLER:0\n\nFatbin ptx code:\n================\narch = sm_121\ncode version = [9,0]\nhost = linux\ncompile_size = 64bit\ncompressed\nptxasOptions =  --fmad false \n"
+    }
+  }
+}

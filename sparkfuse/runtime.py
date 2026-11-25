@@ -70,10 +70,10 @@ def build(source, device):
 class Kernel:
     def __init__(self, ep, device, schedule=None):
         self.plan = p = lower(ep)
-        from .mean_tree import sensitive
+        from .mean_tree import ordered_default, sensitive
 
         self.schedule = schedule or (
-            Schedule(512, "mean_tree", False, 4)
+            ordered_default(p)
             if sensitive(p)
             else (
                 Schedule(128, "block", True)
