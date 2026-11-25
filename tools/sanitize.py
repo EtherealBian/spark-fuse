@@ -1,0 +1,19 @@
+"""Small set that actually launches the generated kernels under Compute Sanitizer."""
+
+import torch
+from examples.graphs import case
+from sparkfuse import Schedule, compile_export
+from sparkfuse.measure import compare
+
+with torch.inference_mode():
+    for name, rows, h, s in [
+        ("resnorm2", 7, 113, Schedule(128, "warp", True)),
+        ("decomp", 11, 128, Schedule(128, "block", True, 4)),
+        ("gate", 47, 128, Schedule(128, "flat", False, 4)),
+        ("mean", 47, 128, Schedule(64, "warp", False, 4)),
+    ]:
+        m, a = case(name, rows, h, torch.bfloat16)
+        a = tuple(torch.cat([x.new_zeros(1), x.flatten()])[1:].view_as(x) for x in a)
+        k = compile_export(torch.export.export(m, a), schedule=s)
+        compare(k(*a), m(*a), exact=(1,) if name == "resnorm2" else ())
+        print(name, rows, h, "passed", flush=True)

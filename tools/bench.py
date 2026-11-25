@@ -62,8 +62,13 @@ def bench(name, rows, width, dt, seed=100, do_profile=False, sched=None):
         "backends": {},
     }
     for label, fn in [("eager", eager), ("inductor", indfn), ("sparkfuse", fast)]:
-        err = compare(fn(), ref, exact=(1,) if name == "resnorm2" else ())
-        rec = dict(errors=err, device=device_time(fn), host_sync=host_time(fn))
+        try:
+            err = compare(fn(), ref, exact=(1,) if name == "resnorm2" else ())
+            rec = dict(parity="pass", errors=err, device=device_time(fn), host_sync=host_time(fn))
+        except AssertionError as exc:
+            # Preserve the other backends. Never attribute speed to a result that missed parity.
+            record["backends"][label] = dict(parity="fail", diagnostic=str(exc))
+            continue
         if do_profile:
             rec.update(profile(fn))
         record["backends"][label] = rec
@@ -82,3 +87,6 @@ if __name__ == "__main__":
     rec = bench(opt.case, opt.rows, opt.width, getattr(torch, opt.dtype), do_profile=opt.profile)
     s = json.dumps(rec, indent=2)
     print(s) if opt.output is None else opt.output.write_text(s + "\n")
+
+    if any(v["parity"] != "pass" for v in rec["backends"].values()):
+        raise SystemExit(2)

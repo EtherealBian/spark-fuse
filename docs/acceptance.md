@@ -15,3 +15,15 @@ From the repository root, set `SPARKFUSE_PYTHON` to an existing CUDA-enabled Pyt
 - `python tools/report.py .runtime/RUN-ID /tmp/report.md`: rebuild the table from the index, including slower cases. Raw times and schedules are in `evidence/`.
 - `.cache/`: generated, safe to clean **after** all compilation and benchmarking processes exit.
 - `sparkfuse.tuning.compile_tuned(ep, db_path)`: uses a matching measured entry, otherwise compiles the default schedule. `kernel.prepare(*args)` reuses the same outputs on subsequent calls; copy results if they must outlive a replay. The normal `kernel(*args)` allocates fresh outputs.
+
+### Bounded token batches
+
+`sparkfuse.dynamic.DynamicRows(ep)` accepts an export with one bounded `torch.export.Dim` shared by the leading axis of rank-2 activations. Widths and weights are static. It verifies the symbol identity in exported tensor metadata, guards every runtime shape and passes actual rows to the existing CUDA launch. This is not symbolic expression compilation. Four graph families are tested at 1, 2, 31, 32, 47, 48, 97 and 129 rows after disabling the compiler entry point; row 130 and inconsistent input rows must raise. Expanded and strided inputs are not silently copied.
+
+### Diagnostics and failures
+
+`tools/verify.sh` serializes the test suite against search workers. `tools/sanitize.sh` runs memcheck, racecheck and synccheck on four generated kernels (filtered by their mangled entry name), with odd widths, warp tails and deliberately offset pointers. Initial output is preserved in `reports/sanitizer-gb10.txt`. These tools test specific paths; a clean run does not prove arbitrary code free of races.
+
+A three-way comparison can fail even when SparkFuse matches eager. In one BF16 decomposed RMSNorm case (`512 × 1536`, comparison seed 2261), SparkFuse matched every element; TorchInductor exceeded the predeclared tolerance at three indices. `reports/decomp-bf16-parity-investigation.json` contains the indices and tolerances. It remains a failed three-way comparison, not a speed win. New workers retain a `.rejected.json` report and identify the failing backend. A selected SparkFuse schedule which fails the third input is removed from dispatch.
+
+With `SPARKFUSE_FINAL_CHECK=1`, the overnight supervisor reserves a near-deadline acceptance pass (`pytest`, and optionally the real Qwen integration when `SPARKFUSE_QWEN_PY` is set), resumes benchmarks with the remaining time, and generates a final comparison table. A validation report contains individual exit codes; a completed job is not automatically a passed release.

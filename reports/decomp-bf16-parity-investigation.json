@@ -1,0 +1,44 @@
+{
+  "job": {
+    "id": "decomp-512x1536-bfloat16",
+    "case": "decomp",
+    "rows": 512,
+    "width": 1536,
+    "dtype": "bfloat16",
+    "budget": 16,
+    "phase": "qwen-reference",
+    "seed": 261,
+    "profile": false
+  },
+  "new_comparison_seed": 2261,
+  "rtol": 0.012,
+  "atol": 0.0002,
+  "backends": {
+    "sparkfuse": {
+      "max_abs": 0.0,
+      "outside_tolerance": 0,
+      "example_indices": [],
+      "passes": true
+    },
+    "inductor": {
+      "max_abs": 0.0625,
+      "outside_tolerance": 3,
+      "example_indices": [
+        [
+          70,
+          393
+        ],
+        [
+          150,
+          359
+        ],
+        [
+          368,
+          9
+        ]
+      ],
+      "passes": false,
+      "diagnostic": "Tensor-likes are not close!\n\nMismatched elements: 3 / 786432 (0.0%)\nGreatest absolute difference: 0.03125 at index (368, 9) (up to 0.0002 allowed)\nGreatest relative difference: 0.012451171875 at index (150, 359) (up to 0.012 allowed)"
+    }
+  }
+}

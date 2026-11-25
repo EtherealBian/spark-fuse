@@ -1,6 +1,6 @@
 """Deadline-aware, single-GPU empirical tuning. No polling LLM / synthetic activity."""
 
-import argparse, collections, datetime, fcntl, hashlib, json, os, random, shutil, signal, statistics, subprocess, sys, time
+import argparse, collections, datetime, fcntl, json, os, random, shutil, signal, statistics, subprocess, sys, time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -120,6 +120,7 @@ def main():
     done = {r["id"] for r in records}
     stop = "worklist exhausted"
     streak = 0
+    final_checks = REPORT / f"{a.run}-acceptance.json"
     for j in queue():
         if j["id"] in done:
             continue
@@ -133,6 +134,27 @@ def main():
         if shutil.disk_usage(ROOT).free < 8 * 1024**3:
             stop = "disk reserve"
             break
+        if (
+            left < 600
+            and not final_checks.is_file()
+            and os.environ.get("SPARKFUSE_FINAL_CHECK") == "1"
+        ):
+            subprocess.run(
+                [
+                    "flock",
+                    str(LOCAL / "gpu-execution.lock"),
+                    sys.executable,
+                    str(ROOT / "tools/release_check.py"),
+                    str(until.timestamp()),
+                    str(final_checks),
+                ],
+                timeout=max(1, left - 1),
+                check=True,
+            )
+            left = until.timestamp() - time.time()
+            if left < 8:
+                stop = "deadline"
+                break
         out = raw / (j["id"] + ".json")
         tmp = out.with_suffix(".pending")
         err = folder / "last-worker.log"
@@ -197,6 +219,10 @@ def main():
             stop = "five consecutive errors: inspect worker logs"
             break
     write(sumpath, summary(records, until, stop))
+    if index.is_file():
+        from report import render
+
+        render(folder, REPORT / f"{a.run}-report.md")
     print(utc(), stop, flush=True)
 
 
