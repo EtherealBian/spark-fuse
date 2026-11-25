@@ -68,7 +68,7 @@ class PackedSwiGLUProjection(nn.Module):
         return F.silu(gate) * up
 
 
-def candidate(out):
+def candidate(out, tensor_meta=_tensor):
     if not _is(out, A.mul.Tensor, 2):
         return None
     for act, other in (out.args, out.args[::-1]):
@@ -83,7 +83,7 @@ def candidate(out):
         ):
             continue
         x, spec, axis = split.args
-        v = _tensor(x)
+        v = tensor_meta(x)
         if (
             v is None
             or not v.ndim
@@ -111,7 +111,7 @@ def candidate(out):
             or indices[0] % 2 == indices[1] % 2
         ):
             continue
-        vals = [_tensor(n) for n in (gate, other, act, out)]
+        vals = [tensor_meta(n) for n in (gate, other, act, out)]
         if any(
             z is None or z.shape != shape or z.dtype != v.dtype or z.device != v.device
             for z in vals
@@ -124,16 +124,21 @@ def candidate(out):
     return None
 
 
-def emit(shape, dt, gate_half, visible, vectorize=True):
+def emit(shape, dt, gate_half, visible, vectorize=True, dynamic_rows=False):
     w = shape[-1]
     rows = prod(shape[:-1])
     widths = [i for i in (8, 4, 2, 1) if w % i == 0 and (vectorize or i == 1)]
     extra = "auto* a=(E*)p[2]; addr|=uintptr_t(a);" if visible else "E* a=nullptr;"
+    extra_arg = ",rows" if dynamic_rows else ""
+    count = f"(rows*{w})" if dynamic_rows else str(rows * w)
     launch = []
     for width in widths:
         cond = f"if(!(addr & {2 * width - 1})) " if width > 1 else ""
+        blocks = (
+            f"((rows*{w}/{width}+127)/128)" if dynamic_rows else (rows * w // width + 127) // 128
+        )
         launch.append(
-            f"{cond}{{packed_swiglu<{width}><<<{(rows * w // width + 127) // 128},128,0,(cudaStream_t)stream>>>(x,y,a); return int(cudaGetLastError());}}"
+            f"{cond}{{packed_swiglu<{width}><<<{blocks},128,0,(cudaStream_t)stream>>>(x,y,a{extra_arg}); return int(cudaGetLastError());}}"
         )
     return (
         f"""#include <cuda_runtime.h>
@@ -142,9 +147,9 @@ def emit(shape, dt, gate_half, visible, vectorize=True):
 #include <stdint.h>
 using E={CT[dt]};
 template<int V> struct alignas(2*V) Packet {{ E lane[V]; }};
-template<int V> __global__ void packed_swiglu(const E* __restrict__ x,E* __restrict__ y,E* __restrict__ act) {{
+template<int V> __global__ void packed_swiglu(const E* __restrict__ x,E* __restrict__ y,E* __restrict__ act{",int rows" if dynamic_rows else ""}) {{
   const int i=int(blockIdx.x)*blockDim.x+threadIdx.x;
-  if(i>={rows * w}/V) return;
+  if(i>={count}/V) return;
   const int row=i/({w}/V),col=(i%({w}/V))*V;
   using P=Packet<V>;const E* base=x+row*{2 * w}+col;
   const P g=*reinterpret_cast<const P*>(base+{gate_half * w});
@@ -157,7 +162,7 @@ template<int V> __global__ void packed_swiglu(const E* __restrict__ x,E* __restr
   reinterpret_cast<P*>(y)[i]=z;
   if constexpr ({str(visible).lower()}) reinterpret_cast<P*>(act)[i]=a;
 }}
-extern "C" int launch(void** p,int,void* stream) {{
+extern "C" int launch(void** p,int{" rows" if dynamic_rows else ""},void* stream) {{
   auto* x=(const E*)p[0]; auto* y=(E*)p[1];uintptr_t addr=uintptr_t(x)|uintptr_t(y); {extra}
   {chr(10).join(launch)}
 }}

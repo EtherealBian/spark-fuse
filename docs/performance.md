@@ -489,3 +489,32 @@ python tools/packed_gate_panel.py --seed-offset 86783 --output /tmp/epilogue.jso
 python tools/qwen_packed_decode.py --seed-offset 86783 --past 1024 --output /tmp/layer.json
 bash tools/sanitize_packed_swiglu.sh
 ```
+
+<a id="bounded-packed-rows"></a>
+
+### 变长 token 门控：同一份二进制，少走一层 FX / Bounded packed rows
+
+上面的两行门控在设备上仅约 2 µs，同步 Python 调用却约 27 µs。为分清时间花在哪里，我们用同一个静态 kernel 比较了完整 FX 调用和内部原生入口，并另做一个可变行数的原生入口。`PackedRows` 编译**整个独立门控子图**，不是跳过任意混合图的 hooks：只接受一个位置参数 `[rows, 2*width]`，由原生入口检查设备、精度、形状上界、连续布局和梯度。可返回门控乘积，或同时返回乘积和舍入后的激活。若切分视图也必须返回，它会拒绝；需要保留这些别名时用静态混合分区。
+
+```python
+from sparkfuse.packed_rows import PackedRows
+
+# gate.forward(packed): a, b = packed.chunk(2, -1); return F.silu(a) * b
+rows = torch.export.Dim("tokens", min=1, max=256)
+ep = torch.export.export(gate, (example_2d,), dynamic_shapes=({0: rows},))
+run = PackedRows(ep, schedule="scalar")   # or "adaptive": address-aligned packets
+product = run(next_2d)                     # fresh allocation; no per-row compilation
+```
+
+Same DGX Spark, width 8,960, BF16. Synchronized **host latency** below includes fresh outputs. The static FX and static native controls use the very same compiled CUDA implementation; the bounded paths use one binary per schedule across all nine tested row counts. Input projections are from one random-weight HF Qwen2 layer; the two-row case is real decode and the other cases are slices of prefill, not independent model runs at different batch sizes.
+
+| Rows · weight seed | Eager | Static FX | Static native | Bounded scalar | Bounded packets |
+|---|---:|---:|---:|---:|---:|
+| 2 · 141144 | 13.62 | 26.64 | 7.47 | 7.25 | 7.50 |
+| 2 · 147096 | 13.74 | 26.61 | 7.49 | 7.25 | 7.58 |
+| 62 · 141144 | 18.50 | 29.73 | 10.30 | 11.73 | 10.42 |
+| 62 · 147096 | 18.62 | 29.58 | 10.38 | 11.55 | 10.37 |
+
+All values in µs. At two rows the **device** medians of static FX and static native were both about 1.99 µs: most of the host difference is outside the kernel. A narrow native ABI avoids the exported FX entry without removing the native tensor guards. It is not a drop-in replacement for arbitrary module calls, a policy for all packet widths, or an end-to-end decoding speedup. The dynamically compiled Inductor control did not pass the exact product gate on these samples and has no timing entry.
+
+[First weight: raw host/device data](../reports/bounded-packed-rows-gb10.json) · [Independent weight](../reports/bounded-packed-rows-heldout-gb10.json) · [Generated sources](../examples/generated/packed-rows) · [Sanitizer](../reports/bounded-packed-rows-sanitizer-gb10.txt) · [Installed-wheel and full regression](../reports/bounded-packed-stage-acceptance.json). Reproduce with `python tools/packed_rows_panel.py --seed-offset 86783 --output /tmp/packed-rows.json` and `bash tools/sanitize_packed_rows.sh`.

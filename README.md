@@ -34,7 +34,7 @@ BF16、`32 × 1536`、残差可见的 RMSNorm。单位为 µs，报告的是**�
 
 可选的 C++ 调用路径复用同一份 CUDA 代码。该形状下，每次分配新输出并等待 GPU 完成的主机延迟从 **85.16 降到 8.46 µs**；设备时间分别为 1.81 和 1.84 µs。不同缓存条件、奇数宽度上未获益的配置和复现命令见 [性能记录](docs/performance.md)。
 
-**形状和范围**：支持连续的 FP32/FP16/BF16 推理张量。静态图之外，`DynamicRows` 支持 rank-2 输入共享一个有界的动态 token 行数，无需按行数重新编译。原生调度在同一份 CUDA 二进制上处理变长输入；可见残差 RMSNorm 的[变长测试](reports/dynamic-native-panel.json)中，同步主机延迟由 28.03 降至 9.01 µs。暂不生成 GEMM、完整 Attention、反向传播或通用动态形状。独立编译拒绝不支持的图；混合分区只替换通过检查的区域。缓存热的微基准不能外推为模型吞吐。
+**形状和范围**：支持连续的 FP32/FP16/BF16 推理张量。静态图之外，`DynamicRows` 支持 rank-2 输入共享一个有界的动态 token 行数，无需按行数重新编译。原生调度在同一份 CUDA 二进制上处理变长输入；可见残差 RMSNorm 的[变长测试](reports/dynamic-native-panel.json)中，同步主机延迟由 28.03 降至 9.01 µs。[打包 SwiGLU 门控](docs/performance.md#bounded-packed-rows)也可用一份 CUDA 二进制处理有界变长行。暂不生成 GEMM、完整 Attention、反向传播或通用动态形状。独立编译拒绝不支持的图；混合分区只替换通过检查的区域。缓存热的微基准不能外推为模型吞吐。
 
 真实 Qwen2Attention 的三次请求可直接用于选型和整图校验，第四次请求单独计时。在 `batch=2, seq=97` 的一轮对照中，分数子图比自身默认布局快 2.33×，但整个 Attention 的设备时间仅从 158.02 降至 155.03 µs。详见[实验记录](docs/performance.md)。
 
@@ -42,4 +42,4 @@ BF16、`32 × 1536`、残差可见的 RMSNorm。单位为 µs，报告的是**�
 
 SparkFuse compiles functional PyTorch inference regions into inspectable CUDA on NVIDIA DGX Spark. Its typed IR supports elementwise DAGs and one last-axis collective region (mean, stable softmax, or affine LayerNorm). Output liveness controls global writes. The tuner can choose a single-writer reduction when only row statistics escape; [paired measurements](reports/compact-mean-panel.json) include aligned and offset inputs. The heterogeneous path keeps unsupported operations in PyTorch. A complete Qwen2 decoder layer, a BERT encoder layer and T5 gated feed-forward blocks are tested with random weights, not a pretrained checkpoint. The [cached Qwen2 decode experiment](reports/qwen-decode-cache-gb10.json) follows two single-token calls with real K/V carried between them. Device replay and synchronized host latency are reported separately. The table above reports warm device replay, not Python latency or end-to-end model speedup.
 
-An optional ATen host launcher supports static and bounded variable-row exports without changing the generated kernel. See [performance evidence](docs/performance.md) for fresh-output host latency, address rotation, and odd-width vector results, including regressions.
+An optional ATen host launcher supports static and bounded variable-row exports without changing the generated kernel. A separate bounded-row entry point compiles an entire packed SwiGLU gate to a guarded native call. See [performance evidence](docs/performance.md) for fresh-output host latency, address rotation, and odd-width vector results, including regressions.

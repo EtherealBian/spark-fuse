@@ -20,7 +20,20 @@ with torch.inference_mode():
     torch.manual_seed(721); x=torch.randn(17,129,device='cuda',dtype=torch.bfloat16);b=torch.randn(129,device='cuda',dtype=torch.bfloat16);m=M()
     k=sparkfuse.compile_export(torch.export.export(m,(x,b)),schedule=sparkfuse.Schedule(128,'warp',True,4));y=native_dispatch(k)(x,b); ref=m(x,b)
     torch.testing.assert_close(y[0],ref[0],atol=0,rtol=.008);torch.testing.assert_close(y[1],ref[1],rtol=0,atol=0)
-print(json.dumps({'import_origin_verified':True,'torch':str(torch.__version__),'device':torch.cuda.get_device_name(),'shape':[17,129],'dtype':'bfloat16','host':'native','seed':721,'passed':True}))
+from sparkfuse.packed_rows import PackedRows
+class Gate(torch.nn.Module):
+    def forward(self, x):
+        a, b = x.chunk(2, -1)
+        g=torch.nn.functional.silu(a)
+        return b*g, g
+with torch.inference_mode():
+    gate=Gate(); x=torch.randn(5,30,device='cuda',dtype=torch.float16)
+    rows=torch.export.Dim('rows',min=1,max=31)
+    r=PackedRows(torch.export.export(gate,(x,),dynamic_shapes=({0:rows},)))
+    for n in (1,3,31):
+        x=torch.randn(n,30,device='cuda',dtype=torch.float16)
+        assert all(torch.equal(a.view(torch.int16),b.view(torch.int16)) for a,b in zip(r(x),gate(x),strict=True))
+print(json.dumps({'bounded_packed_rows':[1,3,31],'import_origin_verified':True,'torch':str(torch.__version__),'device':torch.cuda.get_device_name(),'shape':[17,129],'dtype':'bfloat16','host':'native','seed':721,'passed':True}))
 """
 
 
