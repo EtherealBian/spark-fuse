@@ -2,9 +2,9 @@
 
 在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU 推理子图编译器。输入是 `torch.export` 导出图，输出是可阅读的 CUDA C++。重点是决定哪些值能留在寄存器里、哪些结果必须写回显存，以及哪种线程布局在这张卡上确实更快。
 
-- **前端与融合**：将逐元素运算和一条末轴归约降为标量 DAG；根据图外使用者决定输出。只返回 RMSNorm 时不写回残差；残差也是输出时，同一个 kernel 多写一个结果。生成示例在 `examples/generated/`。
+- **前端与融合**：将逐元素运算与一个末轴归约区域（均值或稳定 Softmax）降为标量 DAG；根据图外使用者决定输出。只返回 RMSNorm 时不写回残差；残差也是输出时，同一个 kernel 多写一个结果。生成示例在 `examples/generated/`。
 - **后端与实测选型**：按行分配线程块、每个 warp 独立处理一行，或线性遍历逐元素图。向量读写支持非对齐地址和不足一包的奇数宽尾部。搜索线程数、向量宽度和跨归约复用，使用另一组输入交错复测后才采纳配置。
-- **真实框架集成**：已导出 Hugging Face `Qwen2RMSNorm` 和 `Qwen2MLP`。分区器在 MLP 中自动识别 SiLU 与乘法，三个线性层仍交给 PyTorch。验证使用随机权重，不代表整模型推理性能。
+- **真实框架集成**：已导出 Hugging Face `Qwen2RMSNorm`、`Qwen2MLP` 和 `Qwen2Attention`。分区器在 MLP 中自动识别 SiLU 与乘法，三个线性层仍交给 PyTorch；Attention 中可融合分数缩放、加性掩码、Softmax 和类型转换，QK/PV 矩阵乘法仍由 PyTorch 执行。验证使用随机权重，不代表整模型推理性能。
 
 ### 跑一个例子
 
@@ -31,10 +31,10 @@ BF16、`32 × 1536`、残差可见的 RMSNorm。单位为 µs，报告的是**�
 
 可选的 C++ 调用路径复用同一份 CUDA 代码。该形状下，每次分配新输出并等待 GPU 完成的主机延迟从 **85.16 降到 8.46 µs**；设备时间分别为 1.81 和 1.84 µs。不同缓存条件、奇数宽度上未获益的配置和复现命令见 [性能记录](docs/performance.md)。
 
-**形状和范围**：支持连续的 FP32/FP16/BF16 推理张量。静态图之外，`DynamicRows` 支持 rank-2 输入共享一个有界的动态 token 行数，无需按行数重新编译。暂不生成 GEMM、Attention、反向传播或通用动态形状。独立编译拒绝不支持的图；混合分区只替换通过检查的区域。缓存热的微基准不能外推为模型吞吐。
+**形状和范围**：支持连续的 FP32/FP16/BF16 推理张量。静态图之外，`DynamicRows` 支持 rank-2 输入共享一个有界的动态 token 行数，无需按行数重新编译。暂不生成 GEMM、完整 Attention、反向传播或通用动态形状。独立编译拒绝不支持的图；混合分区只替换通过检查的区域。缓存热的微基准不能外推为模型吞吐。
 
 ## English
 
-SparkFuse compiles functional PyTorch inference regions into inspectable CUDA on NVIDIA DGX Spark. Its typed IR supports elementwise DAGs and a single last-axis reduction. Output liveness controls global writes; a measured dispatcher selects among block-, warp- and vector-based schedules. The heterogeneous path keeps unsupported operations in PyTorch. Real Qwen2 library modules are tested with random weights, not a pretrained checkpoint. The table above reports warm device replay, not Python latency or end-to-end model speedup.
+SparkFuse compiles functional PyTorch inference regions into inspectable CUDA on NVIDIA DGX Spark. Its typed IR supports elementwise DAGs and one last-axis collective region (mean or stable softmax). Output liveness controls global writes; a measured dispatcher selects among block-, warp- and vector-based schedules. The heterogeneous path keeps unsupported operations in PyTorch. Real Qwen2 library modules are tested with random weights, not a pretrained checkpoint. The table above reports warm device replay, not Python latency or end-to-end model speedup.
 
 An optional ATen host launcher reduces call overhead without changing the generated kernel. See [performance evidence](docs/performance.md) for fresh-output host latency, address rotation, and odd-width vector results, including regressions.

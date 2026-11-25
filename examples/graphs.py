@@ -26,6 +26,19 @@ class DecomposedNorm(nn.Module):
         return w * (f * torch.rsqrt(f.square().mean(-1, keepdim=True) + 1e-6)).to(x.dtype)
 
 
+class ScoreSoftmax(nn.Module):
+    """Attention-score scaling + additive bias + stable softmax; no QK/PV GEMM."""
+
+    def __init__(self, expose=False):
+        super().__init__()
+        self.expose = expose
+
+    def forward(self, scores, bias):
+        logits = scores * 0.125 + bias
+        prob = torch.softmax(logits, dim=-1)
+        return (prob, logits) if self.expose else prob
+
+
 class Mean(nn.Module):
     def forward(self, x):
         return x.square().mean(-1, keepdim=True)
@@ -39,6 +52,8 @@ def case(name, rows, width, dtype, seed=7):
 
     if name == "gate":
         return Gate(), (rand(rows, width), rand(rows, width))
+    if name in ("scores", "scores2"):
+        return ScoreSoftmax(name == "scores2"), (rand(rows, width), rand(width))
     if name == "mean":
         return Mean(), (rand(rows, width),)
     mod = {

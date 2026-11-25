@@ -14,7 +14,15 @@ from .measure import compare, device_time
 @lru_cache(None)
 def backend_id():
     h = hashlib.sha256()
-    for f in ("ir.py", "codegen.py", "vector.py", "runtime.py", "tuning.py", "measure.py"):
+    for f in (
+        "ir.py",
+        "codegen.py",
+        "vector.py",
+        "softmax.py",
+        "runtime.py",
+        "tuning.py",
+        "measure.py",
+    ):
         h.update(Path(__file__).with_name(f).read_bytes())
     return h.hexdigest()
 

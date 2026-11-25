@@ -32,6 +32,8 @@ CALLS = frozenset(
         "to.dtype_layout",
         "rms_norm.default",
         "mean.dim",
+        "softmax.int",
+        "_softmax.default",
         "_assert_tensor_metadata.default",
     )
 )
@@ -73,6 +75,7 @@ def _region(members, pos):
             "aten.to.dtype_layout",
             "prims.convert_element_type.default",
         )
+        and n.meta["val"].dtype == n.args[0].meta["val"].dtype
         for n in outgoing
     ):
         raise Unsupported("possible alias escaping region")

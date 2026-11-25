@@ -1,6 +1,7 @@
 """Schedule-independent scalar DAG emission and CUDA row/warp scheduling."""
 
 from dataclasses import dataclass
+from math import prod
 from .ir import Unsupported
 
 CT = {"f32": "float", "f16": "__half", "bf16": "__nv_bfloat16"}
@@ -38,6 +39,8 @@ class Schedule:
             p.red is not None or any(p.vals[i].shape != p.domain for i in p.outputs)
         ):
             raise Unsupported("flat requires full-sized pointwise outputs")
+        if p.red is not None and p.vals[p.red].op == "softmax" and self.vec != 1:
+            raise Unsupported("softmax currently supports scalar lanes only")
         if self.cache and (p.red is None or self.layout == "flat"):
             raise Unsupported("cache requires a reduction")
 
@@ -56,7 +59,20 @@ def generate(p, s):
             return "j"
         if v.shape == ():
             return "0"
-        return "row"
+        if v.shape == (*p.domain[:-1], 1):
+            return "row"
+        # Input is dense in its OWN shape; expand via coordinates instead of allocating.
+        # row flattens all but the last domain dimension; j is the last coordinate.
+        padded = (1,) * (len(p.domain) - len(v.shape)) + v.shape
+        terms = []
+        for axis, extent in enumerate(padded[:-1]):
+            if extent != 1:
+                div = prod(p.domain[axis + 1 : -1])
+                stride = prod(padded[axis + 1 :])
+                terms.append(f"((row/{div})%{extent})*{stride}")
+        if padded[-1] != 1:
+            terms.append("j")
+        return "+".join(terms) or "0"
 
     def emit(targets, pre=None):
         known = dict(pre or {})
@@ -73,7 +89,7 @@ def generate(p, s):
                 expr = float(v.imm).hex() + "f"
             elif v.op == "input":
                 expr = LOAD[v.dt](f"in{v.imm}[{index(v)}]")
-            elif v.op == "mean":
+            elif v.op in ("mean", "softmax"):
                 raise AssertionError("unbound reduction")
             else:
                 expr = {
@@ -98,6 +114,11 @@ def generate(p, s):
 
         names = [rec(i) for i in targets]
         return "\n".join(lines), names
+
+    if p.red is not None and p.vals[p.red].op == "softmax":
+        from .softmax import generate_softmax
+
+        return generate_softmax(p, s, emit, index)
 
     if s.vec > 1:
         from .vector import generate_vector

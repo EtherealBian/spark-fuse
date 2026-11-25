@@ -1,4 +1,4 @@
-"""Small, closed IR: one dense iteration domain and at most one last-axis reduction."""
+"""Small, closed IR: one dense iteration domain and at most one last-axis collective region."""
 
 from dataclasses import dataclass
 import math
@@ -147,12 +147,32 @@ def lower(ep):
                 torch.contiguous_format,
             ):
                 raise Unsupported("unsupported cast options")
+            if (
+                op == "aten.to.dtype"
+                and len(a) > 4
+                and a[4] not in (None, torch.preserve_format, torch.contiguous_format)
+            ):
+                raise Unsupported("unsupported positional memory format")
             source = arg(a[0])
             idx = put("cast", sh, dt, [source])
             if op in ("aten.to.dtype", "aten.to.dtype_layout") and dt == vs[source].dt:
                 force_copy = a[3] if len(a) > 3 else k.get("copy", False)
                 if not force_copy:
                     aliases[idx] = aliases.get(source, source)
+        elif op in ("aten.softmax.int", "aten._softmax.default"):
+            src = arg(a[0])
+            shape = vs[src].shape
+            axis = a[1] if len(a) > 1 else k.get("dim")
+            if not shape or axis not in (-1, len(shape) - 1) or red is not None:
+                raise Unsupported("softmax requires one last-axis collective region")
+            if op == "aten.softmax.int":
+                # torch.softmax(..., dtype=D) casts the input to D before normalization.
+                target = a[2] if len(a) > 2 else k.get("dtype")
+                if target is not None and DT.get(target) != vs[src].dt:
+                    if target not in DT:
+                        raise Unsupported("unsupported softmax dtype")
+                    src = put("cast", shape, DT[target], [src])
+            red = idx = put("softmax", sh, dt, [src])
         elif op == "aten.rms_norm.default":
             src = arg(a[0])
             shape = vs[src].shape
@@ -185,11 +205,17 @@ def lower(ep):
     domain = max((vs[i].shape for i in ins), key=lambda s: (len(s), math.prod(s)))
     if not domain or math.prod(domain) >= 2**31:
         raise Unsupported("requires a nonempty, 32-bit index domain")
-    shapes = {domain, (domain[-1],), (), (*domain[:-1], 1)}
-    if any(v.shape not in shapes for v in vs):
+
+    def broadcasts(shape):
+        return len(shape) <= len(domain) and all(
+            a == 1 or a == b for a, b in zip(reversed(shape), reversed(domain))
+        )
+
+    if any(not broadcasts(v.shape) for v in vs):
         raise Unsupported("incompatible broadcast domains")
     if red is not None and (
-        vs[vs[red].deps[0]].shape != domain or vs[red].shape != (*domain[:-1], 1)
+        vs[vs[red].deps[0]].shape != domain
+        or vs[red].shape != (domain if vs[red].op == "softmax" else (*domain[:-1], 1))
     ):
         raise Unsupported("reduction must span the iteration domain")
     if any(vs[i].shape not in (domain, (*domain[:-1], 1)) for i in outs):
