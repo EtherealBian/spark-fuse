@@ -1,0 +1,133 @@
+{
+  "torch": "2.13.0+cu130",
+  "device": "NVIDIA GB10",
+  "compiler": "351981d945009d054bdd2e8b70b91341eb688749cd7ee9ac28baa1f05285c0bc",
+  "provenance": {
+    "git_head_at_capture": "9168f6a50d16ef921101da3fa5c072cb362c25a8",
+    "source_tree_sha256": "be9f44723d616af247bd8ee6bf096fffa97c9f03e492486633a8beb1bfb0d242",
+    "archive": "sources/be9f44723d616af247bd8ee6bf096fffa97c9f03e492486633a8beb1bfb0d242.tar.gz"
+  },
+  "scope": "All low-precision bit patterns, stable device/software version, elementwise only. Ignore payloads if both results are NaN; compare all other bits, including signed zero.",
+  "cases": [
+    {
+      "dtype": "torch.float16",
+      "offset_elements": 0,
+      "schedule": {
+        "threads": 128,
+        "layout": "flat",
+        "cache": false,
+        "vec": 1
+      },
+      "outputs": {
+        "gelu_erf": {
+          "encodings": 65536,
+          "matched_nan_results": 2047,
+          "mismatches": 0,
+          "first_mismatches": []
+        },
+        "gelu_tanh": {
+          "encodings": 65536,
+          "matched_nan_results": 2047,
+          "mismatches": 0,
+          "first_mismatches": []
+        },
+        "scalar_cube": {
+          "encodings": 65536,
+          "matched_nan_results": 2046,
+          "mismatches": 0,
+          "first_mismatches": []
+        }
+      }
+    },
+    {
+      "dtype": "torch.float16",
+      "offset_elements": 1,
+      "schedule": {
+        "threads": 128,
+        "layout": "flat",
+        "cache": false,
+        "vec": 4
+      },
+      "outputs": {
+        "gelu_erf": {
+          "encodings": 65536,
+          "matched_nan_results": 2047,
+          "mismatches": 0,
+          "first_mismatches": []
+        },
+        "gelu_tanh": {
+          "encodings": 65536,
+          "matched_nan_results": 2047,
+          "mismatches": 0,
+          "first_mismatches": []
+        },
+        "scalar_cube": {
+          "encodings": 65536,
+          "matched_nan_results": 2046,
+          "mismatches": 0,
+          "first_mismatches": []
+        }
+      }
+    },
+    {
+      "dtype": "torch.bfloat16",
+      "offset_elements": 0,
+      "schedule": {
+        "threads": 128,
+        "layout": "flat",
+        "cache": false,
+        "vec": 1
+      },
+      "outputs": {
+        "gelu_erf": {
+          "encodings": 65536,
+          "matched_nan_results": 255,
+          "mismatches": 0,
+          "first_mismatches": []
+        },
+        "gelu_tanh": {
+          "encodings": 65536,
+          "matched_nan_results": 255,
+          "mismatches": 0,
+          "first_mismatches": []
+        },
+        "scalar_cube": {
+          "encodings": 65536,
+          "matched_nan_results": 254,
+          "mismatches": 0,
+          "first_mismatches": []
+        }
+      }
+    },
+    {
+      "dtype": "torch.bfloat16",
+      "offset_elements": 1,
+      "schedule": {
+        "threads": 128,
+        "layout": "flat",
+        "cache": false,
+        "vec": 4
+      },
+      "outputs": {
+        "gelu_erf": {
+          "encodings": 65536,
+          "matched_nan_results": 255,
+          "mismatches": 0,
+          "first_mismatches": []
+        },
+        "gelu_tanh": {
+          "encodings": 65536,
+          "matched_nan_results": 255,
+          "mismatches": 0,
+          "first_mismatches": []
+        },
+        "scalar_cube": {
+          "encodings": 65536,
+          "matched_nan_results": 254,
+          "mismatches": 0,
+          "first_mismatches": []
+        }
+      }
+    }
+  ]
+}

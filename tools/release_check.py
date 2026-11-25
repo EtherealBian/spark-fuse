@@ -135,6 +135,18 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "dynamic_native_shape_matrix",
+            [
+                sys.executable,
+                str(ROOT / "tools/dynamic_native_panel.py"),
+                "--verify-only",
+                "--output",
+                str(report.with_name(report.stem + "-dynamic-native.json")),
+            ],
+        )
+    )
     for name, cmd in commands:
         left = until - time.time() - 3
         if left < 1:

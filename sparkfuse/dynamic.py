@@ -107,6 +107,12 @@ class DynamicRows:
 
         self._adapt = adapt
 
+    def native_dispatch(self):
+        """Build one native guarded dispatcher for every row count in this export."""
+        from .native import _native_dispatch
+
+        return _native_dispatch(self.kernel, self.bounds)
+
     def prepare(self, *args, **kwargs):
         flat, spec = tree.tree_flatten((args, kwargs))
         if spec != self._spec:

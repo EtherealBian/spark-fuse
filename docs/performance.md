@@ -195,3 +195,17 @@ changes = specialize_host_calls(mixed)  # optional; use a separate module for be
 原始失败记录（gzip JSON）：[24×8192](../reports/wide-score-history-scores-24x8192-float16.json.gz)、[双输出 24×2048](../reports/wide-score-history-scores2-24x2048-float16.json.gz)、[384×4096](../reports/wide-score-history-scores-384x4096-bfloat16.json.gz)。运行 `python tools/wide_score_audit.py --output /tmp/wide.json` 可检验三个布局；[完整阶段验收](../reports/wide-score-stage-acceptance.json)另覆盖相邻奇数宽度和原有框架集成。
 
 **English.** Two illegal accesses and one rejected kernel launch from the long-key search triggered this change. Keeping the outer cache loop and avoiding redundant shared storage for a single-warp score reduction passed the targeted memory, race, and synchronization checks. All three original workloads completed a fresh 16-candidate tuning run. This establishes correctness for the tested cases, not a blanket speedup.
+
+### Variable token counts: one native descriptor and one CUDA binary
+
+`DynamicRows(ep).native_dispatch()` binds one C++ launcher to a rank-2 export with a single bounded leading symbol. Each invocation reads the row count from the first dynamic input, checks the export bounds and every input (including static broadcasts), allocates the correctly sized outputs, and launches on the current stream. It neither re-exports the graph nor builds a native plan per row count. The original Python `prepare` path remains available. A C++17 toolchain is needed for the native path.
+
+The [DGX Spark panel](../reports/dynamic-native-panel.json) exports at seven rows, validates 16 lengths from 1 to 129 against eager, and checks native vs Python outputs byte-for-byte. All four backends passed on all three cases, including the separately observable BF16 residual. Odd-numbered request indices use contiguous tensors offset by one element. Thirteen held-out lengths are then timed in mixed order (identical request sequence per backend; preallocated inputs, fresh outputs). Median synchronized host call in µs across nine randomized windows:
+
+| exported region | width / type | eager | Inductor (`dynamic=True`) | SparkFuse Python | SparkFuse native |
+|---|---|---:|---:|---:|---:|
+| SiLU gate | 8960 / BF16 | 18.848 | 29.152 | 29.023 | 11.552 |
+| visible residual + RMSNorm | 1536 / BF16 | 17.312 | 27.871 | 28.032 | 9.008 |
+| squared mean, output `[R,1]` | 768 / FP32 | 13.216 | 26.159 | 22.992 | 7.280 |
+
+Native had the lower median than each other frontend in 9/9 windows on these workloads. This is a host-dispatch improvement: on 33-row RMSNorm, Python/native fixed-shape CUDA Graph replay was 2.232/2.249 µs; at 129 rows, 2.771/2.707 µs. The two frontends launch the same CUDA binary. Replayed GPU time excludes the host and does not describe variable-shape graph capture. These warmed, single-subgraph calls are not serving throughput, cold compilation latency, or a claim about arbitrary dynamic axes. Reproduce with `python tools/dynamic_native_panel.py --output /tmp/rows.json` on an idle GPU, or add `--verify-only` for the parity matrix without timings/Inductor.

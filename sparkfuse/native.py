@@ -76,6 +76,10 @@ def _extension():
 
 
 def native_dispatch(kernel):
+    return _native_dispatch(kernel, None)
+
+
+def _native_dispatch(kernel, row_bounds):
     p = kernel.plan
     desc = [p.vals[i] for i in p.inputs + p.outputs]
     out_spec = kernel.ep.call_spec.out_spec
@@ -87,9 +91,17 @@ def native_dispatch(kernel):
         kernel.device.index,
         p.rows,
         len(p.inputs),
-        [x.shape for x in desc],
+        # DynamicRows rejects static rank-2 non-singleton leading extents;
+        # representative rows >= 2 therefore distinguishes [R,W] from [1,W].
+        [
+            (-1, x.shape[1])
+            if row_bounds is not None and len(x.shape) == 2 and x.shape[0] == p.rows
+            else x.shape
+            for x in desc
+        ],
         [num[x.dt] for x in desc],
         out_spec.is_leaf(),
+        *(row_bounds or (0, 0)),
     )
     raw = host.run
     plain_out = out_spec.is_leaf() or (
