@@ -4,6 +4,7 @@ import argparse, json, time
 import fcntl
 from pathlib import Path
 import torch
+from provenance import capture
 from bench import bench
 from tune_once import run
 from sparkfuse import Schedule
@@ -17,10 +18,11 @@ if __name__ == "__main__":
     gpu_lock = (a.db.parent.parent / "gpu-execution.lock").open("a")
     fcntl.flock(gpu_lock, fcntl.LOCK_EX)
     j = json.loads(a.request)
+    src = capture(a.db.parent / "sources")
     t = time.time()
     dt = getattr(torch, j["dtype"])
     rec = run(j["case"], j["rows"], j["width"], dt, a.db, j["budget"], j["seed"])
-    result = {"job": j, "tuning": rec, "status": "ok"}
+    result = {"job": j, "tuning": rec, "provenance": src, "status": "ok"}
     result["comparison"] = bench(
         j["case"],
         j["rows"],

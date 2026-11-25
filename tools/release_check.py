@@ -23,6 +23,19 @@ def check(until, report):
                 [opt, str(ROOT / "tools/qwen_integration.py"), "--output", str(qreport)],
             )
         )
+        commands.append(
+            (
+                "qwen_modules_native",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_integration.py"),
+                    "--host-backend",
+                    "native",
+                    "--output",
+                    str(report.with_name(report.stem + "-qwen-native.json")),
+                ],
+            )
+        )
     for name, cmd in commands:
         left = until - time.time() - 3
         if left < 1:
