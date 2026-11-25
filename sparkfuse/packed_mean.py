@@ -22,9 +22,15 @@ class Roles:
 
 def match(p):
     """Return physical argument positions, not FX names or assumed placeholder order."""
-    if not cohort_eligible(p) or len(p.domain) != 2 or len(p.inputs) != 3 or len(p.vals) != 13:
+    if (
+        not cohort_eligible(p)
+        or len(p.domain) not in (2, 3)
+        or len(p.inputs) != 3
+        or len(p.vals) != 13
+    ):
         return None
-    vs, full, row = p.vals, p.domain, (p.rows, 1)
+    # Keep every leading extent for legality; only launch indexing flattens the rows.
+    vs, full, row = p.vals, p.domain, (*p.domain[:-1], 1)
     (sq,) = vs[p.red].deps
     if vs[sq].op != "square" or vs[sq].dt != "f32":
         return None

@@ -664,3 +664,29 @@ python tools/packed_mean_panel.py --selection /tmp/packed-primary.json --seed-of
 python tools/inspect_packed_mean.py /tmp/packed-primary.json --cache "$SPARKFUSE_CACHE" --output /tmp/packed-sass.json
 bash tools/sanitize_packed_mean.sh
 ```
+
+<a id="qwen-packed-mean"></a>
+
+### 一个更快的内核能给 Qwen2 整层省多少？ / A faster tile inside a real decoder layer
+
+对随机权重的 Hugging Face `Qwen2DecoderLayer`，导出图中的 `o_proj` 产生 `[batch, seq, 1536]`。一次 CUDA 调用把它加到原输入，同时返回两份值：跨过 MLP 的 BF16 残差，以及供 gate/up 投影读取的归一化结果。新布局识别连续静态三维输入；只有两条残差流的每个维度都吻合，才把 batch 和 seq 合并为发射行数。广播和符号三维输入不走这条路径。
+
+在 DGX Spark 上用第一组权重选型，在第二组权重上冻结调度复测。旧组试 10 种配置，新组试 9 种；只改这一个融合区，两个混合图的其他算子、调度及连接相同。下表为第二轮的热地址设备时间（µs），每栏取七个交错窗口的中位数。子图的输入由**未融合的 ATen 层**提供。
+
+| 序列长（batch=2） | 子图：旧 → 新 | 整层：旧 → 新 | 整层 HF eager | 整层保留转换的 Inductor |
+|---:|---:|---:|---:|---:|
+| 33 | 3.17 → 2.15 | 561.16 → 558.42 | 609.07 | 未通过逐位门槛 |
+| 65 | 3.52 → 2.67 | 564.60 → 570.78 | 623.50 | **544.87** |
+| 129 | 5.56 → 3.35 | 691.87 → 690.26 | 803.35 | 未通过逐位门槛 |
+
+两组权重、三个长度、共 18 个未参与选型的请求：SparkFuse 的残差、归一化结果、整层隐藏态和注意力概率都与 eager 逐位相同。新旧整层都是 19 次发射；已有混合图相对 eager 的 48 → 19 次不能归功给本次优化。长度 65 时新内核更快，整层却更慢；同组 cast-aware Inductor 既通过逐位检查，也比两种 SparkFuse 配置快。默认 Inductor 在六组整层对照中均未通过三请求逐位门槛，因此不列速度。原始数据保留逐位与普通容差检查，以及同步主机时间。
+
+**English.** A static `[B,S,H]` residual tile improves the isolated post-attention region by **1.32–1.66×** on the second weight seed. End-to-end layer times move in both directions: changing the tile alone does not justify a new global default. The experiment uses one random-weight BF16 layer and measures forward latency; it does not measure trained-model generation throughput.
+
+[Discovery](../reports/qwen-packed-mean-discovery-gb10.json) · [Frozen schedules, independent weights](../reports/qwen-packed-mean-heldout-gb10.json) · [Full regression](../reports/qwen-packed-mean-stage-acceptance.json) · [Memory, race and synchronization checks](../reports/qwen-packed-mean-sanitizer-gb10.txt).
+
+```bash
+source tools/env.sh  # use the interpreter with the optional Transformers integration
+python tools/qwen_packed_mean.py --output /tmp/qwen-primary.json
+python tools/qwen_packed_mean.py --selection /tmp/qwen-primary.json --seed-offset 98627 --output /tmp/qwen-repeat.json
+```

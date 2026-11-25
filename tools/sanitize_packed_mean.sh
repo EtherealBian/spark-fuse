@@ -5,5 +5,5 @@ exec flock .runtime/gpu-execution.lock bash -ec '
 for check in memcheck racecheck synccheck; do
     printf "packed residual mean: %s\n" "$check"
     compute-sanitizer --tool "$check" --target-processes application-only \
-        --kernel-name kns=fused_packed_mean --error-exitcode 86 "$1" -m pytest -q tests/test_packed_mean.py
+        --kernel-name kns=fused_packed_mean --error-exitcode 86 "$1" -m pytest -q tests/test_packed_mean.py tests/test_packed_mean_rank3.py
 done' _ "$PY"

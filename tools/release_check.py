@@ -30,6 +30,22 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "qwen_rank3_packed_boundary",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_packed_mean.py"),
+                    "--verify-only",
+                    "--seq",
+                    "33",
+                    "--seed-offset",
+                    "80141",
+                    "--output",
+                    str(report.with_name(report.stem + "-qwen-packed-mean.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "qwen_modules",
                 [opt, str(ROOT / "tools/qwen_integration.py"), "--output", str(qreport)],
             )
