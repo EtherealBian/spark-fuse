@@ -1,0 +1,397 @@
+{
+  "case": "resnorm2",
+  "shape": [
+    32,
+    1536
+  ],
+  "dtype": "torch.bfloat16",
+  "seed": 100,
+  "device": "NVIDIA GB10",
+  "torch": "2.13.0+cu130",
+  "cuda": "13.0",
+  "python": "3.12.3",
+  "schedule": {
+    "threads": 128,
+    "layout": "block",
+    "cache": true
+  },
+  "export_ms": 610.0051496177912,
+  "sparkfuse_build_or_load_ms": 2.860492095351219,
+  "inductor_wrapper_plus_first_call_ms": 817.8477333858609,
+  "plan": {
+    "domain": [
+      32,
+      1536
+    ],
+    "reduction": 5,
+    "input_ids": [
+      0,
+      1,
+      2
+    ],
+    "output_ids": [
+      10,
+      3
+    ],
+    "values": [
+      {
+        "op": "input",
+        "shape": [
+          32,
+          1536
+        ],
+        "dt": "bf16",
+        "deps": [],
+        "imm": 0
+      },
+      {
+        "op": "input",
+        "shape": [
+          32,
+          1536
+        ],
+        "dt": "bf16",
+        "deps": [],
+        "imm": 1
+      },
+      {
+        "op": "input",
+        "shape": [
+          1536
+        ],
+        "dt": "bf16",
+        "deps": [],
+        "imm": 2
+      },
+      {
+        "op": "add",
+        "shape": [
+          32,
+          1536
+        ],
+        "dt": "bf16",
+        "deps": [
+          0,
+          1
+        ],
+        "imm": null
+      },
+      {
+        "op": "square",
+        "shape": [
+          32,
+          1536
+        ],
+        "dt": "f32",
+        "deps": [
+          3
+        ],
+        "imm": null
+      },
+      {
+        "op": "mean",
+        "shape": [
+          32,
+          1
+        ],
+        "dt": "f32",
+        "deps": [
+          4
+        ],
+        "imm": null
+      },
+      {
+        "op": "const",
+        "shape": [],
+        "dt": "f32",
+        "deps": [],
+        "imm": 1e-06
+      },
+      {
+        "op": "add",
+        "shape": [
+          32,
+          1
+        ],
+        "dt": "f32",
+        "deps": [
+          5,
+          6
+        ],
+        "imm": null
+      },
+      {
+        "op": "rsqrt",
+        "shape": [
+          32,
+          1
+        ],
+        "dt": "f32",
+        "deps": [
+          7
+        ],
+        "imm": null
+      },
+      {
+        "op": "mul",
+        "shape": [
+          32,
+          1536
+        ],
+        "dt": "f32",
+        "deps": [
+          3,
+          8
+        ],
+        "imm": null
+      },
+      {
+        "op": "mul",
+        "shape": [
+          32,
+          1536
+        ],
+        "dt": "bf16",
+        "deps": [
+          9,
+          2
+        ],
+        "imm": null
+      }
+    ],
+    "launches": 1,
+    "global_intermediate_bytes": 0
+  },
+  "torch_export_graph": "graph():\n    %x : [num_users=1] = placeholder[target=x]\n    %skip : [num_users=1] = placeholder[target=skip]\n    %w : [num_users=1] = placeholder[target=w]\n    %add : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%x, %skip), kwargs = {})\n    %rms_norm : [num_users=1] = call_function[target=torch.ops.aten.rms_norm.default](args = (%add, [1536], %w, 1e-06), kwargs = {})\n    return (rms_norm, add)",
+  "backends": {
+    "eager": {
+      "errors": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "device": {
+        "median_us": 2.962999977171421,
+        "p10_us": 2.945000072941184,
+        "p90_us": 2.9635000973939896,
+        "samples_us": [
+          2.945000072941184,
+          2.962999977171421,
+          2.9639999847859144,
+          2.9635000973939896,
+          2.962999977171421,
+          2.962500089779496,
+          2.959999954327941,
+          2.962999977171421,
+          2.956999931484461
+        ]
+      },
+      "host_sync": {
+        "median_us": 13.984,
+        "p10_us": 13.776,
+        "p90_us": 14.416,
+        "samples_us": [
+          24.528,
+          15.312,
+          14.416,
+          14.112,
+          14.32,
+          14.384,
+          14.048,
+          14.048,
+          13.936,
+          14.033,
+          14.0,
+          13.92,
+          13.856,
+          13.712,
+          13.984,
+          14.16,
+          16.352,
+          13.92,
+          13.776,
+          13.968,
+          13.936,
+          13.824,
+          13.936,
+          13.712,
+          13.808,
+          14.049,
+          13.968,
+          13.744,
+          13.984,
+          13.776,
+          14.032
+        ]
+      },
+      "gpu_events": [
+        "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat16>, std::array<char*, 3ul> >(int, at::native::CUDAFunctor_add<c10::BFloat16>, std::array<char*, 3ul>)",
+        "void at::native::(anonymous namespace)::vectorized_layer_norm_kernel<c10::BFloat16, float, true>(int, float, c10::BFloat16 const*, c10::BFloat16 const*, c10::BFloat16 const*, float*, float*, c10::BFloat16*)"
+      ],
+      "allocation_peak_above_entry_bytes": 197120
+    },
+    "inductor": {
+      "errors": [
+        {
+          "max_abs": 0.03125,
+          "mean_abs": 4.334297773311846e-05,
+          "unequal": 639,
+          "rtol": 0.012,
+          "atol": 0.0002
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "device": {
+        "median_us": 1.8454999662935734,
+        "p10_us": 1.8420000560581684,
+        "p90_us": 1.865500002168119,
+        "samples_us": [
+          1.8614999717101455,
+          1.8434999510645866,
+          1.84299994725734,
+          1.8420000560581684,
+          1.8695000326260924,
+          1.84599997010082,
+          1.8424999434500933,
+          1.8454999662935734,
+          1.865500002168119
+        ]
+      },
+      "host_sync": {
+        "median_us": 29.84,
+        "p10_us": 29.217,
+        "p90_us": 33.152,
+        "samples_us": [
+          61.968,
+          37.504,
+          31.216,
+          32.385,
+          30.432,
+          33.152,
+          29.68,
+          30.768,
+          30.16,
+          30.56,
+          42.817,
+          29.872,
+          29.648,
+          29.296,
+          29.536,
+          30.688,
+          29.84,
+          29.344,
+          29.217,
+          29.504,
+          29.088,
+          29.712,
+          28.704,
+          29.792,
+          29.632,
+          29.696,
+          29.217,
+          30.096,
+          30.128,
+          30.48,
+          29.552
+        ]
+      },
+      "gpu_events": [
+        "triton_red_fused__fused_rms_norm_add_0"
+      ],
+      "allocation_peak_above_entry_bytes": 196608
+    },
+    "sparkfuse": {
+      "errors": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "device": {
+        "median_us": 4.88050002604723,
+        "p10_us": 4.863000009208918,
+        "p90_us": 4.883499816060066,
+        "samples_us": [
+          4.863000009208918,
+          4.879499785602093,
+          4.8825000412762165,
+          4.8825000412762165,
+          4.883499816060066,
+          4.879999905824661,
+          4.8859999515116215,
+          4.88050002604723,
+          4.879999905824661
+        ]
+      },
+      "host_sync": {
+        "median_us": 93.985,
+        "p10_us": 90.992,
+        "p90_us": 131.44,
+        "samples_us": [
+          131.44,
+          102.401,
+          99.6,
+          97.712,
+          93.985,
+          94.848,
+          97.169,
+          95.488,
+          181.873,
+          95.584,
+          93.825,
+          93.168,
+          92.337,
+          92.864,
+          91.952,
+          92.241,
+          90.992,
+          92.721,
+          98.72,
+          169.681,
+          94.832,
+          92.8,
+          92.273,
+          91.936,
+          90.721,
+          91.808,
+          90.128,
+          95.201,
+          94.128,
+          90.625,
+          165.776
+        ]
+      },
+      "gpu_events": [
+        "fused(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, int)"
+      ],
+      "allocation_peak_above_entry_bytes": 196608
+    }
+  }
+}

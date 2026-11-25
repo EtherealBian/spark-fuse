@@ -1,0 +1,17 @@
+# Reproduction and evidence contract
+
+1. **Frontend**: export both residual-visibility variants. Kernel sources differ in their output list and stores; graph input, IR, lowering and backend are otherwise shared. Matmul is rejected by standalone compilation. In mixed graphs, keep an operator on the PyTorch path when there is no legal insertion point or an unsupported alias might escape.
+2. **Numerics**: compare matching dtype, device and shape, including every returned tensor, with explicit per-dtype tolerances. A returned residual must match eager bit for bit on the sampled finite inputs. Cover odd widths, offset-but-contiguous inputs, multiple outputs, parameters, pytree outputs and a non-default CUDA stream.
+3. **Performance**: compare against eager and static/fullgraph TorchInductor on the same device, tensors and dtype. The device series uses 9 groups of 4 replays of a 16-invocation graph; it excludes host dispatch and can favor cache residency. The synchronized host series includes fresh output allocation, Python dispatch and completion. Profiling, when enabled, is outside timing; peak allocated bytes include returned outputs and allocator rounding. IR global intermediate bytes are a design property, not a hardware counter.
+4. **Search**: training, schedule confirmation and three-way comparison use different seeds. A candidate replaces the default only if it wins at least 4 of 5 paired holdout rounds and has at least 3% median gain. This is a heuristic, not a confidence interval. Never drop losing or failed workload cases from the denominator. Inductor compilation/first call and our source build/load are different operations; caches can be warm.
+5. **Real module check**: with `transformers==4.51.3` installed, run `python tools/qwen_integration.py --output /tmp/qwen.json`. Hidden size 1536, intermediate size 8960. The test uses the package's actual classes; no checkpoint is downloaded. See `reports/qwen-integration.json` for both before/after graphs.
+
+## Overnight campaign
+
+From the repository root, set `SPARKFUSE_PYTHON` to an existing CUDA-enabled Python interpreter. Run `tools/start-campaign.sh --run RUN-ID --until 2026-11-26T09:00:00+08:00`. It serializes GPU workload cases, validates candidates, stores a SQLite dispatcher, benches the selected candidate with new inputs, and writes each successful full JSON atomically. The supervisor bounds each worker and enforces the absolute deadline, including terminating an unfinished worker. Five consecutive worker failures or a low-disk guard stop the search early with a recorded reason.
+
+- `.runtime/RUN-ID/index.jsonl`: append-only case index, including failures. Preserve this, `evidence/` and `dispatch.sqlite`; they are results, not disposable compiler caches.
+- `reports/RUN-ID-status.json`: atomic progress with the actual stop reason. Rerunning the same ID resumes at unrecorded cases.
+- `python tools/report.py .runtime/RUN-ID /tmp/report.md`: rebuild the table from the index, including slower cases. Raw times and schedules are in `evidence/`.
+- `.cache/`: generated, safe to clean **after** all compilation and benchmarking processes exit.
+- `sparkfuse.tuning.compile_tuned(ep, db_path)`: uses a matching measured entry, otherwise compiles the default schedule. `kernel.prepare(*args)` reuses the same outputs on subsequent calls; copy results if they must outlive a replay. The normal `kernel(*args)` allocates fresh outputs.

@@ -1,0 +1,7 @@
+graph():
+    %x : [num_users=1] = placeholder[target=x]
+    %skip : [num_users=1] = placeholder[target=skip]
+    %w : [num_users=1] = placeholder[target=w]
+    %add : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%x, %skip), kwargs = {})
+    %rms_norm : [num_users=1] = call_function[target=torch.ops.aten.rms_norm.default](args = (%add, [1536], %w, 1e-06), kwargs = {})
+    return (rms_norm, add)
