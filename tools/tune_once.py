@@ -6,7 +6,7 @@ from sparkfuse.tuning import tune
 
 
 @torch.inference_mode()
-def run(name, rows, width, dtype, db, budget, seed):
+def run(name, rows, width, dtype, db, budget, seed, *, store=True):
     m, args = case(name, rows, width, dtype, seed)
     _, held = case(name, rows, width, dtype, seed + 1)
     ep = torch.export.export(m, args)
@@ -18,6 +18,7 @@ def run(name, rows, width, dtype, db, budget, seed):
         m(*held),
         db,
         budget=budget,
+        store=store,
         seed=seed,
         exact=(1,) if name in ("resnorm2", "scores2") else (),
     )
