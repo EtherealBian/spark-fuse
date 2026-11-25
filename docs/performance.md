@@ -731,3 +731,44 @@ python tools/context_projection.py --output /tmp/context-projection.json
 python tools/qwen_context.py --output /tmp/qwen-context.json
 python -m pytest -q tests/test_contextual.py tests/test_contextual_evidence.py
 ```
+
+<a id="resident"></a>
+
+### 一层 Qwen2 的请求延迟：常驻 CUDA Graph / Serving fresh results from a resident graph
+
+`capture_export` 捕获固定形状的 ATen 图或 SparkFuse 混合图。每个请求可以传入新地址：先把所有输入复制到私有缓冲，重放一次图，再将需要独占的结果复制给调用者。下一次重放不会覆盖上一次返回的结果。原图若返回输入本身、输入切片，或同一输出的多个视图，返回值仍保持这些关系。捕获时复制权重，换模型后需重新捕获。
+
+**什么时候值得用？** 下表是在 DGX Spark 上交替输入八个不同请求的 BF16 Qwen2 解码层结果。每个长度测试两组随机权重；普通混合图和常驻混合图使用相同 CUDA 调度。每次同步等待完整响应时，六组都变快；同时排队八个请求时，长度 65 和 129 的普通混合图更快。
+
+| 序列长度 | 权重种子 | 单请求同步：普通 → 常驻 (µs) | 八请求排队：普通 → 常驻 (µs/次) |
+|---:|---:|---:|---:|
+| 33 | 813157 | 633.12 → 594.52 | 595.35 → 585.51 |
+| 33 | 821641 | 637.40 → 593.69 | 603.40 → 586.45 |
+| 65 | 813157 | 646.38 → 614.11 | 593.49 → 602.68 |
+| 65 | 821641 | 646.23 → 611.06 | 596.80 → 599.75 |
+| 129 | 813157 | 761.48 → 745.16 | 728.24 → 734.59 |
+| 129 | 821641 | 760.86 → 755.20 | 728.52 → 744.37 |
+
+CPU 提交从 194–203 µs 降至 35–39 µs。提交耗时不含随后等待 GPU 的时间；表中的同步延迟包含该等待。各组先用八次请求逐位核对两个可见输出，检查每个请求的输出存储独立、布局和别名匹配、屏蔽位置为零、概率行和误差不超过 0.004。默认 Inductor 未通过六组的逐位门槛；保留精度转换的 Inductor 有一组八次全部通过（长度 33、种子 813157）：单请求 603.27 µs，八请求排队 **578.18 µs**，后者快于常驻混合图的 585.51 µs。其余组保留差异，但不作同精度速度排名。
+
+**Contract.** Use nonempty whole contiguous tensor inputs on one CUDA device, with independent storage and the same layout on every request. Use the creating thread and stream. Arrange dependencies on an upstream producer before invoking the handle; `record_stream` protects lifetime, not readiness. Call `close()` or use a context manager to wait for pending replay before releasing resources. The executable supports static functional operators from an explicit allowlist; it rejects training dropout, mutations, dynamic dimensions, alias-only graphs and fresh output views without a visible whole owner. Autocast and nested capture are rejected. Model state and precision policy are those used for capture. Qualification compares against the unmodified export on two different requests, not every possible value.
+
+```python
+from sparkfuse.resident import capture_export
+from sparkfuse.partition import ordered_collectives
+
+opts = dict(host_backend="native", schedule_policy=ordered_collectives, rotary_pairs=True)
+with capture_export(ep, example, audit, backend="mixed", partition_options=opts) as run:
+    first = run(*request_a)
+    second = run(*request_b)  # first's owned results remain valid
+```
+
+**Costs and interpretation.** The six mixed captures took 47–157 ms with warm artifact caches, including partitioning and correctness qualification. Inputs plus privately copied weights require 93.84–94.59 MB (decimal); this excludes graph intermediates and library workspaces. PyTorch allocator deltas in the report are process counters and may include release of earlier allocations; they do not estimate total executable memory. Inputs and fresh outputs are copied on every call: at length 129 this is 0.99 MB in and 1.59 MB out. Neither a new global default nor an autoregressive tokens/s result follows from this experiment.
+
+[Eight-request gates, setup, seeds and raw timings](../reports/resident-qwen-gb10.json) · [Release checks](../reports/resident-stage-acceptance.json) · [Generated-kernel sanitizer checks](../reports/resident-sanitizer-gb10.txt).
+
+```bash
+source tools/env.sh  # use a Python environment with the optional Transformers dependency
+python tools/resident_qwen.py --output /tmp/resident-qwen.json
+python -m pytest -q tests/test_resident.py tests/test_resident_evidence.py
+```

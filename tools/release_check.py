@@ -30,6 +30,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "resident_qwen_requests",
+                [
+                    opt,
+                    str(ROOT / "tools/resident_qwen.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-resident.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "qwen_context_site_replay",
                 [
                     opt,
