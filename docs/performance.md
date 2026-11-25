@@ -951,3 +951,18 @@ Each allocator measurement used a separate, symmetrically warmed process; after 
 On GB10 the ordinary graph launches **28 / 10 / 5 / 3** kernels (eager / previous fusion / grouped affine / packed affine). All three resident paths start with column-major weights, return fresh outputs, and use the same native request interface. The packed path additionally requires `int8_rhs_layout="packed_fanout"`. The 21-output diagnostic case still paid to return 21 separate tensors: faster device replay did **not** reduce its request latency. Across six cases, two independent seeds and eight held-out requests per case, returned results matched eager byte for byte and the tested narrow outputs matched an oracle built from CPU INT32 accumulators. Default and cast-aware Inductor did not pass the same byte gate. These are random-weight projections, not a complete attention layer.
 
 [Generated three-branch CUDA](../examples/generated/token-quant/affine_17x128_64_64.cu) · [Per-output errors, profiler counts and timing windows](../reports/projection-affine-gb10.json) · [Compute Sanitizer](../reports/projection-affine-sanitizer-gb10.txt). Run `python tools/projection_affine_panel.py --output /tmp/affine.json` and `bash tools/sanitize_projection_affine.sh` after `source tools/env.sh`.
+
+<a id="output-slots"></a>
+### 服务方预分配输出 / Caller-owned output slots
+
+`run(inputs...)` 的每次结果都有独立存储。需要排队处理请求时，服务方也可以先分配八组结果缓冲区，再用 `run.run_into(inputs, slot)` 写入其中一组。它返回传入的 `slot` 本身；再次使用同一组会覆盖前一次结果。跨 CUDA stream 使用时，调用方须安排好等待，特别是写入前要等上一次消费者读完。此接口只用于原生请求路径已验证的单个张量或由独立结果组成的扁平元组。写入前检查所有输入、输出的布局和地址范围，拒绝重叠、模型权重、采样用输入和内部图缓冲区作为目的地。
+
+| 相同的常驻打包投影，种子 1661987 | 轮换请求同步时间：独占新结果 → 预分配（µs） | 8 请求排队，平均每请求（µs） | 8 组预分配的 CUDA allocator 字节数 |
+|---|---:|---:|---:|
+| 17 行，3 个结果 | 34.90 → 34.71 | 29.55 → 26.80 | 77,824 |
+| 33 行，21 个结果 | 115.28 → 88.70 | 112.76 → 85.30 | 7,168,000 |
+| 129 行，3 个结果 | 49.17 → 54.37 | 44.96 → 44.64 | 4,227,072 |
+
+The same graph runs three compute kernels in both modes. At 21 outputs, the per-request trace still shows 23 device copies (two inputs plus 21 results); the new path removes the 21 clones/allocations. In a queue of eight this is **168 → 0 hot CUDA allocations**, after paying for the ring up front. At the second seed, rotating latency was 116.03 → 88.72 µs. The longer three-output case was slower for a synchronous request at both seeds. The caller controls buffer reuse; this does not change the default fresh-result API. Seven shuffled windows include the complete request; the retained outputs of all eight requests match the archived arithmetic oracle byte for byte.
+
+[Allocator counters, copy traces and raw clocks](../reports/output-slot-gb10.json) · [Compute Sanitizer](../reports/output-slot-sanitizer-gb10.txt). Reproduce after `source tools/env.sh` with `python tools/output_slot_panel.py --output /tmp/slots.json` and `bash tools/sanitize_output_slots.sh`. The plain-process test separately checks backing storage expires when the caller drops it; the instrumentation can retain Python arguments. Stream ordering and destination version increments are tested under all three sanitizer tools.

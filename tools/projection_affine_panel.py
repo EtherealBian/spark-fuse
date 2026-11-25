@@ -43,7 +43,7 @@ def gate(fn, reqs, refs, weights):
     )
 
 
-def case(spec, seed, smoke):
+def workload(spec, seed):
     label, m, k, ns, debug = spec
     g = torch.Generator(device="cuda").manual_seed(seed + m + k)
     ws = [
@@ -58,6 +58,12 @@ def case(spec, seed, smoke):
         tuple(torch.randn(m, k, device="cuda", generator=g, dtype=torch.bfloat16) for _ in range(2))
         for _ in range(10)
     ]
+    return model, req, ws, cs, bs, dts
+
+
+def case(spec, seed, smoke):
+    label, m, k, ns, debug = spec
+    model, req, ws, cs, bs, dts = workload(spec, seed)
     ex, au, *held = req
     ep = torch.export.export(model, ex)
     refs = [model(*a) for a in held]

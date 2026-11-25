@@ -121,6 +121,18 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "caller_owned_output_slots",
+            [
+                sys.executable,
+                str(ROOT / "tools/output_slot_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-output-slot.json")),
+            ],
+        )
+    )
     opt = os.environ.get("SPARKFUSE_QWEN_PY")
     qreport = report.with_name(report.stem + "-qwen.json")
     if opt:

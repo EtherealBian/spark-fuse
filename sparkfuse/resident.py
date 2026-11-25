@@ -283,7 +283,9 @@ def _recipe(args, out, forbidden, *, int8=False):
 class ResidentExecutable:
     """Obtained from capture_export(). Use/close on the creating thread and CUDA stream."""
 
-    def __init__(self, dev, owner, fn, static, outputs, recipe, graph, layout, metadata):
+    def __init__(
+        self, dev, owner, fn, static, outputs, recipe, graph, layout, metadata, protected=()
+    ):
         self._dev = dev
         self._owner = owner
         self._thread = threading.current_thread()
@@ -296,6 +298,7 @@ class ResidentExecutable:
         self.metadata = metadata
         self._failed = False
         self._native_io = None
+        self._native_into = None
         if metadata["request_backend"] == "native":
             # Flat fresh outputs only. Never reuse the caller's output storage across requests.
             from .native import _extension
@@ -303,14 +306,17 @@ class ResidentExecutable:
             host = _extension()
             self._bad_storage = host._ResidentBadStorage
             self._bad_layout = host._ResidentBadLayout
-            self._native_io = host._ResidentIO(
+            native = host._ResidentIO(
                 static,
                 tuple(self._outputs),
                 graph.replay,
                 [g[2] for g in layout],
                 torch.Tensor,
                 nn.Parameter,
-            ).run
+                protected,
+            )
+            self._native_io = native.run
+            self._native_into = native.run_into
 
     def _guard(self):
         if threading.current_thread() is not self._thread:
@@ -368,6 +374,35 @@ class ResidentExecutable:
             self._failed = True
             raise
 
+    @torch.inference_mode()
+    def run_into(self, inputs, outputs):
+        """Replay into existing buffers. Neither allocate nor return fresh result tensors.
+
+        Pass inputs as a tuple and outputs in the qualified tensor/flat-tuple structure.
+        Caller orders all reads/writes on other streams and must finish using a slot before reuse.
+        An ordinary call still returns independently owned results. The buffers remain caller-owned.
+        """
+        self._guard()
+        if self._graph is None or self._failed:
+            raise RuntimeError("closed or failed resident executable")
+        if self._native_into is None:
+            raise Unsupported("run_into requires native request IO")
+        if torch.is_autocast_enabled("cuda"):
+            raise ValueError("resident request layout or precision mode changed")
+        if type(inputs) is not tuple or (not self._spec.is_leaf() and type(outputs) is not tuple):
+            raise ValueError("expected positional tuple and qualified output structure")
+        buffers = (outputs,) if self._spec.is_leaf() else outputs
+        try:
+            self._native_into(inputs, buffers)
+        except self._bad_storage as e:
+            raise Unsupported(str(e)) from e
+        except self._bad_layout as e:
+            raise ValueError(str(e)) from e
+        except Exception:
+            self._failed = True
+            raise
+        return outputs
+
     def __copy__(self):
         raise TypeError("resident handles cannot be copied")
 
@@ -387,7 +422,7 @@ class ResidentExecutable:
         self._guard()
         if self._graph is not None:
             self._owner.synchronize()
-            self._native_io = None
+            self._native_io = self._native_into = None
             self._graph.reset()
             self._graph = None
             self._outputs = []
@@ -611,6 +646,9 @@ def _capture_export(
                 output_bindings=[asdict(b) for b in recipe[1]],
                 regions=recs,
             ),
+            (*example, *audit, *raw.parameters(), *raw.buffers(), *fn.buffers())
+            if request_backend == "native"
+            else (),
         )
         try:
             for tag, args in [("example", example), ("audit", audit)]:
