@@ -64,3 +64,11 @@ A positional-bias subgraph generates both the unnormalized bias and its row-wise
 | 12 × 128 × 1024 | 92.58 | 56.14 | 47.73 | 42.05 |
 
 Device µs with warm addresses. Inductor is faster on the single-query case. [Exact schedules, input seeds, all raw windows, FX and parity](../reports/position-broadcast-gb10.json). The [pre-fix frontend probe](../reports/frontend-before-gb10.json) also shows why explicit mean-dtype conversion has to happen before accumulation: both narrowing cases previously yielded 0.375 rather than eager's 0.
+
+### BERT：残差与带仿射参数的 LayerNorm
+
+`tools/bert_output.py` exports the real Hugging Face `BertSelfOutput` with fixed random projection weights, BF16, batch 1, 97 tokens, hidden width 768, evaluation-mode dropout and epsilon 1e-12. The linear layer remains PyTorch. The add and affine LayerNorm are one generated kernel. The kernel subtracts a per-row origin before computing the mean, then accumulates squared centered values in FP32; it does not evaluate `E[x²] − E[x]²`.
+
+On a fourth request, the entire module's **hot device** medians were **14.46 / 14.20 / 12.86 µs** for eager / default mixed / selected mixed. Its **synchronized host** medians were **27.52 / 47.09 / 45.92 µs**; eager was faster there. Mixed passed the unchanged tolerances on all four requests. Full-graph Inductor missed parity on those requests and is not assigned a speed. [Graphs, per-input errors, chosen schedule, timing order and windows](../reports/bert-self-output-guarded-gb10.json). No claim about end-to-end BERT throughput.
+
+The intermediate implementation exposed bad GPU address calculations. We keep [the two failing generated kernels and Compute Sanitizer traces](../reports/layernorm-debug/README.md), not just the successful timings. [Stage regression: 231 tests plus installed wheel, Qwen and BERT checks](../reports/layernorm-guarded-acceptance.json).
