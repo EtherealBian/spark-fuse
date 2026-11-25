@@ -218,6 +218,8 @@ def partition_export(
     framework_softmax=False,
     ordered_scores=None,
     cache_fanout=False,
+    packed_gates=False,
+    packed_gate_schedule="adaptive",
 ):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
     if ordered_scores not in (None, "loop", "slots", "guarded") or (
@@ -225,6 +227,12 @@ def partition_export(
     ):
         raise ValueError(
             "choose one softmax policy: framework_softmax or ordered_scores='loop'/'slots'/'guarded'"
+        )
+    if packed_gate_schedule not in ("scalar", "adaptive") or (
+        not packed_gates and packed_gate_schedule != "adaptive"
+    ):
+        raise ValueError(
+            "packed_gate_schedule must be adaptive or scalar with packed_gates enabled"
         )
     if host_backend not in ("python", "native"):
         raise ValueError("unknown host backend")
@@ -236,6 +244,14 @@ def partition_export(
         if schema is not None and schema.is_mutable:
             raise Unsupported("requires functional graph without mutations")
     records = []
+    if packed_gates:
+        from .packed_swiglu import fuse_packed_swiglu
+
+        records.extend(
+            fuse_packed_swiglu(
+                gm, device, host_backend, vectorize=packed_gate_schedule == "adaptive"
+            )
+        )
     if rotary_pairs:
         from .rotary import fuse_pairs
 

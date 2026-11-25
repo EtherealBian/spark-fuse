@@ -454,3 +454,38 @@ For the first decode step after prefix 127, unprofiled device medians in µs (se
 | 147096 | 375.98 | 376.67 | 374.94 | 376.23 | 878.43 |
 
 Keeping the original weights plus the packed snapshot costs **52.5 MiB** per layer and about **514 µs** to pack here. Replacing one gate-weight row made the old snapshot produce two wrong BF16 gate elements; fresh packing recovered those bits. A hidden permanent weight cache would be wrong. The private-view path issued four kernels versus five for the two-linears path. A smaller kernel count did not make it universally faster than HF eager on prefill. Inductor failed this study’s **exact visible-down-output** gate on every case and was not timed; this is not a claim that its differences exceed ordinary model tolerances. [Raw windows, tensor strides, mismatch witnesses, kernel names and packing cost](../reports/qwen-mlp-projection-admission-gb10.json) · [reproduction](../tools/mlp_projection_audit.py). No complete-layer or generation speedup implied.
+
+### 打包权重与门控 CUDA：子图收益能否带到整层？ / Packed SwiGLU
+
+`PackedSwiGLUProjection.from_linears(gate, up)` 将两个无偏置投影显式转换为唯一注册的 `[gate; up]` 权重。导出的图仍用框架做矩阵乘法；`packed_gates=True` 识别最后一维等分、SiLU、乘法，生成一个读同一行两半的 CUDA kernel。SiLU 先舍入回原精度再相乘；若激活也是图输出，kernel 写出第二个独立结果。外部可见的切分视图仍指向输入。部署模型不再保留旧投影；转换本身需要暂存，测试还保留原模型作对照。同步请求之间可用 `reload_weights_` 原位更新，新值对已经捕获的 CUDA Graph 生效。
+
+```python
+from sparkfuse.packed_swiglu import PackedSwiGLUProjection
+from sparkfuse.partition import partition_export
+
+gate_up = PackedSwiGLUProjection.from_linears(mlp.gate_proj, mlp.up_proj)
+ep = torch.export.export(gate_up, (example_hidden,))
+mixed, decisions = partition_export(ep, packed_gates=True, host_backend="native")
+```
+
+On DGX Spark, batch 2, BF16, random-weight Hugging Face Qwen2 layer, after 1,024 prefix tokens. Each entry is the unprofiled hot device median in µs (seven shuffled windows); step 2 correctness carries each backend's own KV from step 1. The two right columns differ **only in gate scheduling**.
+
+| Weight seed · step | HF eager | Hybrid, two projections | Packed, framework gate | Packed CUDA, adaptive | Packed CUDA, scalar |
+|---|---:|---:|---:|---:|---:|
+| 141144 · 1 | 614.14 | 577.22 | 575.77 | 573.55 | 573.66 |
+| 141144 · 2 | 605.68 | 572.67 | 574.50 | 571.06 | 570.90 |
+| 147096 · 1 | 614.49 | 578.79 | 581.45 | 579.94 | 577.58 |
+| 147096 · 2 | 607.31 | 573.94 | 578.31 | 573.43 | 573.90 |
+
+The gate replacement removed one kernel in each measured step (17 → 16 here). The checkpoint conversion alone was not a consistent win. At seed 147096, step 1, the adaptive packed layer was **slower** than the two-projection hybrid. Both generated schedules matched hidden state, probabilities, K and V bits and strides on five held-out trajectories per weight/prefix; Inductor did not meet the layer's predeclared numeric gate and was not timed. These are layer-forward times, not model tokens/s or measured DRAM traffic.
+
+在相同的真实投影输出上独测门控：两行 decode 时，两组权重的标量调度均约 **1.47 µs**，一次最多 8 个元素的调度约 **1.99 µs**，eager 约 **4.03 µs**。62 行 prefill 时则反过来：标量约 **4.71 µs**，向量约 **3.52 µs**。子图不能替代整层测量；小 decode 的同步主机调用还由 eager 的约 14 µs 增至约 27 µs。因此不全局启用这个 pass，也不依行数自动切换整层策略。
+
+[Layer windows: first](../reports/qwen-decode-packed-swiglu-gb10.json) · [second weight](../reports/qwen-decode-packed-swiglu-heldout-gb10.json) · [Epilogue: first](../reports/packed-swiglu-epilogue-gb10.json) · [second weight](../reports/packed-swiglu-epilogue-heldout-gb10.json) · [CUDA source](../examples/generated/packed-swiglu) · [Compute Sanitizer](../reports/packed-swiglu-sanitizer-gb10.txt) · [release checks](../reports/packed-swiglu-stage-acceptance.json).
+
+```bash
+source tools/env.sh
+python tools/packed_gate_panel.py --seed-offset 86783 --output /tmp/epilogue.json
+python tools/qwen_packed_decode.py --seed-offset 86783 --past 1024 --output /tmp/layer.json
+bash tools/sanitize_packed_swiglu.sh
+```

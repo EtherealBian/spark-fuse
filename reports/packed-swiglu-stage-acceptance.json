@@ -1,0 +1,160 @@
+{
+  "checks": [
+    {
+      "check": "tests",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "........................................................................ [ 12%]\n........................................................................ [ 24%]\n........................................................................ [ 36%]\n........................................................................ [ 48%]\n........................................................................ [ 60%]\n........................................................................ [ 73%]\n........................................................................ [ 85%]\n........................................................................ [ 97%]\n...............                                                          [100%]\n591 passed in 12.50s\n",
+      "elapsed_s": 13.640873624011874
+    },
+    {
+      "check": "installed_wheel",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 2.9740181379020214
+    },
+    {
+      "check": "qwen_modules",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.711936781182885
+    },
+    {
+      "check": "qwen_modules_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.61618216522038
+    },
+    {
+      "check": "qwen_attention_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.6393237449228764
+    },
+    {
+      "check": "bert_self_output_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "BertSelfOutput verified\n",
+      "elapsed_s": 3.0202744780108333
+    },
+    {
+      "check": "bert_encoder_layer_fixed_order",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "{'eager': (True, None, None), 'unsplit': (False, None, None), 'split': (False, None, None), 'ordered': (True, None, None), 'exported_aten': (True, None, None)}\n",
+      "elapsed_s": 3.2625295566394925
+    },
+    {
+      "check": "bert_host_call_equivalence",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "bert 33 [('eager', True, None), ('export', True, None), ('export_fast', True, None), ('mixed', True, None), ('mixed_fast', True, None)]\n{}\n",
+      "elapsed_s": 3.0257597090676427
+    },
+    {
+      "check": "qwen_decoder_layer_residual_barrier",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "33 witness True {'eager': (True, None, None), 'exported_aten': (True, None, None), 'prior': (True, None, None), 'split': (True, None, None)}\n",
+      "elapsed_s": 3.774731927551329
+    },
+    {
+      "check": "qwen_decoder_paired_rotary",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "33 witness True {'eager': (True, None, None), 'exported_aten': (True, None, None), 'prior': (True, None, None), 'split': (True, None, None), 'rotary': (True, None, None)}\n",
+      "elapsed_s": 3.713446474634111
+    },
+    {
+      "check": "qwen_decode_cache_carry",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "63 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': []}\n",
+      "elapsed_s": 3.9960951041430235
+    },
+    {
+      "check": "qwen_decode_head_repeat",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "255 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': [], 'repeat': []}\n1025 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': [], 'repeat': []}\n",
+      "elapsed_s": 4.484733514487743
+    },
+    {
+      "check": "qwen_decode_ordered_scores",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "1023 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': []}\n2047 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': []}\n",
+      "elapsed_s": 4.721845246851444
+    },
+    {
+      "check": "qwen_decode_guarded_bf16_scores",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "1535 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': [], 'guarded': []}\n2047 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': [], 'guarded': []}\n",
+      "elapsed_s": 5.059041692875326
+    },
+    {
+      "check": "qwen_decode_cache_fanout",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "63 True {'eager': [], 'exported_aten': [], 'separate': [], 'fanout': []}\n1024 True {'eager': [], 'exported_aten': [], 'separate': [], 'fanout': []}\n2047 True {'eager': [], 'exported_aten': [], 'separate': [], 'fanout': []}\n",
+      "elapsed_s": 5.069646030664444
+    },
+    {
+      "check": "qwen_decode_packed_swiglu",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "63 True []\n2047 True []\n",
+      "elapsed_s": 5.736747506074607
+    },
+    {
+      "check": "t5_gated-gelu",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gated-gelu [('eager', True, None, None), ('exported_aten', True, None, None), ('mixed', True, None, None)]\n",
+      "elapsed_s": 3.235514584928751
+    },
+    {
+      "check": "t5_gated-gelu_pytorch_tanh",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gated-gelu_pytorch_tanh [('eager', True, None, None), ('exported_aten', True, None, None), ('mixed', True, None, None)]\n",
+      "elapsed_s": 2.9107003454118967
+    },
+    {
+      "check": "all_low_precision_activation_encodings",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "torch.float16 1 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.float16 4 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.bfloat16 1 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.bfloat16 4 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\n",
+      "elapsed_s": 2.290873068384826
+    },
+    {
+      "check": "wide_cached_score_schedules",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "scores 24 8192 float16 31885 pass\nscores 24 8192 float16 39804 pass\nscores 24 8192 float16 47723 pass\nscores 24 8192 float16 55642 pass\nscores2 24 2048 float16 32395 pass\nscores2 24 2048 float16 40314 pass\nscores2 24 2048 float16 48233 pass\nscores2 24 2048 float16 56152 pass\nscores 384 4096 bfloat16 32497 pass\nscores 384 4096 bfloat16 40416 pass\nscores 384 4096 bfloat16 48335 pass\nscores 384 4096 bfloat16 56254 pass\n",
+      "elapsed_s": 2.1283945981413126
+    },
+    {
+      "check": "dynamic_native_shape_matrix",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gate verify only excluded: []\nresnorm2 verify only excluded: []\nmean verify only excluded: []\n",
+      "elapsed_s": 2.3407745715230703
+    },
+    {
+      "check": "offline_campaign_evidence",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "{\"run\": \"gb10-attention\", \"panel\": \"attention\", \"indexed\": 122, \"passed\": 117, \"distinct_sources_verified\": 44, \"missing_source\": 0, \"state\": \"in progress at capture\"}\n{\"run\": \"gb10-overnight\", \"panel\": \"general\", \"indexed\": 230, \"passed\": 224, \"distinct_sources_verified\": 55, \"missing_source\": 87, \"state\": \"in progress at capture\"}\n",
+      "elapsed_s": 0.2523299250751734
+    }
+  ],
+  "passed": true,
+  "completed_epoch": 1795630431.1220305
+}

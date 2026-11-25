@@ -216,6 +216,23 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "qwen_decode_packed_swiglu",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_packed_decode.py"),
+                    "--past",
+                    "63",
+                    "2047",
+                    "--verify-only",
+                    "--seed-offset",
+                    "91733",
+                    "--output",
+                    str(report.with_name(report.stem + "-packed-gate.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (
