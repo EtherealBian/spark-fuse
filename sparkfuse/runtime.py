@@ -70,11 +70,17 @@ def build(source, device):
 class Kernel:
     def __init__(self, ep, device, schedule=None):
         self.plan = p = lower(ep)
+        from .mean_tree import sensitive
+
         self.schedule = schedule or (
-            Schedule(128, "block", True)
-            if p.red is not None
-            else Schedule(
-                256, "flat" if all(p.vals[i].shape == p.domain for i in p.outputs) else "block"
+            Schedule(512, "mean_tree", False, 4)
+            if sensitive(p)
+            else (
+                Schedule(128, "block", True)
+                if p.red is not None
+                else Schedule(
+                    256, "flat" if all(p.vals[i].shape == p.domain for i in p.outputs) else "block"
+                )
             )
         )
         self.device = torch.device(device)

@@ -234,3 +234,24 @@ Native had the lower median than each other frontend in 9/9 windows on these wor
 **English.** The compact schedule removes the final block-wide broadcast when only row-sized results escape. Broadening the conventional block search to the same thread counts isolates the layout benefit. The aligned long BF16 case improved against the best conventional candidate, not against Inductor. Misaligned long rows were effectively tied. The table reports a single exported reduction, not Transformer latency. Reproduce the family comparison with `python tools/compact_mean_panel.py --output /tmp/compact-panel.json` on an idle GPU.
 
 **What changed in the binary?** For the `31 × 14336` BF16 row above, the [ordinary](../examples/generated/compact-mean/block.cu) and [compact](../examples/generated/compact-mean/compact_mean.cu) emitted kernels use the same 1024 threads and eight-element pack. `cuobjdump --dump-sass` found two block-barrier instruction sites and two shared-load/store sites each in the ordinary kernel; each compact specialization has one of each. The compact aligned specialization has a 128-bit global load and no scalar BF16 global-load sites. These are [static counts per binary function](../reports/compact-mean-sass.json), not executed counts or a causal attribution of all the timing difference. After running the panel with the same build settings, use `python tools/inspect_reduction_sass.py reports/compact-mean-panel.json --cache .cache/kernels --output /tmp/reduction-sass.json` to inspect the selected binaries.
+
+### 一个 BF16 舍入边界：先修数值，再看速度 / An ordered FP32 mean
+
+夜间搜索在 `48 × 8960` BF16 的分解式残差 RMSNorm 上[拒绝了默认布局](../reports/mean-tree-history.json.gz)：留出种子 1753 的 430,080 个输出中有一个超出既定容差。`[25,3533]` 的 FP32 均值从 eager 的 `2.0016326904296875` 变成 `2.0016324520111084`，归一化值因而落到 BF16 舍入中点；乘权后的结果为 `−2.578125`，eager 为 `−2.546875`。误差来自归约加法次序；没有改容差，也没有删掉该样本。
+
+`mean_tree` 在一个 CUDA kernel 中按本机 PyTorch eager 的次序计算 FP32 均值：四个独立累加器、降序 warp shuffle，宽行再归约 16 组部分和。这个**逻辑**次序不随物理线程块大小变化，归约结果可以继续喂给融合后处理，也可一同返回可见残差。匹配的对象是明确导出的、对已材化 FP32 行表达式的均值，不假定任意输入视图对齐，也不把该规则套到原生 `aten.rms_norm`。仅在已支持的至少 16 行、宽 128–65536 且整除 4、总元素数不超过 2²⁴ 的计划上开放；敏感低精度后处理默认走有序树。这些条件不保证不同 PyTorch 版本采用同一棵树。
+
+[逐边界核验与计时](../reports/mean-tree-boundaries-gb10.json)将均值、逆平方根、FP32 归一化、窄化结果、乘权输出及残差分别与 eager 按位比较。四种形状 × 六个种子均一致，后面三个种子的三个输入分别偏移 1、2、3 个元素。另用第七个种子对已导出图的正常单输出调用（不返回诊断张量）计时。下表为七轮交错 CUDA Graph 设备时间的中位数，单位 µs；报告另列普通同步 Python 主机调用。
+
+| 行 × 宽 / 类型 | eager | Inductor | 旧默认 | 有序默认 |
+|---|---:|---:|---:|---:|
+| 48 × 8960 BF16 | 20.520 | 3.301 | 9.124 | 4.389 |
+| 17 × 8160 FP16 | 21.798 | 3.329 | 7.783 | 31.231 |
+| 17 × 8164 FP16 | 12.732 | 3.366 | 8.229 | 3.487 |
+| 32 × 1536 BF16 | 12.069 | 1.830 | 4.901 | 7.424 |
+
+8160 和 8164 分别落在 eager 两种不同的行内归约策略上；表中的性能不能跨形状外推。特别是 `17 × 8160` 的修复明显比旧默认慢。历史错误发生在种子 1753，而不是上表的计时种子 91853。
+
+[原生产任务重放](../reports/mean-tree-replay.json.gz)复用了原任务的三个种子和预算上限 24，实际测试全部六种有序布局（128/256/512 线程，各含缓存和重算）。SparkFuse 在留出输入与第三个输入均逐元素一致。第三个种子 3752 上，Inductor 在 `[43,4916]` 有一个值未通过相同门槛；未为它计时，整个重放按失败保存，空数据库未发布任何选型。这个结果不能算三后端通过，亦不代表 Inductor 在其他种子上不正确。
+
+**English.** A one-element BF16 error motivated matching the observed eager FP32 reduction order, rather than relaxing parity tolerances. The six tapped results matched bitwise on the 24 sampled requests, including shifted inputs. The untapped seventh request demonstrates both gains and regressions relative to the previous schedule. Reproduce with `python tools/mean_tree_audit.py --output /tmp/mean-tree.json`; the report includes the installed PyTorch CUDA reduction-header digest, profiler geometry, raw timings and source snapshot.

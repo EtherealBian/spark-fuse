@@ -20,7 +20,7 @@ from sparkfuse import Schedule
 )
 def test_worker_publication(monkeypatch, tmp_path, outcome, previous, expected):
     monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / "tools"))
-    import campaign_case as worker
+    import campaign_worker as worker
 
     p = tmp_path / "db"
     dest = tmp_path / "example.pending"
@@ -86,3 +86,61 @@ def test_fault_diagnostic_keeps_original_error_and_kernel(tmp_path):
     assert any(
         "holdout parity" in n and "compiled-hash" in n and "warp" in n for n in fault.__notes__
     )
+
+
+def test_cli_waits_before_importing_worker(tmp_path):
+    """An arriving case must not import a stale backend while code/another worker owns the GPU lock."""
+    import fcntl
+    import os
+    import subprocess
+    import sys
+
+    script = Path(__file__).resolve().parents[1] / "tools/campaign_case.py"
+    job = tmp_path / "job"
+    job.mkdir()
+    present = tmp_path / "entered"
+    # Execute in a fresh interpreter. Replace only the worker module, keep the actual file lock.
+    program = """
+import fcntl, importlib.abc, importlib.util, os, runpy, sys
+from pathlib import Path
+class Fake(importlib.abc.MetaPathFinder, importlib.abc.Loader):
+    def find_spec(self,name,path,target=None):
+        if name=='campaign_worker': return importlib.util.spec_from_loader(name,self)
+    def create_module(self,spec):return None
+    def exec_module(self,mod):
+        Path(os.environ['ENTERED']).touch();mod.execute=lambda *args: None
+sys.meta_path.insert(0,Fake()); orig=fcntl.flock
+def record(*args):
+    print('waiting',flush=True);return orig(*args)
+fcntl.flock=record
+sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name='__main__')
+"""
+    with (tmp_path / "gpu-execution.lock").open("a") as lk:
+        fcntl.flock(lk, fcntl.LOCK_EX)
+        with subprocess.Popen(
+            [
+                sys.executable,
+                "-c",
+                program,
+                str(script),
+                "{}",
+                str(job / "output"),
+                str(job / "db"),
+            ],
+            stdout=subprocess.PIPE,
+            text=True,
+            env={**os.environ, "ENTERED": str(present)},
+        ) as child:
+            try:
+                import select
+
+                assert (
+                    select.select([child.stdout], [], [], 10)[0]
+                    and child.stdout.readline().strip() == "waiting"
+                )
+                assert not present.exists()
+                fcntl.flock(lk, fcntl.LOCK_UN)
+                assert child.wait(10) == 0 and present.is_file()
+            finally:
+                if child.poll() is None:
+                    child.kill()

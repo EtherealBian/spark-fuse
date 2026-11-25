@@ -20,6 +20,7 @@ def backend_id():
         "codegen.py",
         "vector.py",
         "compact_mean.py",
+        "mean_tree.py",
         "softmax.py",
         "layernorm.py",
         "runtime.py",
@@ -75,7 +76,16 @@ def compact_eligible(p):
 
 
 def candidates(p):
-    choices = []
+    from .mean_tree import eligible, sensitive
+
+    ordered = (
+        [Schedule(t, "mean_tree", cache, 4) for t in (128, 256, 512) for cache in (False, True)]
+        if eligible(p)
+        else []
+    )
+    if sensitive(p):
+        return ordered
+    choices = list(ordered)
     layouts = ["block", "warp"] if p.red is not None else ["flat", "warp", "block"]
     if p.red is not None and p.vals[p.red].op == "softmax" and 32 <= p.width <= 1024:
         layouts.append("warp_xor")

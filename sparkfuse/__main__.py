@@ -61,7 +61,7 @@ def main(argv=None):
     p.add_argument("--threads", type=int, default=128)
     p.add_argument(
         "--layout",
-        choices=("block", "warp", "flat", "warp_xor", "block_welford", "compact_mean"),
+        choices=("block", "warp", "flat", "warp_xor", "block_welford", "compact_mean", "mean_tree"),
         default="block",
     )
     p.add_argument("--vec", type=int, default=1)

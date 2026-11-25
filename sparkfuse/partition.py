@@ -183,6 +183,10 @@ class _RegionModule(nn.Module):
 
 def ordered_collectives(plan):
     """Optional fixed reduction orders for supported dense rows; other regions use the existing path."""
+    from .mean_tree import eligible
+
+    if eligible(plan):
+        return Schedule(512, "mean_tree", False, 4)
     if plan.red is not None:
         kind = plan.vals[plan.red].op
         if kind == "layer_norm" and plan.width % 4 == 0:

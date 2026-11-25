@@ -79,6 +79,18 @@ class DynamicRows:
             state_dict=ep.state_dict,
             constants=ep.constants,
         )
+        # A tree-matched mean is validated for a bounded total extent, not just the representative rows.
+        if schedule is None or schedule.layout == "mean_tree":
+            from .codegen import Schedule
+            from .ir import lower
+            from .mean_tree import sensitive
+
+            plan = lower(proxy)
+            if hi * plan.width > 2**24:
+                if schedule is not None:
+                    raise Unsupported("mean_tree row bound exceeds validated total elements")
+                if sensitive(plan):
+                    schedule = Schedule(128, "block", True)
         self.kernel = compile_export(proxy, device, schedule)
         if (
             self.kernel.plan.domain[0] != representative

@@ -251,7 +251,7 @@ def lower(ep):
             if k.get("dtype") is not None and vs[src].dt != dt:
                 # ATen first rounds each element to the requested dtype, then reduces.
                 src = put("cast", shape, dt, [src])
-            red = idx = put("mean", sh, dt, [src])
+            red = idx = put("mean", sh, dt, [src], imm="exported_mean")
         else:
             raise Unsupported(f"unsupported operator: {op}")
         ids[n] = idx

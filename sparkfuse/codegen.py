@@ -35,9 +35,17 @@ class Schedule:
             "warp_xor",
             "block_welford",
             "compact_mean",
+            "mean_tree",
             "flat",
         ):
             raise Unsupported("unknown schedule")
+        if self.layout == "mean_tree":
+            from .mean_tree import eligible
+
+            if not eligible(p) or self.threads not in (128, 256, 512) or self.vec != 4:
+                raise Unsupported(
+                    "mean_tree requires a supported materialized FP32 vector mean, four-element packs and 128/256/512 threads"
+                )
         if self.layout == "compact_mean" and (
             self.cache
             or p.red is None
@@ -152,6 +160,11 @@ def generate(p, s):
 
         names = [rec(i) for i in targets]
         return "\n".join(lines), names
+
+    if s.layout == "mean_tree":
+        from .mean_tree import generate_tree
+
+        return generate_tree(p, s, emit, index)
 
     if s.layout == "compact_mean":
         from .compact_mean import generate_compact_mean
