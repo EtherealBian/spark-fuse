@@ -60,3 +60,24 @@ def test_nonfinite_pointwise_masks():
         assert torch.equal(a.isposinf(), b.isposinf())
         assert torch.equal(a.isneginf(), b.isneginf())
         torch.testing.assert_close(a, b, equal_nan=True)
+
+
+def test_nonfinite_report_is_strict_json():
+    import json
+    from sparkfuse.measure import compare
+
+    ref = torch.tensor([torch.nan, torch.inf, -torch.inf, 1.0], device="cuda")
+    item = compare(ref, ref)[0]
+    assert (
+        item["matched_nan"]
+        == item["matched_posinf"]
+        == item["matched_neginf"]
+        == item["finite_pairs"]
+        == 1
+    )
+    assert item["unequal"] == item["max_abs"] == 0
+    all_bad = compare(ref[:3], ref[:3])[0]
+    assert all_bad["max_abs"] is None and all_bad["mean_abs"] is None
+    json.dumps([item, all_bad], allow_nan=False)
+    with pytest.raises(AssertionError):
+        compare(ref, ref.nan_to_num())

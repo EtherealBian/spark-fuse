@@ -160,3 +160,27 @@ def test_mixed_cast_boundary():
     gm, regions = partition_export(torch.export.export(m, (x,)), host_backend="native")
     assert sum("module" in d for d in regions) == 1
     compare(gm(x), m(x))
+
+
+@pytest.mark.parametrize("width", [1, 3, 97, 128, 769])
+@pytest.mark.parametrize("cache,vec,layout", [(True, 8, "warp"), (False, 4, "block")])
+def test_packed_softmax_offset_and_nonfinite(width, cache, vec, layout):
+    class M(nn.Module):
+        def forward(self, x, bias):
+            z = x + bias
+            p = torch.softmax(z, dim=-1, dtype=torch.float32).to(x.dtype)
+            return p * 0.5, z
+
+    torch.manual_seed(782)
+    args = tuple(
+        torch.randn(torch.Size(d).numel() + 1, device="cuda", dtype=torch.bfloat16)[1:].view(d)
+        for d in ((2, 3, 5, width), (2, 1, 5, width))
+    )
+    args[1][:, :, 1, :] = -torch.inf
+    args[0][0, :, 2, 0] = torch.nan
+    m = M()
+    k = compile_export(torch.export.export(m, args), schedule=Schedule(128, layout, cache, vec))
+    out = k(*args)
+    ref = m(*args)
+    for i, (a, b) in enumerate(zip(out, ref)):
+        torch.testing.assert_close(a, b, rtol=0 if i == 1 else 0.008, atol=0, equal_nan=True)

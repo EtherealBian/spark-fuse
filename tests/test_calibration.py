@@ -1,6 +1,5 @@
 import sqlite3
 import torch, pytest
-from torch import nn
 from sparkfuse import calibration as cal
 from sparkfuse.partition import partition_export
 from sparkfuse.measure import compare

@@ -16,6 +16,8 @@ with torch.inference_mode():
         ("mean", 47, 128, Schedule(64, "warp", False, 4)),
         ("scores2", 13, 97, Schedule(128, "warp", True)),
         ("scores", 7, 769, Schedule(256, "block", False)),
+        ("scores2", 13, 97, Schedule(128, "warp", True, 8)),
+        ("scores2", 3, 769, Schedule(128, "block", False, 4)),
     ]:
         m, a = case(name, rows, h, torch.bfloat16)
         a = tuple(torch.cat([x.new_zeros(1), x.flatten()])[1:].view_as(x) for x in a)

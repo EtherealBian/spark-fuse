@@ -33,6 +33,8 @@ BF16、`32 × 1536`、残差可见的 RMSNorm。单位为 µs，报告的是**�
 
 **形状和范围**：支持连续的 FP32/FP16/BF16 推理张量。静态图之外，`DynamicRows` 支持 rank-2 输入共享一个有界的动态 token 行数，无需按行数重新编译。暂不生成 GEMM、完整 Attention、反向传播或通用动态形状。独立编译拒绝不支持的图；混合分区只替换通过检查的区域。缓存热的微基准不能外推为模型吞吐。
 
+真实 Qwen2Attention 的三次请求可直接用于选型和整图校验，第四次请求单独计时。在 `batch=2, seq=97` 的一轮对照中，分数子图比自身默认布局快 2.33×，但整个 Attention 的设备时间仅从 158.02 降至 155.03 µs。详见[实验记录](docs/performance.md)。
+
 ## English
 
 SparkFuse compiles functional PyTorch inference regions into inspectable CUDA on NVIDIA DGX Spark. Its typed IR supports elementwise DAGs and one last-axis collective region (mean or stable softmax). Output liveness controls global writes; a measured dispatcher selects among block-, warp- and vector-based schedules. The heterogeneous path keeps unsupported operations in PyTorch. Real Qwen2 library modules are tested with random weights, not a pretrained checkpoint. The table above reports warm device replay, not Python latency or end-to-end model speedup.

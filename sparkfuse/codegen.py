@@ -39,8 +39,6 @@ class Schedule:
             p.red is not None or any(p.vals[i].shape != p.domain for i in p.outputs)
         ):
             raise Unsupported("flat requires full-sized pointwise outputs")
-        if p.red is not None and p.vals[p.red].op == "softmax" and self.vec != 1:
-            raise Unsupported("softmax currently supports scalar lanes only")
         if self.cache and (p.red is None or self.layout == "flat"):
             raise Unsupported("cache requires a reduction")
 

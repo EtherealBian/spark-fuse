@@ -1,0 +1,687 @@
+{
+  "compiler": "354c8441157449a29f55ee8cb0234839d0994698f031d19bd74d5c4851782bb0",
+  "seed": 12572,
+  "comparison": {
+    "1": {
+      "static_global_ops": {
+        "LDG.E.U16.CONSTANT": 66,
+        "STG.E.U16": 33
+      },
+      "kernel_source": "#include <cuda_runtime.h>\n#include <cuda_fp16.h>\n#include <cuda_bf16.h>\n#include <math.h>\n__global__ void fused(const __nv_bfloat16* __restrict__ in0, const __nv_bfloat16* __restrict__ in1, __nv_bfloat16* __restrict__ out0, int rows) {\nconst int row=blockIdx.x; if(row>=rows)return; const int lane=threadIdx.x;\nfloat held[32];\nfloat acc=-INFINITY;\nfor(int j=lane;j<8192;j+=256){const int pos=row*8192+j;\nconst float v0 = __bfloat162float(in0[pos]);\nconst float v2 = 0x1.0000000000000p-3f;\nconst float v3 = __bfloat162float(__float2bfloat16_rn(v0*v2));\nconst float v1 = __bfloat162float(in1[j]);\nconst float v4 = __bfloat162float(__float2bfloat16_rn(v3+v1));\nacc=fmaxf(acc,v4);\nheld[j/256]=v4;\n}\nfor(int d=16;d;d>>=1) acc=fmaxf(acc,__shfl_down_sync(0xffffffff,acc,d));\n__shared__ float part_rowmax[8]; if((lane&31)==0)part_rowmax[lane>>5]=acc; __syncthreads();\nif(lane<32){ acc=lane<8?part_rowmax[lane]:-INFINITY;\nfor(int d=16;d;d>>=1) acc=fmaxf(acc,__shfl_down_sync(0xffffffff,acc,d));\nif(lane==0)part_rowmax[0]=acc; } __syncthreads(); const float rowmax=part_rowmax[0];\nfloat mass=0.f;\nfor(int j=lane;j<8192;j+=256){const int pos=row*8192+j;\nfloat e=expf(held[j/256]-rowmax); held[j/256]=e; mass+=e;\n}\nfor(int d=16;d;d>>=1) mass=mass+__shfl_down_sync(0xffffffff,mass,d);\n__shared__ float part_rowsum[8]; if((lane&31)==0)part_rowsum[lane>>5]=mass; __syncthreads();\nif(lane<32){ mass=lane<8?part_rowsum[lane]:0.f;\nfor(int d=16;d;d>>=1) mass=mass+__shfl_down_sync(0xffffffff,mass,d);\nif(lane==0)part_rowsum[0]=mass; } __syncthreads(); const float rowsum=part_rowsum[0];\nconst float inv=1.f/rowsum;\nfor(int j=lane;j<8192;j+=256){const int pos=row*8192+j;\nconst float prob=__bfloat162float(__float2bfloat16_rn(held[j/256]*inv));\n\nout0[pos]=__float2bfloat16_rn(prob);\n}\n}\nextern \"C\" int launch(void **ptr,int rows,void *stream){\nfused<<<rows,256,0,(cudaStream_t)stream>>>((__nv_bfloat16*)ptr[0],(__nv_bfloat16*)ptr[1],(__nv_bfloat16*)ptr[2],rows);return (int)cudaGetLastError();\n}\n",
+      "kernel_cache_id": "d6d39d2c8a6017ffd4904f53805f8a8bf5afc80f7b3adbf2188215d6b7da868b",
+      "benchmark": {
+        "case": "scores",
+        "shape": [
+          12,
+          8192
+        ],
+        "dtype": "torch.bfloat16",
+        "seed": 12572,
+        "device": "NVIDIA GB10",
+        "torch": "2.13.0+cu130",
+        "cuda": "13.0",
+        "python": "3.12.3",
+        "schedule": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "export_ms": 6.8640755489468575,
+        "sparkfuse_build_or_load_ms": 0.327124260365963,
+        "inductor_wrapper_plus_first_call_ms": 706.3309727236629,
+        "plan": {
+          "domain": [
+            12,
+            8192
+          ],
+          "reduction": 5,
+          "input_ids": [
+            0,
+            1
+          ],
+          "output_ids": [
+            5
+          ],
+          "values": [
+            {
+              "op": "input",
+              "shape": [
+                12,
+                8192
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 0
+            },
+            {
+              "op": "input",
+              "shape": [
+                8192
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 1
+            },
+            {
+              "op": "const",
+              "shape": [],
+              "dt": "f32",
+              "deps": [],
+              "imm": 0.125
+            },
+            {
+              "op": "mul",
+              "shape": [
+                12,
+                8192
+              ],
+              "dt": "bf16",
+              "deps": [
+                0,
+                2
+              ],
+              "imm": null
+            },
+            {
+              "op": "add",
+              "shape": [
+                12,
+                8192
+              ],
+              "dt": "bf16",
+              "deps": [
+                3,
+                1
+              ],
+              "imm": null
+            },
+            {
+              "op": "softmax",
+              "shape": [
+                12,
+                8192
+              ],
+              "dt": "bf16",
+              "deps": [
+                4
+              ],
+              "imm": null
+            }
+          ],
+          "launches": 1,
+          "global_intermediate_bytes": 0
+        },
+        "torch_export_graph": "graph():\n    %scores : [num_users=1] = placeholder[target=scores]\n    %bias : [num_users=1] = placeholder[target=bias]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%scores, 0.125), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul, %bias), kwargs = {})\n    %softmax : [num_users=1] = call_function[target=torch.ops.aten.softmax.int](args = (%add, -1), kwargs = {})\n    return (softmax,)",
+        "backends": {
+          "eager": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ],
+            "device": {
+              "median_us": 5.907000042498112,
+              "p10_us": 5.886000115424395,
+              "p90_us": 6.132999900728464,
+              "samples_us": [
+                5.886000115424395,
+                5.90750016272068,
+                5.906499922275543,
+                5.90750016272068,
+                5.903999786823988,
+                5.907000042498112,
+                5.907000042498112,
+                6.132999900728464,
+                6.640499923378229
+              ]
+            },
+            "host_sync": {
+              "median_us": 18.544,
+              "p10_us": 18.048,
+              "p90_us": 44.736,
+              "samples_us": [
+                32.129,
+                20.544,
+                23.328,
+                24.785,
+                22.32,
+                44.736,
+                97.793,
+                107.634,
+                75.2,
+                20.417,
+                18.304,
+                18.96,
+                18.384,
+                18.048,
+                18.369,
+                32.336,
+                18.912,
+                18.72,
+                18.289,
+                18.768,
+                17.856,
+                18.08,
+                18.416,
+                17.857,
+                18.512,
+                17.808,
+                18.16,
+                18.4,
+                18.065,
+                18.544,
+                18.256
+              ]
+            },
+            "gpu_events": [
+              "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul> >(int, at::native::AUnaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul>)",
+              "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::CUDAFunctor_add<c10::BFloat16> >(at::TensorIteratorBase&, at::native::CUDAFunctor_add<c10::BFloat16> const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::CUDAFunctor_add<c10::BFloat16> >(at::TensorIteratorBase&, at::native::CUDAFunctor_add<c10::BFloat16> const&)::{lambda(int)#1})",
+              "void at::native::(anonymous namespace)::cunn_SoftMaxForwardReg<c10::BFloat16, float, c10::BFloat16, at::native::(anonymous namespace)::SoftMaxForwardEpilogue, long, 8>(c10::BFloat16*, c10::BFloat16 const*, long)"
+            ],
+            "allocation_peak_above_entry_bytes": 393216
+          },
+          "inductor": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 3.0517578125e-05,
+                "mean_abs": 2.0361926544865128e-07,
+                "unequal": 20120,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ],
+            "device": {
+              "median_us": 3.505999920889735,
+              "p10_us": 3.491499926894903,
+              "p90_us": 3.5069999285042286,
+              "samples_us": [
+                3.493000054731965,
+                3.5019998904317617,
+                3.5039999056607485,
+                3.5069999285042286,
+                3.5069999285042286,
+                3.505999920889735,
+                3.5069999285042286,
+                3.5069999285042286,
+                3.491499926894903
+              ]
+            },
+            "host_sync": {
+              "median_us": 28.288,
+              "p10_us": 27.488,
+              "p90_us": 32.112,
+              "samples_us": [
+                70.849,
+                38.145,
+                29.76,
+                32.112,
+                29.025,
+                31.248,
+                28.992,
+                29.009,
+                27.568,
+                28.144,
+                28.609,
+                28.944,
+                27.328,
+                27.824,
+                28.049,
+                28.352,
+                27.776,
+                27.761,
+                28.288,
+                29.424,
+                32.113,
+                27.472,
+                27.488,
+                27.985,
+                26.992,
+                27.92,
+                29.425,
+                27.888,
+                27.808,
+                27.888,
+                28.529
+              ]
+            },
+            "gpu_events": [
+              "triton_red_fused__softmax_add_mul_prepare_softmax_online_0"
+            ],
+            "allocation_peak_above_entry_bytes": 196608
+          },
+          "sparkfuse": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ],
+            "device": {
+              "median_us": 9.390000253915787,
+              "p10_us": 9.362500160932541,
+              "p90_us": 9.428000077605247,
+              "samples_us": [
+                9.447500109672546,
+                9.390000253915787,
+                9.379499591886997,
+                9.370500221848488,
+                9.422999806702137,
+                9.362500160932541,
+                9.410000406205654,
+                9.428000077605247,
+                9.387499652802944
+              ]
+            },
+            "host_sync": {
+              "median_us": 92.449,
+              "p10_us": 91.249,
+              "p90_us": 136.514,
+              "samples_us": [
+                136.514,
+                193.57,
+                100.161,
+                94.145,
+                92.369,
+                91.425,
+                93.729,
+                92.369,
+                92.625,
+                92.673,
+                91.713,
+                91.857,
+                171.41,
+                92.449,
+                91.329,
+                93.521,
+                93.233,
+                91.105,
+                91.249,
+                91.185,
+                92.449,
+                91.249,
+                91.633,
+                167.282,
+                94.609,
+                93.521,
+                91.377,
+                91.297,
+                90.993,
+                94.273,
+                92.113
+              ]
+            },
+            "gpu_events": [
+              "fused(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, int)"
+            ],
+            "allocation_peak_above_entry_bytes": 196608
+          }
+        }
+      }
+    },
+    "8": {
+      "static_global_ops": {
+        "LDG.E.128": 8,
+        "LDG.E.U16": 64,
+        "STG.E.128": 4,
+        "STG.E.U16": 32
+      },
+      "kernel_source": "#include <cuda_runtime.h>\n#include <cuda_fp16.h>\n#include <cuda_bf16.h>\n#include <stdint.h>\n#include <math.h>\ntemplate<class T,int V> struct alignas(sizeof(T)*V) Pack { T x[V]; };\ntemplate<class T,int V> __device__ __forceinline__ Pack<T,V> loadv(const T* p){\n  using P=Pack<T,V>;\n  if((uintptr_t(p)&(alignof(P)-1))==0) return *reinterpret_cast<const P*>(p);\n  P q;\n  #pragma unroll\n  for(int i=0;i<V;i++)q.x[i]=p[i]; return q;\n}\ntemplate<class T,int V> __device__ __forceinline__ void storev(T* p,Pack<T,V> q){\n  using P=Pack<T,V>;\n  if((uintptr_t(p)&(alignof(P)-1))==0){ *reinterpret_cast<P*>(p)=q; return; }\n  #pragma unroll\n  for(int i=0;i<V;i++)p[i]=q.x[i];\n}\n__global__ void fused(const __nv_bfloat16* __restrict__ in0, const __nv_bfloat16* __restrict__ in1, __nv_bfloat16* __restrict__ out0, int rows) {\nconst int row=blockIdx.x; if(row>=rows)return; const int lane=threadIdx.x;\nfloat held[32];\nfloat acc=-INFINITY;\nfor(int first=lane*8;first<8192;first+=2048){\nauto pk0=loadv<__nv_bfloat16,8>(in0+((row*8192+first)));\nauto pk1=loadv<__nv_bfloat16,8>(in1+(first));\n#pragma unroll\nfor(int q=0;q<8;++q){const int j=first+q;\n\nconst int pos=row*8192+j;\nconst float v2 = 0x1.0000000000000p-3f;\nconst float v3 = __bfloat162float(__float2bfloat16_rn(__bfloat162float(pk0.x[q])*v2));\nconst float v4 = __bfloat162float(__float2bfloat16_rn(v3+__bfloat162float(pk1.x[q])));\nacc=fmaxf(acc,v4);\nheld[(first/2048)*8+q]=v4;\n}\n}\nfor(int d=16;d;d>>=1) acc=fmaxf(acc,__shfl_down_sync(0xffffffff,acc,d));\n__shared__ float part_rowmax[8]; if((lane&31)==0)part_rowmax[lane>>5]=acc; __syncthreads();\nif(lane<32){ acc=lane<8?part_rowmax[lane]:-INFINITY;\nfor(int d=16;d;d>>=1) acc=fmaxf(acc,__shfl_down_sync(0xffffffff,acc,d));\nif(lane==0)part_rowmax[0]=acc; } __syncthreads(); const float rowmax=part_rowmax[0];\nfloat mass=0.f;\nfor(int first=lane*8;first<8192;first+=2048){\n#pragma unroll\nfor(int q=0;q<8;++q){const int j=first+q;\n\nconst int pos=row*8192+j;\nfloat e=expf(held[(first/2048)*8+q]-rowmax); held[(first/2048)*8+q]=e; mass+=e;\n}\n}\nfor(int d=16;d;d>>=1) mass=mass+__shfl_down_sync(0xffffffff,mass,d);\n__shared__ float part_rowsum[8]; if((lane&31)==0)part_rowsum[lane>>5]=mass; __syncthreads();\nif(lane<32){ mass=lane<8?part_rowsum[lane]:0.f;\nfor(int d=16;d;d>>=1) mass=mass+__shfl_down_sync(0xffffffff,mass,d);\nif(lane==0)part_rowsum[0]=mass; } __syncthreads(); const float rowsum=part_rowsum[0];\nconst float inv=1.f/rowsum;\nfor(int first=lane*8;first<8192;first+=2048){\nPack<__nv_bfloat16,8> dst0{};\n#pragma unroll\nfor(int q=0;q<8;++q){const int j=first+q;\n\nconst int pos=row*8192+j;\nconst float prob=__bfloat162float(__float2bfloat16_rn(held[(first/2048)*8+q]*inv));\n\ndst0.x[q]=__float2bfloat16_rn(prob);\n}\nstorev(out0+row*8192+first,dst0);\n}\n}\nextern \"C\" int launch(void **ptr,int rows,void *stream){\nfused<<<rows,256,0,(cudaStream_t)stream>>>((__nv_bfloat16*)ptr[0],(__nv_bfloat16*)ptr[1],(__nv_bfloat16*)ptr[2],rows);return (int)cudaGetLastError();\n}\n",
+      "kernel_cache_id": "5967d586e4af03e2289882002146f630b0cca0d468c40e9fc681241106b8c994",
+      "benchmark": {
+        "case": "scores",
+        "shape": [
+          12,
+          8192
+        ],
+        "dtype": "torch.bfloat16",
+        "seed": 12572,
+        "device": "NVIDIA GB10",
+        "torch": "2.13.0+cu130",
+        "cuda": "13.0",
+        "python": "3.12.3",
+        "schedule": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 8
+        },
+        "export_ms": 6.096546538174152,
+        "sparkfuse_build_or_load_ms": 0.32296404242515564,
+        "inductor_wrapper_plus_first_call_ms": 0.5040215328335762,
+        "plan": {
+          "domain": [
+            12,
+            8192
+          ],
+          "reduction": 5,
+          "input_ids": [
+            0,
+            1
+          ],
+          "output_ids": [
+            5
+          ],
+          "values": [
+            {
+              "op": "input",
+              "shape": [
+                12,
+                8192
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 0
+            },
+            {
+              "op": "input",
+              "shape": [
+                8192
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 1
+            },
+            {
+              "op": "const",
+              "shape": [],
+              "dt": "f32",
+              "deps": [],
+              "imm": 0.125
+            },
+            {
+              "op": "mul",
+              "shape": [
+                12,
+                8192
+              ],
+              "dt": "bf16",
+              "deps": [
+                0,
+                2
+              ],
+              "imm": null
+            },
+            {
+              "op": "add",
+              "shape": [
+                12,
+                8192
+              ],
+              "dt": "bf16",
+              "deps": [
+                3,
+                1
+              ],
+              "imm": null
+            },
+            {
+              "op": "softmax",
+              "shape": [
+                12,
+                8192
+              ],
+              "dt": "bf16",
+              "deps": [
+                4
+              ],
+              "imm": null
+            }
+          ],
+          "launches": 1,
+          "global_intermediate_bytes": 0
+        },
+        "torch_export_graph": "graph():\n    %scores : [num_users=1] = placeholder[target=scores]\n    %bias : [num_users=1] = placeholder[target=bias]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%scores, 0.125), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul, %bias), kwargs = {})\n    %softmax : [num_users=1] = call_function[target=torch.ops.aten.softmax.int](args = (%add, -1), kwargs = {})\n    return (softmax,)",
+        "backends": {
+          "eager": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ],
+            "device": {
+              "median_us": 5.942000076174736,
+              "p10_us": 5.923999939113855,
+              "p90_us": 5.95200015231967,
+              "samples_us": [
+                5.923999939113855,
+                5.948999896645546,
+                5.9425001963973045,
+                5.95200015231967,
+                5.956000182777643,
+                5.939499940723181,
+                5.942000076174736,
+                5.9369998052716255,
+                5.935499910265207
+              ]
+            },
+            "host_sync": {
+              "median_us": 22.72,
+              "p10_us": 22.512,
+              "p90_us": 23.664,
+              "samples_us": [
+                32.176,
+                23.905,
+                23.664,
+                23.12,
+                23.041,
+                22.96,
+                23.472,
+                23.008,
+                22.721,
+                23.104,
+                22.832,
+                22.72,
+                22.641,
+                22.72,
+                22.784,
+                22.672,
+                22.641,
+                25.264,
+                23.024,
+                22.432,
+                22.625,
+                22.4,
+                22.8,
+                22.688,
+                22.657,
+                22.64,
+                22.368,
+                22.72,
+                22.545,
+                22.512,
+                22.592
+              ]
+            },
+            "gpu_events": [
+              "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul> >(int, at::native::AUnaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul>)",
+              "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::CUDAFunctor_add<c10::BFloat16> >(at::TensorIteratorBase&, at::native::CUDAFunctor_add<c10::BFloat16> const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::CUDAFunctor_add<c10::BFloat16> >(at::TensorIteratorBase&, at::native::CUDAFunctor_add<c10::BFloat16> const&)::{lambda(int)#1})",
+              "void at::native::(anonymous namespace)::cunn_SoftMaxForwardReg<c10::BFloat16, float, c10::BFloat16, at::native::(anonymous namespace)::SoftMaxForwardEpilogue, long, 8>(c10::BFloat16*, c10::BFloat16 const*, long)"
+            ],
+            "allocation_peak_above_entry_bytes": 393216
+          },
+          "inductor": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 3.0517578125e-05,
+                "mean_abs": 2.0361926544865128e-07,
+                "unequal": 20120,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ],
+            "device": {
+              "median_us": 3.5395000595599413,
+              "p10_us": 3.512500086799264,
+              "p90_us": 3.5459999926388264,
+              "samples_us": [
+                3.5459999926388264,
+                3.541999962180853,
+                3.5395000595599413,
+                3.512999974191189,
+                3.5345000214874744,
+                3.512500086799264,
+                3.5655000247061253,
+                3.5145001020282507,
+                3.541500074788928
+              ]
+            },
+            "host_sync": {
+              "median_us": 28.0,
+              "p10_us": 27.441,
+              "p90_us": 30.305,
+              "samples_us": [
+                48.384,
+                32.864,
+                30.305,
+                28.96,
+                28.384,
+                28.737,
+                30.576,
+                28.96,
+                27.921,
+                28.272,
+                28.16,
+                27.649,
+                28.08,
+                28.816,
+                27.665,
+                27.52,
+                27.664,
+                27.728,
+                28.161,
+                28.544,
+                28.512,
+                27.745,
+                27.152,
+                28.0,
+                27.441,
+                27.52,
+                27.536,
+                27.584,
+                27.441,
+                27.184,
+                27.68
+              ]
+            },
+            "gpu_events": [
+              "triton_red_fused__softmax_add_mul_prepare_softmax_online_0"
+            ],
+            "allocation_peak_above_entry_bytes": 196608
+          },
+          "sparkfuse": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 4.76837158203125e-07,
+                "mean_abs": 4.850638409455617e-12,
+                "unequal": 1,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ],
+            "device": {
+              "median_us": 4.019999876618385,
+              "p10_us": 3.983499947935343,
+              "p90_us": 4.028500057756901,
+              "samples_us": [
+                4.0374998934566975,
+                4.013000056147575,
+                4.019999876618385,
+                4.019999876618385,
+                4.019999876618385,
+                4.017500206828117,
+                3.9915000088512897,
+                4.028500057756901,
+                3.983499947935343
+              ]
+            },
+            "host_sync": {
+              "median_us": 86.145,
+              "p10_us": 84.385,
+              "p90_us": 119.329,
+              "samples_us": [
+                119.329,
+                92.001,
+                88.353,
+                85.809,
+                85.457,
+                85.857,
+                91.233,
+                85.937,
+                156.897,
+                89.873,
+                83.681,
+                86.161,
+                86.001,
+                85.105,
+                84.769,
+                84.449,
+                84.385,
+                90.929,
+                83.841,
+                1638.466,
+                101.697,
+                91.841,
+                85.617,
+                88.241,
+                84.273,
+                85.473,
+                85.009,
+                88.721,
+                86.145,
+                86.816,
+                152.93
+              ]
+            },
+            "gpu_events": [
+              "fused(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, int)"
+            ],
+            "allocation_peak_above_entry_bytes": 196608
+          }
+        }
+      }
+    }
+  },
+  "interpretation": "The scalar and packed layouts differ only in vector width. Device replay reuses addresses; static SASS counts are not dynamic memory transactions."
+}

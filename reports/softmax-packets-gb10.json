@@ -1,0 +1,1167 @@
+[
+  {
+    "case": "scores",
+    "shape": [
+      1,
+      97
+    ],
+    "dtype": "bfloat16",
+    "seed": 9400,
+    "holdout_seed": 9501,
+    "compiler": "354c8441157449a29f55ee8cb0234839d0994698f031d19bd74d5c4851782bb0",
+    "gpu": "NVIDIA GB10",
+    "schedules": {
+      "1": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 1
+      },
+      "2": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 2
+      },
+      "4": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 4
+      },
+      "8": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 8
+      }
+    },
+    "orders": [
+      [
+        1,
+        8,
+        4,
+        2
+      ],
+      [
+        8,
+        2,
+        4,
+        1
+      ],
+      [
+        2,
+        4,
+        8,
+        1
+      ],
+      [
+        4,
+        1,
+        2,
+        8
+      ],
+      [
+        8,
+        4,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        8,
+        4
+      ],
+      [
+        8,
+        2,
+        1,
+        4
+      ]
+    ],
+    "window_medians_us": {
+      "1": [
+        1.1440000186363857,
+        1.14333334689339,
+        1.1526666736851137,
+        1.1436666827648878,
+        1.1530000095566113,
+        1.14333334689339,
+        1.1436666827648878
+      ],
+      "2": [
+        1.6973333743711312,
+        1.6973333743711312,
+        1.6976666326324146,
+        1.6976666326324146,
+        1.698000046114127,
+        1.6973333743711312,
+        1.69833330437541
+      ],
+      "4": [
+        1.6763332920769851,
+        1.6766667055586975,
+        1.6763332920769851,
+        1.6766667055586975,
+        1.6769999638199806,
+        1.6763332920769851,
+        1.6760000338157017
+      ],
+      "8": [
+        2.0606666803359985,
+        2.060333266854286,
+        2.060000008593003,
+        2.060999938597282,
+        2.060333266854286,
+        2.060999938597282,
+        2.0606666803359985
+      ]
+    },
+    "paired_scalar_over_candidate": {
+      "1": 1.0,
+      "2": 0.6736697657722763,
+      "4": 0.6823786752325621,
+      "8": 0.5549983865311051
+    },
+    "errors": {
+      "1": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 97,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ],
+      "2": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 97,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ],
+      "4": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 97,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ],
+      "8": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 97,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ]
+    }
+  },
+  {
+    "case": "scores2",
+    "shape": [
+      47,
+      97
+    ],
+    "dtype": "bfloat16",
+    "seed": 9401,
+    "holdout_seed": 9502,
+    "compiler": "354c8441157449a29f55ee8cb0234839d0994698f031d19bd74d5c4851782bb0",
+    "gpu": "NVIDIA GB10",
+    "schedules": {
+      "1": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 1
+      },
+      "2": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 2
+      },
+      "4": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 4
+      },
+      "8": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 8
+      }
+    },
+    "orders": [
+      [
+        1,
+        4,
+        2,
+        8
+      ],
+      [
+        4,
+        1,
+        8,
+        2
+      ],
+      [
+        8,
+        2,
+        4,
+        1
+      ],
+      [
+        8,
+        2,
+        1,
+        4
+      ],
+      [
+        8,
+        2,
+        4,
+        1
+      ],
+      [
+        4,
+        2,
+        8,
+        1
+      ],
+      [
+        4,
+        8,
+        2,
+        1
+      ]
+    ],
+    "window_medians_us": {
+      "1": [
+        1.167000038549304,
+        1.1746666859835386,
+        1.177999967088302,
+        1.1646666874488194,
+        1.169333312039574,
+        1.1860000280042489,
+        1.179666646445791
+      ],
+      "2": [
+        1.8040000771482785,
+        1.8043333354095619,
+        1.804666593670845,
+        1.8040000771482785,
+        1.8043333354095619,
+        1.804666593670845,
+        1.804666593670845
+      ],
+      "4": [
+        1.9323333787421386,
+        1.9313332935174305,
+        1.9326666370034218,
+        1.9313332935174305,
+        1.9323333787421386,
+        1.9326666370034218,
+        1.9323333787421386
+      ],
+      "8": [
+        2.5723332849641642,
+        2.5726666984458766,
+        2.5726666984458766,
+        2.570999941478173,
+        2.570999941478173,
+        2.676333300769329,
+        2.5726666984458766
+      ]
+    },
+    "paired_scalar_over_candidate": {
+      "1": 1.0,
+      "2": 0.6510253193969303,
+      "4": 0.6082154177771063,
+      "8": 0.4548165455683661
+    },
+    "errors": {
+      "1": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 4559,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 4559,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "2": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 4559,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 4559,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "4": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 4559,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 4559,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "8": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 4559,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 4559,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ]
+    }
+  },
+  {
+    "case": "scores2",
+    "shape": [
+      257,
+      769
+    ],
+    "dtype": "float32",
+    "seed": 9402,
+    "holdout_seed": 9503,
+    "compiler": "354c8441157449a29f55ee8cb0234839d0994698f031d19bd74d5c4851782bb0",
+    "gpu": "NVIDIA GB10",
+    "schedules": {
+      "1": {
+        "threads": 256,
+        "layout": "block",
+        "cache": true,
+        "vec": 1
+      },
+      "2": {
+        "threads": 256,
+        "layout": "block",
+        "cache": true,
+        "vec": 2
+      },
+      "4": {
+        "threads": 256,
+        "layout": "block",
+        "cache": true,
+        "vec": 4
+      }
+    },
+    "orders": [
+      [
+        4,
+        2,
+        1
+      ],
+      [
+        4,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        4
+      ],
+      [
+        1,
+        4,
+        2
+      ],
+      [
+        2,
+        4,
+        1
+      ],
+      [
+        2,
+        1,
+        4
+      ],
+      [
+        4,
+        1,
+        2
+      ]
+    ],
+    "window_medians_us": {
+      "1": [
+        4.236666796108087,
+        4.236333382626374,
+        4.236666796108087,
+        4.2436666165788965,
+        4.256666637957096,
+        4.254999880989392,
+        4.257999981443088
+      ],
+      "2": [
+        4.234333212176959,
+        4.236666796108087,
+        4.236333382626374,
+        4.336666626234849,
+        4.271333416302999,
+        4.261666598419349,
+        4.279999993741512
+      ],
+      "4": [
+        4.236333382626374,
+        4.235333452622096,
+        4.236333382626374,
+        4.2409999296069145,
+        4.234333212176959,
+        4.28700012465318,
+        4.236666796108087
+      ]
+    },
+    "paired_scalar_over_candidate": {
+      "1": 1.0,
+      "2": 0.998435654860371,
+      "4": 1.0002360923916531
+    },
+    "errors": {
+      "1": [
+        {
+          "max_abs": 1.862645149230957e-09,
+          "mean_abs": 5.513461594631965e-11,
+          "unequal": 91220,
+          "finite_pairs": 197633,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 2e-05,
+          "atol": 2e-06
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 197633,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "2": [
+        {
+          "max_abs": 1.862645149230957e-09,
+          "mean_abs": 5.5732803386193846e-11,
+          "unequal": 91502,
+          "finite_pairs": 197633,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 2e-05,
+          "atol": 2e-06
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 197633,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "4": [
+        {
+          "max_abs": 3.725290298461914e-09,
+          "mean_abs": 5.6163130556063185e-11,
+          "unequal": 91747,
+          "finite_pairs": 197633,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 2e-05,
+          "atol": 2e-06
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 197633,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ]
+    }
+  },
+  {
+    "case": "scores",
+    "shape": [
+      512,
+      1024
+    ],
+    "dtype": "bfloat16",
+    "seed": 9403,
+    "holdout_seed": 9504,
+    "compiler": "354c8441157449a29f55ee8cb0234839d0994698f031d19bd74d5c4851782bb0",
+    "gpu": "NVIDIA GB10",
+    "schedules": {
+      "1": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 1
+      },
+      "2": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 2
+      },
+      "4": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 4
+      },
+      "8": {
+        "threads": 128,
+        "layout": "warp",
+        "cache": true,
+        "vec": 8
+      }
+    },
+    "orders": [
+      [
+        4,
+        1,
+        2,
+        8
+      ],
+      [
+        4,
+        8,
+        1,
+        2
+      ],
+      [
+        1,
+        4,
+        2,
+        8
+      ],
+      [
+        4,
+        1,
+        8,
+        2
+      ],
+      [
+        2,
+        1,
+        8,
+        4
+      ],
+      [
+        4,
+        1,
+        2,
+        8
+      ],
+      [
+        2,
+        1,
+        4,
+        8
+      ]
+    ],
+    "window_medians_us": {
+      "1": [
+        3.19099985063076,
+        3.19099985063076,
+        3.2950000216563544,
+        3.826333209872246,
+        3.4296667824188867,
+        3.1913332641124725,
+        3.19099985063076
+      ],
+      "2": [
+        10.767333209514618,
+        10.837999482949575,
+        10.849667092164358,
+        10.87866723537445,
+        10.888000329335531,
+        10.889999568462372,
+        10.872000207503637
+      ],
+      "4": [
+        3.3403333897391954,
+        3.3396665627757707,
+        3.3403333897391954,
+        3.3406668032209077,
+        3.3403333897391954,
+        3.3403333897391954,
+        3.3406668032209077
+      ],
+      "8": [
+        3.147666652997335,
+        3.1480000664790473,
+        3.1913332641124725,
+        3.4686665361126265,
+        3.19099985063076,
+        3.1913332641124725,
+        3.19099985063076
+      ]
+    },
+    "paired_scalar_over_candidate": {
+      "1": 1.0,
+      "2": 0.2963593480891828,
+      "4": 0.9554845642969082,
+      "8": 1.0137667683431986
+    },
+    "errors": {
+      "1": [
+        {
+          "max_abs": 7.62939453125e-06,
+          "mean_abs": 5.4569682106375694e-11,
+          "unequal": 8,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ],
+      "2": [
+        {
+          "max_abs": 7.62939453125e-06,
+          "mean_abs": 5.820766091346741e-11,
+          "unequal": 10,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ],
+      "4": [
+        {
+          "max_abs": 7.62939453125e-06,
+          "mean_abs": 4.3655745685100555e-11,
+          "unequal": 8,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ],
+      "8": [
+        {
+          "max_abs": 7.62939453125e-06,
+          "mean_abs": 5.093170329928398e-11,
+          "unequal": 9,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ]
+    }
+  },
+  {
+    "case": "scores2",
+    "shape": [
+      128,
+      4096
+    ],
+    "dtype": "float16",
+    "seed": 9404,
+    "holdout_seed": 9505,
+    "compiler": "354c8441157449a29f55ee8cb0234839d0994698f031d19bd74d5c4851782bb0",
+    "gpu": "NVIDIA GB10",
+    "schedules": {
+      "1": {
+        "threads": 128,
+        "layout": "block",
+        "cache": false,
+        "vec": 1
+      },
+      "2": {
+        "threads": 128,
+        "layout": "block",
+        "cache": false,
+        "vec": 2
+      },
+      "4": {
+        "threads": 128,
+        "layout": "block",
+        "cache": false,
+        "vec": 4
+      },
+      "8": {
+        "threads": 128,
+        "layout": "block",
+        "cache": false,
+        "vec": 8
+      }
+    },
+    "orders": [
+      [
+        2,
+        1,
+        4,
+        8
+      ],
+      [
+        4,
+        1,
+        8,
+        2
+      ],
+      [
+        8,
+        2,
+        1,
+        4
+      ],
+      [
+        8,
+        2,
+        4,
+        1
+      ],
+      [
+        4,
+        1,
+        8,
+        2
+      ],
+      [
+        1,
+        2,
+        8,
+        4
+      ],
+      [
+        8,
+        2,
+        4,
+        1
+      ]
+    ],
+    "window_medians_us": {
+      "1": [
+        6.073333323001862,
+        6.1356667429208755,
+        6.611666952570279,
+        6.154666965206464,
+        6.157000238696734,
+        6.156666825215022,
+        6.157999858260155
+      ],
+      "2": [
+        7.957333077987035,
+        8.0636665225029,
+        8.073333029945692,
+        8.074666683872541,
+        8.071999996900558,
+        8.07699995736281,
+        8.07699995736281
+      ],
+      "4": [
+        6.604666511217753,
+        6.602666651209195,
+        6.65433332324028,
+        6.666999931136767,
+        6.668666377663612,
+        6.666999931136767,
+        6.670000031590462
+      ],
+      "8": [
+        5.900333325068156,
+        5.9199997534354525,
+        5.900666738549869,
+        5.901000152031581,
+        6.505333508054416,
+        5.943333109219869,
+        5.940999835729599
+      ]
+    },
+    "paired_scalar_over_candidate": {
+      "1": 1.0,
+      "2": 0.7624117730304878,
+      "4": 0.9232730939006516,
+      "8": 1.0364302362276736
+    },
+    "errors": {
+      "1": [
+        {
+          "max_abs": 4.76837158203125e-07,
+          "mean_abs": 8.86757334228605e-12,
+          "unequal": 22,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.0018,
+          "atol": 3e-05
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "2": [
+        {
+          "max_abs": 4.76837158203125e-07,
+          "mean_abs": 8.526512829121202e-12,
+          "unequal": 23,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.0018,
+          "atol": 3e-05
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "4": [
+        {
+          "max_abs": 2.384185791015625e-07,
+          "mean_abs": 6.139089236967266e-12,
+          "unequal": 25,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.0018,
+          "atol": 3e-05
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "8": [
+        {
+          "max_abs": 4.76837158203125e-07,
+          "mean_abs": 1.2391865311656147e-11,
+          "unequal": 37,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.0018,
+          "atol": 3e-05
+        },
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 524288,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ]
+    }
+  },
+  {
+    "case": "scores",
+    "shape": [
+      12,
+      8192
+    ],
+    "dtype": "bfloat16",
+    "seed": 9405,
+    "holdout_seed": 9506,
+    "compiler": "354c8441157449a29f55ee8cb0234839d0994698f031d19bd74d5c4851782bb0",
+    "gpu": "NVIDIA GB10",
+    "schedules": {
+      "1": {
+        "threads": 256,
+        "layout": "block",
+        "cache": true,
+        "vec": 1
+      },
+      "2": {
+        "threads": 256,
+        "layout": "block",
+        "cache": true,
+        "vec": 2
+      },
+      "4": {
+        "threads": 256,
+        "layout": "block",
+        "cache": true,
+        "vec": 4
+      },
+      "8": {
+        "threads": 256,
+        "layout": "block",
+        "cache": true,
+        "vec": 8
+      }
+    },
+    "orders": [
+      [
+        1,
+        4,
+        2,
+        8
+      ],
+      [
+        8,
+        1,
+        2,
+        4
+      ],
+      [
+        2,
+        4,
+        1,
+        8
+      ],
+      [
+        4,
+        1,
+        2,
+        8
+      ],
+      [
+        8,
+        2,
+        1,
+        4
+      ],
+      [
+        8,
+        2,
+        4,
+        1
+      ],
+      [
+        8,
+        4,
+        2,
+        1
+      ]
+    ],
+    "window_medians_us": {
+      "1": [
+        9.087666869163513,
+        9.088000282645226,
+        9.090000142653784,
+        9.100666890541712,
+        9.10033347706,
+        9.101000304023424,
+        9.101000304023424
+      ],
+      "2": [
+        7.23166639606158,
+        7.6659998546044035,
+        7.2136664142211275,
+        7.265666499733925,
+        7.241666937867801,
+        7.244333624839783,
+        7.262999812761943
+      ],
+      "4": [
+        4.748000142474969,
+        4.748000142474969,
+        4.746666798988978,
+        4.748333245515823,
+        4.747333315511544,
+        4.748333245515823,
+        4.748333245515823
+      ],
+      "8": [
+        4.10866675277551,
+        4.107333409289519,
+        4.106000065803528,
+        4.108999855816364,
+        4.095333317915599,
+        4.106666582326095,
+        4.095333317915599
+      ]
+    },
+    "paired_scalar_over_candidate": {
+      "1": 1.0,
+      "2": 1.2562922658362112,
+      "4": 1.916602399196833,
+      "8": 2.214813144288519
+    },
+    "errors": {
+      "1": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 98304,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ],
+      "2": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 98304,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ],
+      "4": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 98304,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ],
+      "8": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 98304,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ]
+    }
+  }
+]

@@ -66,12 +66,29 @@ def compare(out, ref, exact=()):
         if k in exact:
             r = t = 0
         torch.testing.assert_close(x, y, rtol=r, atol=t, equal_nan=True)
-        delta = (x.float() - y.float()).abs()
+        # Matched infinities / NaNs contribute no finite error. Literal NaN is
+        # not valid portable JSON, and inf-inf poisoned previous error summaries.
+        finite = torch.isfinite(y)
+        count = int(finite.sum().item())
+        if count == y.numel():
+            delta = (x.float() - y.float()).abs()
+            unequal = int((x != y).sum().item())
+            nan = posinf = neginf = 0
+        else:
+            delta = (x[finite].float() - y[finite].float()).abs()
+            nan = int(y.isnan().sum().item())
+            posinf = int(y.isposinf().sum().item())
+            neginf = int(y.isneginf().sum().item())
+            unequal = int(((x != y) & finite).sum().item())
         result.append(
             {
-                "max_abs": delta.max().item(),
-                "mean_abs": delta.mean().item(),
-                "unequal": (x != y).sum().item(),
+                "max_abs": delta.max().item() if count else None,
+                "mean_abs": delta.mean(dtype=torch.float64).item() if count else None,
+                "unequal": unequal,
+                "finite_pairs": count,
+                "matched_nan": nan,
+                "matched_posinf": posinf,
+                "matched_neginf": neginf,
                 "rtol": r,
                 "atol": t,
             }

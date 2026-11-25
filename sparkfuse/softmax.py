@@ -23,10 +23,62 @@ def generate_softmax(p, s, emit, index):
     row = f"blockIdx.x*{t // 32}+(threadIdx.x>>5)" if warp else "blockIdx.x"
     lane = "(threadIdx.x&31)" if warp else "threadIdx.x"
     src += [f"const int row={row}; if(row>=rows)return; const int lane={lane};"]
-    loop = f"for(int j=lane;j<{h};j+={stride}){{ const int pos=row*{h}+j;"
-    text, (operand,) = emit([inp])
+    v = s.vec
+    tail = h % v != 0
+    if v > 1:
+        from .vector import HEADER, TAIL_HEADER
+
+        src[:4] = [HEADER + (TAIL_HEADER if tail else "")]
+    off = f"j/{stride}" if v == 1 else f"(first/{stride * v})*{v}+q"
     if s.cache:
-        src.append(f"float held[{(h + stride - 1) // stride}];")
+        src.append(f"float held[{((h + stride * v - 1) // (stride * v)) * v}];")
+
+    def phase(targets, pre, body, full=()):
+        # Gather only input packs used by this phase. Broadcast-only dimensions
+        # retain scalar loads, while an unexpanded key dimension permits vectors.
+        if v == 1:
+            return [
+                f"for(int j=lane;j<{h};j+={stride}){{const int pos=row*{h}+j;",
+                *body(dict(pre)),
+                "}",
+            ]
+        live = set()
+
+        def walk(i):
+            if i in pre or i in live:
+                return
+            live.add(i)
+            for dep in p.vals[i].deps:
+                walk(dep)
+
+        for i in targets:
+            walk(i)
+        lines = [f"for(int first=lane*{v};first<{h};first+={stride * v}){{"]
+        known = dict(pre)
+        for i in p.inputs:
+            x = p.vals[i]
+            if i not in live or not x.shape or x.shape[-1] != h:
+                continue
+            base = index(x).replace("pos", f"(row*{h}+first)").replace("j", "first")
+            load = "load_tail" if tail else "loadv"
+            remain = f",{h}-first" if tail else ""
+            lines.append(f"auto pk{i}={load}<{CT[x.dt]},{v}>(in{x.imm}+({base}){remain});")
+            known[i] = LOAD[x.dt](f"pk{i}.x[q]")
+        for k, i in full:
+            lines.append(f"Pack<{CT[p.vals[i].dt]},{v}> dst{k}{{}};")
+        lines += [
+            "#pragma unroll",
+            f"for(int q=0;q<{v};++q){{const int j=first+q;",
+            f"if(j>={h})continue;" if tail else "",
+            f"const int pos=row*{h}+j;",
+            *body(known),
+            "}",
+        ]
+        for k, i in full:
+            store = "store_tail" if tail else "storev"
+            remain = f",{h}-first" if tail else ""
+            lines.append(f"{store}(out{k}+row*{h}+first,dst{k}{remain});")
+        return lines + ["}"]
 
     def collective(acc, mode, name):
         neutral = "-INFINITY" if mode == "max" else "0.f"
@@ -49,15 +101,27 @@ def generate_softmax(p, s, emit, index):
             f"if(lane==0){sh}[0]={acc}; }} __syncthreads(); const float {name}={sh}[0];",
         ]
 
-    src += ["float acc=-INFINITY;", loop, text, f"acc=fmaxf(acc,{operand});"]
-    if s.cache:
-        src += [f"held[j/{stride}]={operand};"]
-    src += ["}", *collective("acc", "max", "rowmax"), "float mass=0.f;", loop]
-    if s.cache:
-        src += [f"float e=expf(held[j/{stride}]-rowmax); held[j/{stride}]=e;"]
-    else:
-        src += [text, f"float e=expf({operand}-rowmax);"]
-    src += ["mass+=e;}", *collective("mass", "sum", "rowsum"), "const float inv=1.f/rowsum;"]
+    def maxbody(known):
+        text, (operand,) = emit([inp], known)
+        return [text, f"acc=fmaxf(acc,{operand});"] + (
+            [f"held[{off}]={operand};"] if s.cache else []
+        )
+
+    def sumbody(known):
+        if s.cache:
+            return [f"float e=expf(held[{off}]-rowmax); held[{off}]=e; mass+=e;"]
+        text, (operand,) = emit([inp], known)
+        return [text, f"mass+=expf({operand}-rowmax);"]
+
+    src += [
+        "float acc=-INFINITY;",
+        *phase([inp], {}, maxbody),
+        *collective("acc", "max", "rowmax"),
+        "float mass=0.f;",
+        *phase([] if s.cache else [inp], {}, sumbody),
+        *collective("mass", "sum", "rowsum"),
+        "const float inv=1.f/rowsum;",
+    ]
     full = [(k, i) for k, i in enumerate(p.outputs) if p.vals[i].shape == p.domain]
     small = [(k, i) for k, i in enumerate(p.outputs) if p.vals[i].shape != p.domain]
     if small:
@@ -68,23 +132,28 @@ def generate_softmax(p, s, emit, index):
             src += [f"out{k}[row]=" + STORE[p.vals[i].dt](nm) + ";"]
         src += ["}"]
     if full:
-        src.append(loop)
-        known = {}
-        if s.cache:
-            prob = f"held[j/{stride}]*inv"
-        else:
-            # Scope temporaries from the operand DAG separately from the epilogue.
-            src += ["float logit; {", text, f"logit={operand}; }}"]
-            known[inp] = "logit"
-            prob = "expf(logit-rowmax)*inv"
-        dt = p.vals[p.red].dt
-        src += ["const float prob=" + LOAD[dt](STORE[dt](prob)) + ";"]
-        known[p.red] = "prob"
-        tx, names = emit([i for _, i in full], known)
-        src += [tx]
-        for (k, i), nm in zip(full, names):
-            src += [f"out{k}[pos]=" + STORE[p.vals[i].dt](nm) + ";"]
-        src += ["}"]
+        ids = [i for _, i in full]
+
+        def epilogue(known):
+            out = []
+            if s.cache:
+                prob = f"held[{off}]*inv"
+            else:
+                text, (operand,) = emit([inp], known)
+                out += ["float logit; {", text, f"logit={operand}; }}"]
+                known[inp] = "logit"
+                prob = "expf(logit-rowmax)*inv"
+            dt = p.vals[p.red].dt
+            out += ["const float prob=" + LOAD[dt](STORE[dt](prob)) + ";"]
+            known[p.red] = "prob"
+            text, names = emit(ids, known)
+            out.append(text)
+            for (k, i), nm in zip(full, names):
+                dst = f"out{k}[pos]" if v == 1 else f"dst{k}.x[q]"
+                out.append(dst + "=" + STORE[p.vals[i].dt](nm) + ";")
+            return out
+
+        src += phase(ids + ([] if s.cache else [inp]), {p.red: "prob"}, epilogue, full)
     blocks = f"(rows-1)/{t // 32}+1" if warp else "rows"
     src += [
         "}",
