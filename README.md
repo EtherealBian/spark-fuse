@@ -10,6 +10,8 @@
 
 [Q/K/V 布局实验](docs/performance.md#packed-rotary)保留图要求的拷贝；在[原生 Phi-3 解码层](docs/performance.md#phi3-native)上，V 必须保留为视图。将 Q/K 旋转与[两次 KV 缓存拼接](docs/performance.md#phi3-cache)合成一个 CUDA kernel 后，单 token 更新的整层发射数从 15 次降到 13 次；不改权重。
 
+[逐 token INT8 量化](docs/performance.md#token-quant)在一个 kernel 中计算残差、编码和尺度；接上 PyTorch 整数矩阵乘法后，两个投影片段的实测发射数从 14 次降到 5 次。
+
 ### 跑一个例子
 
 需要 Linux、支持目标 GPU 的 CUDA 工具链（含 `nvcc`）和 CUDA 版 PyTorch；实测环境为 GB10 / CUDA 13.0 / PyTorch 2.13.0+cu130。以下命令从仓库根目录运行：
@@ -51,3 +53,5 @@ An optional ATen host launcher supports static and bounded variable-row exports 
 The [packed QKV study](docs/performance.md#packed-rotary) preserves explicit copies. An [unmodified Phi-3 layer](docs/performance.md#phi3-native) instead exposes V as a view: fusing Q/K rotation preserves that alias. [Combining rotation and the two KV cache appends](docs/performance.md#phi3-cache) then reduces single-token updates from 15 to 13 whole-layer launches.
 
 For [decomposed residual RMSNorm](docs/performance.md#packed-mean), a packed shared-memory tile preserves both narrow rounding points and the FP32 sum order. Across 18 held-out shape/alignment comparisons it was 1.12–1.73× as fast as the best measured previous schedule; it does not always beat cast-aware Inductor. [Inside Qwen2](docs/performance.md#qwen-packed-mean), one of three layer lengths regressed. An opt-in [whole-graph tuner](docs/performance.md#context-site) can now change one site without retuning its neighbors. [Resident graph execution](docs/performance.md#resident) returns fresh outputs for rotating requests; the Qwen2 panel separates single-request latency from queued throughput. [Multiple fixed shapes](docs/performance.md#shape-family) can share the frozen weights.
+
+[Per-token INT8 quantization](docs/performance.md#token-quant) fuses the residual, codes and scales into one kernel while leaving the integer GEMM in PyTorch.

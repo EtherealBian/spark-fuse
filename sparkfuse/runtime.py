@@ -95,6 +95,7 @@ class DenseKernelCall:
             if torch.is_grad_enabled() and t.requires_grad:
                 raise ValueError("inference only: run under torch.inference_mode()")
         dtype = {v: k for k, v in DT.items()}
+        dtype["i8"] = torch.int8  # Storage ABI only; not an admissible floating scalar IR type.
         out = [
             torch.empty(p.vals[i].shape, dtype=dtype[p.vals[i].dt], device=self.device)
             for i in p.outputs

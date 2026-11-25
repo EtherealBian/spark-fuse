@@ -9,9 +9,15 @@ from .runtime import DenseKernelCall, build
 
 
 class IndexProgram(DenseKernelCall):
-    def __init__(self, inputs, outputs, dtype, device, source, *, input_strides=None):
+    def __init__(
+        self, inputs, outputs, dtype, device, source, *, input_strides=None, output_dtypes=None
+    ):
         n = len(inputs)
         m = len(outputs)
+        out_types = (dtype,) * m if output_dtypes is None else tuple(output_dtypes)
+        if len(out_types) != m or any(t not in ("f16", "bf16", "f32", "i8") for t in out_types):
+            raise ValueError("expected one supported storage dtype per output")
+        types = (dtype,) * n + out_types
         # A descriptor is relative to data_ptr(), never the backing storage base.
         # None keeps the normal dense guard. Only an explicitly specialized index
         # program can accept a noncompact input. Output allocation is unchanged.
@@ -36,7 +42,7 @@ class IndexProgram(DenseKernelCall):
             inputs=list(range(n)),
             outputs=list(range(n, n + m)),
             vals=[
-                Val("input" if j < n else "index", tuple(shape), dtype)
+                Val("input" if j < n else "index", tuple(shape), types[j])
                 for j, shape in enumerate([*inputs, *outputs])
             ],
             rows=1,

@@ -810,3 +810,25 @@ source tools/env.sh
 python tools/shape_family_panel.py --output /tmp/shape-family.json
 python -m pytest -q tests/test_family.py tests/test_shape_family_evidence.py
 ```
+
+<a id="token-quant"></a>
+### 残差与逐 token INT8 量化 / Residual per-token quantization
+
+`partition_export(ep, token_quant=True, host_backend="native")` 识别 FP16/BF16 的 `z=x+r` 和一段固定公式：先将窄精度残差升至 FP32，沿最后一维求绝对值最大值，以 `max(amax,1e-5)/127` 为尺度，除以尺度、舍入到最近偶数、限制到 `[-127,127]`，再写有符号 INT8。rank 为 2 或 3，末维 1–8192。每个线程块处理一行，warp 内 shuffle、warp 间共享内存归约；仅为图外可见的残差或尺度分配输出。[生成的 CUDA](../examples/generated/token-quant/residual_bf16_33x1536.cu) 和 [原始报告](../reports/token-quant-gb10.json) 可逐项核对。
+
+| 片段（新输入，种子 279239） | eager 设备 µs | 融合后设备 µs | 实测 kernel 次数 |
+|---|---:|---:|---:|
+| FP16 `17×1025`，仅量化与可见残差 | 13.07 | 3.41 | 10 → 1 |
+| BF16 `33×1536`，同上 | 14.44 | 4.18 | 10 → 1 |
+| BF16 `1×65×8160`，同上 | 41.07 | 14.43 | 10 → 1 |
+| BF16 `2×16×1536 → 128`，含 INT32 GEMM 和反量化 | 25.36 | 15.11 | 14 → 5 |
+| FP16 `33×1536 → 64`，同上 | 51.30 | 40.38 | 14 → 5 |
+
+两组种子、三组地址偏移的输出都与 eager 逐字节一致。投影的 INT32 累加另与 CPU 整数乘法核对。inductor 默认和启用 `emulate_precision_casts` 的版本都在每组至少一个请求中产生不同编码，因此保留诊断、不作为同精度速度基线。一处 FP16 样本的 eager 商为 −63.499996，舍入到 −63；另一条路径给出 −64。报告记录实际输出和重算商，不据此推断编译器内部指令。边界回归分别枚举两种 dtype 的全部 65,536 个源编码、四种配对策略，并测试半整数附近；并未枚举所有输入对。
+
+The table measures warm device replay on DGX Spark; synchronized host samples are separate. Each projection uses PyTorch's existing `torch._int_mm` with synthetic INT8 weights, not a generated GEMM or a model-quality experiment. Unsupported formulas and escaping intermediate values stay in the ordinary partitioner. Run from the repository root after `source tools/env.sh`:
+
+```bash
+python tools/token_quant_panel.py --output /tmp/token-quant.json
+bash tools/sanitize_token_quant.sh
+```
