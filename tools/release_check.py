@@ -49,6 +49,18 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "frozen_w8a8_rhs_layout",
+            [
+                sys.executable,
+                str(ROOT / "tools/quant_state_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-quant-state.json")),
+            ],
+        )
+    )
     opt = os.environ.get("SPARKFUSE_QWEN_PY")
     qreport = report.with_name(report.stem + "-qwen.json")
     if opt:

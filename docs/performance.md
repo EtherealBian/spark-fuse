@@ -847,3 +847,30 @@ bash tools/sanitize_token_quant.sh
 单位为热 CUDA Graph 设备 µs。两组种子 × 三个尺寸中，投影的发射计数分别为 14、5、12、3；每组四次独立请求与 eager 逐字节一致，整数累加另经 CPU 核对。只测反量化时，Inductor 也通过了准入：两者都是一次发射，生成的 CUDA 设备中位数为 1.47–1.74 µs，Inductor 为 3.51–3.52 µs。不过这个小片段的混合 FX **同步主机调用慢于直接 eager**。整段投影没有这个结论；两种 Inductor 配置均因量化边界输出不一致，未参与整段等精度计时。
 
 The [ablation report](../reports/projection-epilogue-gb10.json) separates isolated dequantization, each pass on its own, and the combined projection. It includes per-output byte diagnostics, shuffled raw device/host samples and a profiler census. This remains a static synthetic W8A8 projection experiment, not a pretrained-model result. Run `python tools/projection_epilogue_panel.py --output /tmp/dequant.json` and `bash tools/sanitize_projection_epilogue.sh` after sourcing the environment.
+
+<a id="frozen-rhs"></a>
+### 静态 INT8 权重的存储顺序 / Frozen projection weight layout
+
+同一份 `K×N` 权重可以有两种物理步长：按行存放为 `(N, 1)`，按列存放为 `(1, K)`。这不改变矩阵的形状、内容或运算。在 GB10 上实测，PyTorch 对这两种步长选用了不同的整数 GEMM kernel。`capture_export(..., int8_rhs_layout="column_major")` 只在建立图时分配并填充一份私有权重；`"preserve"` 做等量快照但保留原布局。两者均不修改调用方的权重。只接受直接读取、占满存储的静态 INT8 右矩阵；同存储但几何不兼容的视图、矩阵乘以外的读者和作为请求参数传入的权重不走这条路径。相同布局的共享权重只计一次。GB10 此路径保守限定为 `M > 16`、`K` 是 64 的倍数、`N` 是 8 的倍数；窄 `K` 在库的不同布局上支持不一致，并不默认补齐。
+
+| 输入 → 输出通道（种子 987143） | 同一投影设备回放，行 → 列 µs | 常驻图，轮换请求同步延迟 µs | 常驻图，8 个请求排队，每请求 µs |
+|---|---:|---:|---:|
+| FP16 `33×1536 → 64` | 37.64 → 11.70 | 65.64 → 40.98 | 56.12 → 34.58 |
+| BF16 `2×16×1536 → 128` | 39.01 → 12.39 | 72.25 → 48.78 | 58.28 → 47.29 |
+| BF16 `65×3072 → 256` | 78.53 → 20.58 | 113.28 → 54.69 | 103.09 → 47.90 |
+
+设备回放列用普通融合图测量；两列请求时间包含输入暂存、图回放、返回五个独立结果和等待 GPU，不再外套 CUDA Graph。三种形状的投影仍各发射三个 kernel。控制组用**本来就是列布局**的 FP16 权重，逻辑字节与表中首行完全相同；轮换请求为 48.87 → 48.89 µs，第二个种子为 48.72 → 48.61 µs，没有收益。两种策略的建图时间单列于报告，不是纯重排耗时，也不计入稳态请求。若原图不在准入范围内，默认接口不会自动改变权重布局。
+
+The [paired report](../reports/frozen-rhs-gb10.json) includes two seeds, eight held-out requests per case, and every raw timing window. INT32 accumulators match an independent CPU integer multiplication. Both Inductor modes are shown in the accuracy gates but excluded from equivalent-output timings because some quantized codes differ. This is a frozen, single-shape W8A8 projection benchmark; it neither implements a new GEMM nor measures a complete trained model. After `source tools/env.sh`:
+
+```python
+from sparkfuse.resident import capture_export
+
+with capture_export(ep, example, audit, backend="mixed",
+                    partition_options={"host_backend": "native", "token_quant": True,
+                                       "projection_epilogue": True},
+                    int8_rhs_layout="column_major") as run:
+    residual, codes, scales, accumulator, output = run(*request)
+```
+
+Run `python tools/quant_state_panel.py --output /tmp/frozen-rhs.json` and `bash tools/sanitize_quant_state.sh` for the matched panel and an unfiltered sanitizer replay. The fresh outputs and the frozen snapshot remain valid if the original module's weights are later overwritten.

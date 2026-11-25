@@ -31,11 +31,16 @@ _DTYPES = {torch.float16, torch.bfloat16, torch.float32, torch.int32, torch.int6
 _CAPTURE = threading.Lock()
 
 
-def _validate_export(ep):
+def _validate_export(ep, *, quantized=False):
     if ep.range_constraints or any(
         s.kind.name != "USER_OUTPUT" for s in ep.graph_signature.output_specs
     ):
         raise Unsupported("resident execution requires a static, functional user-output export")
+    added = set()
+    if quantized:
+        from .quant_state import certify
+
+        added = certify(ep)
     for n in ep.graph.nodes:
         if n.op in ("placeholder", "output"):
             continue
@@ -50,7 +55,7 @@ def _validate_export(ep):
             continue
         if (
             n.op != "call_function"
-            or str(n.target).removeprefix("aten.") not in _OPS
+            or (str(n.target).removeprefix("aten.") not in _OPS and n not in added)
             or not isinstance(n.target, torch._ops.OpOverload)
             or n.target.namespace != "aten"
             or n.target._schema.is_mutable
@@ -71,11 +76,11 @@ def _geometry(t):
     return (t.dtype, tuple(t.shape), tuple(t.stride()), t.storage_offset())
 
 
-def _plain(t):
+def _plain(t, *, int8=False):
     return (
         type(t) in (torch.Tensor, nn.Parameter)
         and t.layout == torch.strided
-        and t.dtype in _DTYPES
+        and (t.dtype in _DTYPES or (int8 and t.dtype is torch.int8))
         and t.numel() > 0
         and not t.is_conj()
         and not t.is_neg()
@@ -112,7 +117,7 @@ def _get(root, path):
     return root
 
 
-def _snapshot(gm, dev, args, max_bytes, shared):
+def _snapshot(gm, dev, args, max_bytes, shared, rhs_layout):
     # Create a separate module hierarchy. Rebinding/mutating the caller's Parameters
     # after setup cannot free or overwrite cuBLAS/CUDA addresses captured here.
     root = nn.Module()
@@ -130,6 +135,11 @@ def _snapshot(gm, dev, args, max_bytes, shared):
     names = {n.target for n in graph.nodes if n.op == "get_attr"}
     if shared is not None and names != set(shared):
         raise Unsupported("shape family changed its named state")
+    bindings, inventory = {}, []
+    if rhs_layout is not None:
+        from .quant_state import frozen_weights
+
+        bindings, inventory = frozen_weights(graph, gm, dev, rhs_layout, _get, _store, _geometry)
     private_keys = set()
     for n in list(graph.nodes):
         if n.op == "call_module":
@@ -153,7 +163,12 @@ def _snapshot(gm, dev, args, max_bytes, shared):
             root.add_module(n.target, mod)
         elif n.op == "get_attr":
             t = _get(gm, n.target)
-            if not _plain(t) or t.device != dev or not _whole(t):
+            packed = bindings.get(n.target)
+            if (
+                not _plain(t, int8=packed is not None)
+                or t.device != dev
+                or (packed is None and not _whole(t))
+            ):
                 raise Unsupported(
                     "resident state must be whole contiguous tensors on the capture device"
                 )
@@ -166,7 +181,14 @@ def _snapshot(gm, dev, args, max_bytes, shared):
                 if used > max_bytes:
                     raise ValueError("request staging + weight snapshot exceeds byte limit")
                 if shared is None:
-                    copied[key] = t.detach().clone()
+                    # Allocate a single private RHS in its final physical order; no retained source clone.
+                    copied[key] = (
+                        t.detach().clone()
+                        if packed is None
+                        else torch.empty_strided(
+                            t.shape, packed, device=t.device, dtype=t.dtype
+                        ).copy_(t.detach())
+                    )
                 else:
                     candidate = shared[n.target]
                     if (
@@ -183,7 +205,8 @@ def _snapshot(gm, dev, args, max_bytes, shared):
                     copied[key] = candidate
             if shared is not None and _store(copied[key]) != _store(shared[n.target]):
                 raise Unsupported("shape family state alias groups changed")
-            if _geometry(copied[key]) != _geometry(t):
+            desired = _geometry(t) if packed is None else (t.dtype, tuple(t.shape), packed, 0)
+            if _geometry(copied[key]) != desired:
                 raise Unsupported("incompatible tied state layouts")
             parent = root
             parts = n.target.split(".")
@@ -196,7 +219,7 @@ def _snapshot(gm, dev, args, max_bytes, shared):
     for name in ("_in_spec", "_out_spec"):
         if hasattr(gm, name):
             setattr(owned, name, getattr(gm, name))
-    return owned, state_stores, {_store(x) for x in copied.values()}, used
+    return owned, state_stores, {_store(x) for x in copied.values()}, used, inventory
 
 
 @dataclass(frozen=True)
@@ -209,9 +232,9 @@ class _Binding:
     offset: int
 
 
-def _recipe(args, out, forbidden):
+def _recipe(args, out, forbidden, *, int8=False):
     ys, spec = tree.tree_flatten(out)
-    if not ys or not all(_plain(y) and y.device == args[0].device for y in ys):
+    if not ys or not all(_plain(y, int8=int8) and y.device == args[0].device for y in ys):
         raise Unsupported("expected nonempty same-device tensor outputs")
     by_input = {_store(x): i for i, x in enumerate(args)}
     leaders = {}
@@ -340,24 +363,57 @@ class ResidentExecutable:
 
 @torch.inference_mode()
 def capture_export(
-    ep, example, audit, *, backend="mixed", partition_options=None, max_static_bytes=1024**3
+    ep,
+    example,
+    audit,
+    *,
+    backend="mixed",
+    partition_options=None,
+    max_static_bytes=1024**3,
+    int8_rhs_layout=None,
 ):
     """Capture a deterministic ATen export or its SparkFuse partition, with a private weight snapshot.
 
     Validate two content-distinct requests against the original export before returning. Limit covers
     staging inputs and copied model state, not graph-private intermediates, external workspace or outputs.
     Caller provides stream dependencies for inputs, and excludes concurrent process-wide capture/setup.
+    int8_rhs_layout="preserve" or "column_major" admits a signed W8A8 projection with direct,
+    frozen full-storage RHS buffers. It never packs mutable request arguments or rewrites the GEMM.
     """
-    return _capture_export(ep, example, audit, backend, partition_options, max_static_bytes, None)
+    return _capture_export(
+        ep,
+        example,
+        audit,
+        backend,
+        partition_options,
+        max_static_bytes,
+        None,
+        int8_rhs_layout=int8_rhs_layout,
+    )
 
 
 @torch.inference_mode()
-def _capture_export(ep, example, audit, backend, partition_options, max_static_bytes, shared):
+def _capture_export(
+    ep,
+    example,
+    audit,
+    backend,
+    partition_options,
+    max_static_bytes,
+    shared,
+    *,
+    int8_rhs_layout=None,
+):
     if backend not in ("aten", "mixed") or (backend == "aten" and partition_options):
         raise ValueError("choose aten without partition options, or mixed")
     if type(max_static_bytes) is not int or max_static_bytes < 1:
         raise ValueError("positive byte limit required")
-    _validate_export(ep)
+    if int8_rhs_layout not in (None, "preserve", "column_major") or (
+        shared is not None and int8_rhs_layout is not None
+    ):
+        raise ValueError("choose a single-export W8A8 snapshot layout: preserve or column_major")
+    quantized = int8_rhs_layout is not None
+    _validate_export(ep, quantized=quantized)
     if (
         not isinstance(example, tuple)
         or not example
@@ -384,14 +440,20 @@ def _capture_export(ep, example, audit, backend, partition_options, max_static_b
         ):
             raise ValueError("a content-distinct audit request is required")
         raw = ep.module()
+        if quantized:
+            # Reject malformed or aliased source state before even the reference BLAS call.
+            # Check again on the partitioned/snapshotted graph, whose users may differ.
+            from .quant_state import frozen_weights
+
+            frozen_weights(raw.graph, raw, dev, int8_rhs_layout, _get, _store, _geometry)
         reference = raw(*example)  # Check the export input contract before running generated code.
         gm, recs = (
             partition_export(ep, device=dev, **dict(partition_options or {}))
             if backend == "mixed"
             else (raw, [])
         )
-        fn, original_state, private_state, used = _snapshot(
-            gm, dev, example, max_static_bytes, shared
+        fn, original_state, private_state, used, inventory = _snapshot(
+            gm, dev, example, max_static_bytes, shared, int8_rhs_layout
         )
         if any(_store(x) in original_state for x in audit):
             raise Unsupported("audit request aliases model state")
@@ -407,11 +469,11 @@ def _capture_export(ep, example, audit, backend, partition_options, max_static_b
         owner.wait_stream(side)
         for t in tree.tree_leaves(warm):
             t.record_stream(owner)
-        recipe = _recipe(example, reference, original_state)
+        recipe = _recipe(example, reference, original_state, int8=quantized)
         if not any(b.source == "copy" for b in recipe[1]):
             raise Unsupported("alias-only outputs have no resident CUDA work to serve")
         _exact(warm, reference, "warm result")
-        if _recipe(static, warm, private_state) != recipe:
+        if _recipe(static, warm, private_state, int8=quantized) != recipe:
             raise Unsupported("snapshot changed output alias contract")
         del warm, reference
         graph = torch.cuda.CUDAGraph()
@@ -420,7 +482,7 @@ def _capture_export(ep, example, audit, backend, partition_options, max_static_b
         owner.wait_stream(side)
         for t in tree.tree_leaves(outputs):
             t.record_stream(owner)
-        if _recipe(static, outputs, private_state) != recipe:
+        if _recipe(static, outputs, private_state, int8=quantized) != recipe:
             raise Unsupported("capture changed output alias contract")
         exe = ResidentExecutable(
             dev,
@@ -434,6 +496,8 @@ def _capture_export(ep, example, audit, backend, partition_options, max_static_b
             dict(
                 backend=backend,
                 staging_and_state_bytes=used,
+                int8_rhs_layout=int8_rhs_layout,
+                frozen_int8_weights=inventory,
                 input_bytes=sum(t.nbytes for t in static),
                 fresh_output_bytes=sum(
                     t.nbytes
@@ -449,7 +513,9 @@ def _capture_export(ep, example, audit, backend, partition_options, max_static_b
                 want = raw(*args)
                 got = exe(*args)
                 _exact(got, want, "resident " + tag)
-                if _recipe(args, got, original_state) != _recipe(args, want, original_state):
+                if _recipe(args, got, original_state, int8=quantized) != _recipe(
+                    args, want, original_state, int8=quantized
+                ):
                     raise Unsupported("replay changed public aliases")
         except Exception:
             exe.close()
