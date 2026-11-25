@@ -1108,3 +1108,20 @@ The fast entry requires finite `|Q,K,V| ≤ 64` and either finite `|bias| ≤ 10
 The middle row reverses direction when KV storage rotates. In the separate synchronized, rotating-input host test it also regressed (53.91 → 58.06 µs). In the S=257 hot test R=4 lost even without rotating (5.39 → 6.92 µs). Thus a hot-only winner should not become a universal default. The ring panel distinguishes same Q/K/V, independent Q with shared KV, and independent Q/K/V. The latter has unique KV storage totalling at least three times the reported L2 capacity; **this is allocated address footprint, not measured DRAM traffic or a guarantee of cache misses**. CUDA Graph numbers exclude graph construction, qualification and value scans.
 
 [Raw timings, address footprints and FP64 gates](../reports/grouped-decode-gb10.json) · [Compute Sanitizer](../reports/grouped-decode-sanitizer-gb10.txt). Reproduce: `python tools/grouped_decode_panel.py --output /tmp/grouped-decode.json`.
+
+<a id="qwen-sdpa-sites"></a>
+### 实际解码层：在保留公开缓存的前提下消除 KV 头重复 / SDPA inside Qwen2
+
+`partition_decode_sites` 在导出图中识别单 token SDPA，以原始 ATen 调用的**实际输出与步幅**验证替代 kernel。遇到 `unsqueeze → expand → reshape` 的 K/V 头重复，可让 CUDA 直接读取较少的物理头，不再为注意力物化两份重复数据。其他消费者仍能看到需要的重复张量；两步解码返回的完整 K/V 缓存不删、不覆写。支持 BF16/FP16 同类型共享头偏置，包括全遮蔽行。只接受已识别的无副作用静态图，不改传入的导出图；无法降低的注意力留在 ATen，未授权的周边算子在执行前拒绝。`domain="checked"` 默认检查范围；以下 CUDA 性能使用显式 `domain="bounded"`，前提是上游已经保证数值范围。
+
+随机权重 **Hugging Face Qwen2DecoderLayer**（B=2、隐藏宽度 512、8/2 查询/KV 头、D=64）。历史缓存来自真正的预填；两组模型权重，每组每种形状八条独立轨迹，各后端把自己第一步的缓存传入第二步。三条 CUDA 路径的完整 K/V 均与 stateful Transformers 参考逐字节相同，隐藏输出满足逐元素 `atol=.012, rtol=.02`，不要求逐位相同。另用 CPU FP64 在算子边界核验独立请求。
+
+| 第一步 KV 长度（首套权重） | HF eager | 原导出 ATen | CUDA，保留重复 | CUDA，消除重复 | Inductor |
+|---|---:|---:|---:|---:|---:|
+| 65，BF16 偏置 | 74.92 | 74.74 | 71.09 | **67.51** | 38.48 |
+| 257，无偏置 | 75.78 | 75.78 | 73.05 | **68.61** | 39.70 |
+| 1025，BF16 偏置 | 129.72 | 129.71 | 87.38 | **75.61** | 84.67 |
+
+All entries are **whole-layer CUDA Graph device replay µs**, not throughput. Both CUDA ablations in the table fix tile=32 and one query head per thread block. At 1025 tokens removal eliminates two materializations totalling **4,198,400 logical bytes**, taking launches from 43 to 41; this is not a DRAM byte counter. The separately measured rotating, synchronized request still favors Inductor: HF eager **317.60**, original export **397.67**, retained-repeat CUDA **392.39**, compact CUDA **365.44**, Inductor **192.34 µs**. Inductor passed the numerical, prefix and fresh-storage checks in all six panels, but its returned full caches were not byte-identical. Its times are provided as a numerical baseline, not a byte-exact substitute. Grouping four query heads was slower than one at each tested layer length. These tests do not measure pretrained model quality or an entire autoregressive model.
+
+[Executable real-model boundary](../examples/qwen_sdpa_step.py) · [raw gates, held-out hashes, kernel traces and timing windows](../reports/qwen-sdpa-sites-gb10.json) · [sanitizers](../reports/qwen-sdpa-sites-sanitizer-gb10.txt). Reproduce: `python tools/qwen_sdpa_sites.py --output /tmp/qwen-sdpa-sites.json` with the optional Transformers environment.

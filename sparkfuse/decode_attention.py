@@ -128,6 +128,8 @@ class QualifiedDecode:
             type(x) is not torch.Tensor
             or x.layout != torch.strided
             or x.device.type != "cuda"
+            or x.is_neg()
+            or x.is_conj()
             or x.data_ptr() % 16
             for x in args
         ):
@@ -161,6 +163,21 @@ def compile_decode_attention(
 ):
     """Qualify one exported ATen SDPA against two distinct batches on the target GPU."""
     ins, opt = _pattern(ep)
+    mod = ep.module()
+    return _build_site(
+        ins,
+        opt,
+        example,
+        audit,
+        reference=lambda i, batch: mod(*batch),
+        tile=tile,
+        head_group=head_group,
+        max_workspace_bytes=max_workspace_bytes,
+    )
+
+
+def _build_site(ins, opt, example, audit, *, reference, tile, head_group, max_workspace_bytes):
+    """Use the original operator output, not a compact-GQA eager surrogate."""
     policy = _policy()
     _require(
         torch.is_inference_mode_enabled() and not policy[0],
@@ -180,7 +197,7 @@ def compile_decode_attention(
     n = len(ins)
     _require(len(xs) == len(ys) == n, "wrong number of inputs")
     for batch in (xs, ys):
-        for node, x in zip(ins, batch):
+        for input_index, (node, x) in enumerate(zip(ins, batch)):
             m = node.meta.get("val")
             _require(
                 type(x) is torch.Tensor
@@ -194,7 +211,8 @@ def compile_decode_attention(
                 and all(type(a) is int for a in m.shape)
                 and x.shape == m.shape
                 and x.is_contiguous()
-                and x.stride() == m.stride()
+                and all(a == b or k == 1 for a, b, k in zip(x.stride(), m.stride(), x.shape))
+                and x.stride() == xs[input_index].stride()
                 and all(a > 0 for a in x.stride())
                 and x.data_ptr() % 16 == 0,
                 "expected fixed, aligned input matching export metadata",
@@ -232,12 +250,12 @@ def compile_decode_attention(
     if n == 4:
         m = xs[3]
         _require(
-            m.dtype == torch.float32
+            m.dtype in (q.dtype, torch.float32)
             and m.ndim == 4
             and m.shape[0] in (1, b)
             and tuple(m.shape[1:]) == (1, 1, s)
-            and h > g,
-            "only shared-head FP32 additive GQA masks supported",
+            and (m.dtype == q.dtype or h > g),
+            "expected shared-head additive mask (FP32 only for GQA)",
         )
         mask_b = m.shape[0]
     scale = opt["scale"] if opt["scale"] is not None else 1 / math.sqrt(d)
@@ -252,12 +270,11 @@ def compile_decode_attention(
         max(b * g * s * d, b * h * d, math.prod(scratch)) < 2**29 and size <= max_workspace_bytes,
         "index range or workspace budget exceeded",
     )
-    mod = ep.module()
     stride = None
     refs = []
     for batch in (xs, ys):
         _bounded(batch)
-        y = mod(*batch)
+        y = reference(len(refs), batch)
         _require(
             y.shape == q.shape
             and y.dtype == q.dtype
@@ -275,7 +292,19 @@ def compile_decode_attention(
         stride = y.stride()
         refs.append(y)
     dt = "bf16" if q.dtype == torch.bfloat16 else "f16"
-    a, m = emit(b, h, g, s, d, dt, tile, scale, mask_b, head_group=head_group)
+    a, m = emit(
+        b,
+        h,
+        g,
+        s,
+        d,
+        dt,
+        tile,
+        scale,
+        mask_b,
+        head_group=head_group,
+        narrow_bias=bool(mask_b and xs[3].dtype == q.dtype),
+    )
     p1 = IndexProgram(
         [tuple(x.shape) for x in xs],
         [scratch if m else tuple(q.shape)],
@@ -283,7 +312,7 @@ def compile_decode_attention(
         q.device,
         a,
         input_strides=[x.stride() for x in xs],
-        input_dtypes=[dt] * 3 + (["f32"] if mask_b else []),
+        input_dtypes=[dt] * 3 + ([dt if xs[3].dtype == q.dtype else "f32"] if mask_b else []),
         output_dtypes=["f32" if m else dt],
     )
     p2 = (

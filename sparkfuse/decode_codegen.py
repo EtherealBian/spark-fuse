@@ -4,7 +4,7 @@ import math
 from .grouped_decode_codegen import grouped_partial
 
 
-def emit(b, h, g, s, d, dtype, tile, scale, mask_batch=0, *, head_group=1):
+def emit(b, h, g, s, d, dtype, tile, scale, mask_batch=0, *, head_group=1, narrow_bias=False):
     if not (
         all(type(i) is int for i in (b, h, g, s, d, tile, mask_batch, head_group))
         and type(scale) in (int, float)
@@ -17,6 +17,8 @@ def emit(b, h, g, s, d, dtype, tile, scale, mask_batch=0, *, head_group=1):
         and tile in (32, 64, 128, 256)
         and dtype in ("bf16", "f16")
         and mask_batch in (0, 1, b)
+        and type(narrow_bias) is bool
+        and (not narrow_bias or mask_batch)
         and math.isfinite(scale)
         and 0 < scale <= 32
     ):
@@ -43,13 +45,16 @@ __device__ __forceinline__ float sumwarp(float x){{
 }}
 """
     mask = "" if not mask_batch else f"+bias[{'b*S+' if mask_batch > 1 else ''}key]"
+    bias_type = "T" if narrow_bias else "float"
+    if narrow_bias:
+        mask = "+ld(" + mask[1:] + ")"
     # Each warp computes one query-key dot, then value lanes read adjacent features.
     if head_group != 1:
-        a = grouped_partial(defines, b, head_group, scale, mask_batch, mask)
+        a = grouped_partial(defines, b, head_group, scale, mask_batch, mask, bias_type)
     else:
         a = (
             defines
-            + f"""__global__ void decode_partial(const T* q,const T* k,const T* v,const float* bias,void* dst){{
+            + f"""__global__ void decode_partial(const T* q,const T* k,const T* v,const {bias_type}* bias,void* dst){{
  const int i=threadIdx.x,l=i&31,w=i>>5,h=blockIdx.y,b=blockIdx.z,chunk=blockIdx.x;
  const int begin=chunk*Tile, count=min(Tile,S-begin),kv=((b*G+h/(H/G))*S)*D,qi=(b*H+h)*D;
  __shared__ float scores[Tile],rowmax,mass;
@@ -77,7 +82,7 @@ __device__ __forceinline__ float sumwarp(float x){{
  if constexpr(C==1){{if(i<D)((T*)dst)[qi+i]=rt(mass==0.f ? 0.f : y/mass);}}
  else{{if(i<D)((float*)dst)[base+i]=y;if(i==0){{((float*)dst)[base+D]=mx;((float*)dst)[base+D+1]=mass;}}}}
 }}
-extern "C" int launch(void** p,int,void* stream){{decode_partial<<<dim3(C,H,{b}),NT,0,(cudaStream_t)stream>>>((T*)p[0],(T*)p[1],(T*)p[2],{("(float*)p[3]" if mask_batch else "nullptr")},p[{4 if mask_batch else 3}]);return int(cudaGetLastError());}}
+extern "C" int launch(void** p,int,void* stream){{decode_partial<<<dim3(C,H,{b}),NT,0,(cudaStream_t)stream>>>((T*)p[0],(T*)p[1],(T*)p[2],{(f"({bias_type}*)p[3]" if mask_batch else "nullptr")},p[{4 if mask_batch else 3}]);return int(cudaGetLastError());}}
 """
         )
     if chunks == 1:

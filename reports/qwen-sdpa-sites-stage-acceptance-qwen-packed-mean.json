@@ -1,0 +1,1883 @@
+{
+ "protocol": "Random-weight, BF16 Qwen2DecoderLayer, batch 2 with distinct positions and causal/padding masks. Isolated inputs/outputs from unmodified exported ATen. Independently calibrate ten prior and nine packed native schedules in three shuffled device windows. Same exported layer, identical other schedules/records/FX. Freeze selected schedules for new weights/requests. Each scope separately requires bitwise-equal visible outputs across three requests before timing fresh dispatch; whole also verifies dropped mask entries and row sums. Seven shuffled windows, independent device and synchronized host medians; profiler counts outside timers. Whole Inductor internal wires are not observable. No generation-throughput or trained-model claim.",
+ "torch": "2.13.0+cu130",
+ "cuda": "13.0",
+ "device": "NVIDIA GB10",
+ "transformers": "4.51.3",
+ "sequences": [
+  33
+ ],
+ "verify_only": true,
+ "seed_offset": 80141,
+ "selection_sha256": null,
+ "provenance": {
+  "git_head_at_capture": "2c9150ca2343847a877743dcd8d2ab95c8d2a2b8",
+  "source_tree_sha256": "f05bdc4c6e2c8bd9eae111888cdda25144162f3fdf9dfc1fa47669ce7efeaba0",
+  "archive": "sources/f05bdc4c6e2c8bd9eae111888cdda25144162f3fdf9dfc1fa47669ce7efeaba0.tar.gz"
+ },
+ "cases": [
+  {
+   "sequence": 33,
+   "weight_seed": 485314,
+   "export_seed": 615963,
+   "export_sha256": "717a13591f2306a4afd709763c5cc8696d7b4f989ea0d3363851697fec0af248",
+   "weight_sha256": {
+    "layer.self_attn.q_proj.weight": "959030ddbe4c60393a7e2d73816550044d2a341a20233f045a73cefff6fdb118",
+    "layer.self_attn.q_proj.bias": "3ed7f0167d0d73e154e835e95f1a565df603e4fdcebaf617475fe989a4fdf628",
+    "layer.self_attn.k_proj.weight": "f31e4209ad3c6cc307e14d314a9375cf736afea9d24bb31b26e01e5f2e9da1c4",
+    "layer.self_attn.k_proj.bias": "5a88f96c65470ca121432c63cfad534873b53387f822b803a3bea1a4cb7e1e82",
+    "layer.self_attn.v_proj.weight": "1ce97b449a216b9d4143edcfc1dc7f87538f0d6a969e45dc9def256c94f863a7",
+    "layer.self_attn.v_proj.bias": "2d6f29bd36fde267e32749581178b0814754b1262cbf98ff70799badb63c590b",
+    "layer.self_attn.o_proj.weight": "2f90ddb9ad222fc2d603a7567454d52ee2a368d554a81713422398224be52761",
+    "layer.mlp.gate_proj.weight": "b7946587c7cedc33b1ae5e753f7cfd32a9731339fea81ec3ccbfcd69f24a74b0",
+    "layer.mlp.up_proj.weight": "5e52ab5cf9cf4e59db2acb60c9a958d0074ec62a661feadcb9af22744b495cfa",
+    "layer.mlp.down_proj.weight": "ff0fa2c32e61e68463699501ae6f5fa68f91a3f2c906046d17776a64137fc832",
+    "layer.input_layernorm.weight": "670b4dc469efef0a3c7a31c2ec1973203a8c60322f0f3c3a6b3fb972166ccb32",
+    "layer.post_attention_layernorm.weight": "3b09528aa27deaa535c7d41720a05eac4df31f6af3436a9c96395905de47a4de"
+   },
+   "region": {
+    "ops": [
+     "add_4",
+     "_assert_tensor_metadata_default_3",
+     "to_3",
+     "pow_2",
+     "mean_1",
+     "add_5",
+     "rsqrt_1",
+     "mul_7",
+     "_assert_tensor_metadata_default_4",
+     "to_4",
+     "mul_8"
+    ],
+    "split": {
+     "component": "3",
+     "reason": "fallback_barrier",
+     "original_rejection": "no legal insertion point between live-ins and live-outs",
+     "covered_ops": 9,
+     "planned_regions": 1,
+     "logical_output_bytes": 405504
+    },
+    "module": "_sparkfuse_region_3_0",
+    "live_ins": [
+     "layer_post_attention_layernorm_weight",
+     "x",
+     "linear_3"
+    ],
+    "live_outs": [
+     "add_4",
+     "mul_8"
+    ],
+    "schedule": {
+     "threads": 256,
+     "layout": "mean_cohort",
+     "cache": true,
+     "vec": 4
+    },
+    "host_backend": "native"
+   },
+   "ir": {
+    "domain": [
+     2,
+     33,
+     1536
+    ],
+    "reduction": 6,
+    "input_ids": [
+     0,
+     1,
+     2
+    ],
+    "output_ids": [
+     3,
+     12
+    ],
+    "values": [
+     {
+      "op": "input",
+      "shape": [
+       1536
+      ],
+      "dt": "bf16",
+      "deps": [],
+      "imm": 0
+     },
+     {
+      "op": "input",
+      "shape": [
+       2,
+       33,
+       1536
+      ],
+      "dt": "bf16",
+      "deps": [],
+      "imm": 1
+     },
+     {
+      "op": "input",
+      "shape": [
+       2,
+       33,
+       1536
+      ],
+      "dt": "bf16",
+      "deps": [],
+      "imm": 2
+     },
+     {
+      "op": "add",
+      "shape": [
+       2,
+       33,
+       1536
+      ],
+      "dt": "bf16",
+      "deps": [
+       1,
+       2
+      ],
+      "imm": null
+     },
+     {
+      "op": "cast",
+      "shape": [
+       2,
+       33,
+       1536
+      ],
+      "dt": "f32",
+      "deps": [
+       3
+      ],
+      "imm": null
+     },
+     {
+      "op": "square",
+      "shape": [
+       2,
+       33,
+       1536
+      ],
+      "dt": "f32",
+      "deps": [
+       4
+      ],
+      "imm": null
+     },
+     {
+      "op": "mean",
+      "shape": [
+       2,
+       33,
+       1
+      ],
+      "dt": "f32",
+      "deps": [
+       5
+      ],
+      "imm": "exported_mean"
+     },
+     {
+      "op": "const",
+      "shape": [],
+      "dt": "f32",
+      "deps": [],
+      "imm": 1e-06
+     },
+     {
+      "op": "add",
+      "shape": [
+       2,
+       33,
+       1
+      ],
+      "dt": "f32",
+      "deps": [
+       6,
+       7
+      ],
+      "imm": null
+     },
+     {
+      "op": "rsqrt",
+      "shape": [
+       2,
+       33,
+       1
+      ],
+      "dt": "f32",
+      "deps": [
+       8
+      ],
+      "imm": null
+     },
+     {
+      "op": "mul",
+      "shape": [
+       2,
+       33,
+       1536
+      ],
+      "dt": "f32",
+      "deps": [
+       4,
+       9
+      ],
+      "imm": null
+     },
+     {
+      "op": "cast",
+      "shape": [
+       2,
+       33,
+       1536
+      ],
+      "dt": "bf16",
+      "deps": [
+       10
+      ],
+      "imm": null
+     },
+     {
+      "op": "mul",
+      "shape": [
+       2,
+       33,
+       1536
+      ],
+      "dt": "bf16",
+      "deps": [
+       0,
+       11
+      ],
+      "imm": null
+     }
+    ],
+    "launches": 1,
+    "global_intermediate_bytes": 0
+   },
+   "partition_records": [
+    {
+     "module": "_sparkfuse_rotary_pair_0",
+     "kind": "rotary_pair",
+     "cuda_sha256": "4c03acc1c95b4e6d28ec0e40a52c4fa514d3e5d53fc28cf52ef6f768a8138bdb",
+     "ops": [
+      "mul_2",
+      "slice_1",
+      "slice_2",
+      "neg",
+      "cat",
+      "mul_3",
+      "add_1",
+      "mul_4",
+      "slice_3",
+      "slice_4",
+      "neg_1",
+      "cat_1",
+      "mul_5",
+      "add_2"
+     ],
+     "live_ins": [
+      "view",
+      "view_1",
+      "unsqueeze",
+      "unsqueeze_1"
+     ],
+     "live_outs": [
+      "add_1",
+      "add_2"
+     ],
+     "physical_order": [
+      "BSHD",
+      "BSHD"
+     ],
+     "schedule": {
+      "layout": "paired_half_rotate",
+      "threads": 256
+     },
+     "host_backend": "native"
+    },
+    {
+     "ops": [
+      "_assert_tensor_metadata_default"
+     ],
+     "fallback": "below minimum region size"
+    },
+    {
+     "ops": [
+      "to",
+      "pow_1",
+      "mean",
+      "add",
+      "rsqrt",
+      "mul",
+      "_assert_tensor_metadata_default_1",
+      "to_1",
+      "mul_1"
+     ],
+     "module": "_sparkfuse_region_1",
+     "live_ins": [
+      "layer_input_layernorm_weight",
+      "x"
+     ],
+     "live_outs": [
+      "mul_1"
+     ],
+     "schedule": {
+      "threads": 256,
+      "layout": "mean_cohort",
+      "cache": true,
+      "vec": 4
+     },
+     "host_backend": "native"
+    },
+    {
+     "ops": [
+      "mul_6",
+      "add_3",
+      "softmax",
+      "_assert_tensor_metadata_default_2",
+      "to_2"
+     ],
+     "module": "_sparkfuse_region_2",
+     "live_ins": [
+      "matmul",
+      "alias"
+     ],
+     "live_outs": [
+      "to_2"
+     ],
+     "schedule": {
+      "threads": 128,
+      "layout": "warp_xor",
+      "cache": true,
+      "vec": 1
+     },
+     "host_backend": "native"
+    },
+    {
+     "ops": [
+      "add_4",
+      "_assert_tensor_metadata_default_3",
+      "to_3",
+      "pow_2",
+      "mean_1",
+      "add_5",
+      "rsqrt_1",
+      "mul_7",
+      "_assert_tensor_metadata_default_4",
+      "to_4",
+      "mul_8"
+     ],
+     "split": {
+      "component": "3",
+      "reason": "fallback_barrier",
+      "original_rejection": "no legal insertion point between live-ins and live-outs",
+      "covered_ops": 9,
+      "planned_regions": 1,
+      "logical_output_bytes": 405504
+     },
+     "module": "_sparkfuse_region_3_0",
+     "live_ins": [
+      "layer_post_attention_layernorm_weight",
+      "x",
+      "linear_3"
+     ],
+     "live_outs": [
+      "add_4",
+      "mul_8"
+     ],
+     "schedule": {
+      "threads": 256,
+      "layout": "mean_cohort",
+      "cache": true,
+      "vec": 4
+     },
+     "host_backend": "native"
+    },
+    {
+     "ops": [
+      "add_6"
+     ],
+     "split": {
+      "component": "3",
+      "reason": "fallback_barrier",
+      "original_rejection": "no legal insertion point between live-ins and live-outs",
+      "covered_ops": 9,
+      "planned_regions": 1,
+      "logical_output_bytes": 405504
+     },
+     "fallback": "not included in a legal collective split"
+    },
+    {
+     "ops": [
+      "silu",
+      "mul_9"
+     ],
+     "module": "_sparkfuse_region_4",
+     "live_ins": [
+      "linear_4",
+      "linear_5"
+     ],
+     "live_outs": [
+      "mul_9"
+     ],
+     "schedule": {
+      "threads": 256,
+      "layout": "flat",
+      "cache": false,
+      "vec": 1
+     },
+     "host_backend": "native"
+    }
+   ],
+   "variants": {
+    "previous": {
+     "records": [
+      {
+       "module": "_sparkfuse_rotary_pair_0",
+       "kind": "rotary_pair",
+       "cuda_sha256": "4c03acc1c95b4e6d28ec0e40a52c4fa514d3e5d53fc28cf52ef6f768a8138bdb",
+       "ops": [
+        "mul_2",
+        "slice_1",
+        "slice_2",
+        "neg",
+        "cat",
+        "mul_3",
+        "add_1",
+        "mul_4",
+        "slice_3",
+        "slice_4",
+        "neg_1",
+        "cat_1",
+        "mul_5",
+        "add_2"
+       ],
+       "live_ins": [
+        "view",
+        "view_1",
+        "unsqueeze",
+        "unsqueeze_1"
+       ],
+       "live_outs": [
+        "add_1",
+        "add_2"
+       ],
+       "physical_order": [
+        "BSHD",
+        "BSHD"
+       ],
+       "schedule": {
+        "layout": "paired_half_rotate",
+        "threads": 256
+       },
+       "host_backend": "native"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "to",
+        "pow_1",
+        "mean",
+        "add",
+        "rsqrt",
+        "mul",
+        "_assert_tensor_metadata_default_1",
+        "to_1",
+        "mul_1"
+       ],
+       "module": "_sparkfuse_region_1",
+       "live_ins": [
+        "layer_input_layernorm_weight",
+        "x"
+       ],
+       "live_outs": [
+        "mul_1"
+       ],
+       "schedule": {
+        "threads": 256,
+        "layout": "mean_cohort",
+        "cache": true,
+        "vec": 4
+       },
+       "host_backend": "native"
+      },
+      {
+       "ops": [
+        "mul_6",
+        "add_3",
+        "softmax",
+        "_assert_tensor_metadata_default_2",
+        "to_2"
+       ],
+       "module": "_sparkfuse_region_2",
+       "live_ins": [
+        "matmul",
+        "alias"
+       ],
+       "live_outs": [
+        "to_2"
+       ],
+       "schedule": {
+        "threads": 128,
+        "layout": "warp_xor",
+        "cache": true,
+        "vec": 1
+       },
+       "host_backend": "native"
+      },
+      {
+       "ops": [
+        "add_4",
+        "_assert_tensor_metadata_default_3",
+        "to_3",
+        "pow_2",
+        "mean_1",
+        "add_5",
+        "rsqrt_1",
+        "mul_7",
+        "_assert_tensor_metadata_default_4",
+        "to_4",
+        "mul_8"
+       ],
+       "split": {
+        "component": "3",
+        "reason": "fallback_barrier",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 9,
+        "planned_regions": 1,
+        "logical_output_bytes": 405504
+       },
+       "module": "_sparkfuse_region_3_0",
+       "live_ins": [
+        "layer_post_attention_layernorm_weight",
+        "x",
+        "linear_3"
+       ],
+       "live_outs": [
+        "add_4",
+        "mul_8"
+       ],
+       "schedule": {
+        "threads": 256,
+        "layout": "mean_cohort",
+        "cache": true,
+        "vec": 4
+       },
+       "host_backend": "native"
+      },
+      {
+       "ops": [
+        "add_6"
+       ],
+       "split": {
+        "component": "3",
+        "reason": "fallback_barrier",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 9,
+        "planned_regions": 1,
+        "logical_output_bytes": 405504
+       },
+       "fallback": "not included in a legal collective split"
+      },
+      {
+       "ops": [
+        "silu",
+        "mul_9"
+       ],
+       "module": "_sparkfuse_region_4",
+       "live_ins": [
+        "linear_4",
+        "linear_5"
+       ],
+       "live_outs": [
+        "mul_9"
+       ],
+       "schedule": {
+        "threads": 256,
+        "layout": "flat",
+        "cache": false,
+        "vec": 1
+       },
+       "host_backend": "native"
+      }
+     ],
+     "fx_sha256": "a50e86e0e9134d6e04413665bf5d701e4546688caa214e9b3e1dc4025a12e1ad"
+    },
+    "packed": {
+     "records": [
+      {
+       "module": "_sparkfuse_rotary_pair_0",
+       "kind": "rotary_pair",
+       "cuda_sha256": "4c03acc1c95b4e6d28ec0e40a52c4fa514d3e5d53fc28cf52ef6f768a8138bdb",
+       "ops": [
+        "mul_2",
+        "slice_1",
+        "slice_2",
+        "neg",
+        "cat",
+        "mul_3",
+        "add_1",
+        "mul_4",
+        "slice_3",
+        "slice_4",
+        "neg_1",
+        "cat_1",
+        "mul_5",
+        "add_2"
+       ],
+       "live_ins": [
+        "view",
+        "view_1",
+        "unsqueeze",
+        "unsqueeze_1"
+       ],
+       "live_outs": [
+        "add_1",
+        "add_2"
+       ],
+       "physical_order": [
+        "BSHD",
+        "BSHD"
+       ],
+       "schedule": {
+        "layout": "paired_half_rotate",
+        "threads": 256
+       },
+       "host_backend": "native"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "to",
+        "pow_1",
+        "mean",
+        "add",
+        "rsqrt",
+        "mul",
+        "_assert_tensor_metadata_default_1",
+        "to_1",
+        "mul_1"
+       ],
+       "module": "_sparkfuse_region_1",
+       "live_ins": [
+        "layer_input_layernorm_weight",
+        "x"
+       ],
+       "live_outs": [
+        "mul_1"
+       ],
+       "schedule": {
+        "threads": 256,
+        "layout": "mean_cohort",
+        "cache": true,
+        "vec": 4
+       },
+       "host_backend": "native"
+      },
+      {
+       "ops": [
+        "mul_6",
+        "add_3",
+        "softmax",
+        "_assert_tensor_metadata_default_2",
+        "to_2"
+       ],
+       "module": "_sparkfuse_region_2",
+       "live_ins": [
+        "matmul",
+        "alias"
+       ],
+       "live_outs": [
+        "to_2"
+       ],
+       "schedule": {
+        "threads": 128,
+        "layout": "warp_xor",
+        "cache": true,
+        "vec": 1
+       },
+       "host_backend": "native"
+      },
+      {
+       "ops": [
+        "add_4",
+        "_assert_tensor_metadata_default_3",
+        "to_3",
+        "pow_2",
+        "mean_1",
+        "add_5",
+        "rsqrt_1",
+        "mul_7",
+        "_assert_tensor_metadata_default_4",
+        "to_4",
+        "mul_8"
+       ],
+       "split": {
+        "component": "3",
+        "reason": "fallback_barrier",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 9,
+        "planned_regions": 1,
+        "logical_output_bytes": 405504
+       },
+       "module": "_sparkfuse_region_3_0",
+       "live_ins": [
+        "layer_post_attention_layernorm_weight",
+        "x",
+        "linear_3"
+       ],
+       "live_outs": [
+        "add_4",
+        "mul_8"
+       ],
+       "schedule": {
+        "threads": 128,
+        "layout": "mean_packed_tile",
+        "cache": true,
+        "vec": 2
+       },
+       "host_backend": "native"
+      },
+      {
+       "ops": [
+        "add_6"
+       ],
+       "split": {
+        "component": "3",
+        "reason": "fallback_barrier",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 9,
+        "planned_regions": 1,
+        "logical_output_bytes": 405504
+       },
+       "fallback": "not included in a legal collective split"
+      },
+      {
+       "ops": [
+        "silu",
+        "mul_9"
+       ],
+       "module": "_sparkfuse_region_4",
+       "live_ins": [
+        "linear_4",
+        "linear_5"
+       ],
+       "live_outs": [
+        "mul_9"
+       ],
+       "schedule": {
+        "threads": 256,
+        "layout": "flat",
+        "cache": false,
+        "vec": 1
+       },
+       "host_backend": "native"
+      }
+     ],
+     "fx_sha256": "a50e86e0e9134d6e04413665bf5d701e4546688caa214e9b3e1dc4025a12e1ad"
+    }
+   },
+   "aten_graph": "graph():\n    %p_layer_self_attn_q_proj_weight : [num_users=1] = placeholder[target=p_layer_self_attn_q_proj_weight]\n    %p_layer_self_attn_q_proj_bias : [num_users=1] = placeholder[target=p_layer_self_attn_q_proj_bias]\n    %p_layer_self_attn_k_proj_weight : [num_users=1] = placeholder[target=p_layer_self_attn_k_proj_weight]\n    %p_layer_self_attn_k_proj_bias : [num_users=1] = placeholder[target=p_layer_self_attn_k_proj_bias]\n    %p_layer_self_attn_v_proj_weight : [num_users=1] = placeholder[target=p_layer_self_attn_v_proj_weight]\n    %p_layer_self_attn_v_proj_bias : [num_users=1] = placeholder[target=p_layer_self_attn_v_proj_bias]\n    %p_layer_self_attn_o_proj_weight : [num_users=1] = placeholder[target=p_layer_self_attn_o_proj_weight]\n    %p_layer_mlp_gate_proj_weight : [num_users=1] = placeholder[target=p_layer_mlp_gate_proj_weight]\n    %p_layer_mlp_up_proj_weight : [num_users=1] = placeholder[target=p_layer_mlp_up_proj_weight]\n    %p_layer_mlp_down_proj_weight : [num_users=1] = placeholder[target=p_layer_mlp_down_proj_weight]\n    %p_layer_input_layernorm_weight : [num_users=1] = placeholder[target=p_layer_input_layernorm_weight]\n    %p_layer_post_attention_layernorm_weight : [num_users=1] = placeholder[target=p_layer_post_attention_layernorm_weight]\n    %x : [num_users=3] = placeholder[target=x]\n    %cos : [num_users=1] = placeholder[target=cos]\n    %sin : [num_users=1] = placeholder[target=sin]\n    %mask : [num_users=1] = placeholder[target=mask]\n    %_assert_tensor_metadata_default : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%x,), kwargs = {dtype: torch.bfloat16, device: cuda:0, layout: torch.strided})\n    %to : [num_users=2] = call_function[target=torch.ops.aten.to.dtype](args = (%x, torch.float32), kwargs = {})\n    %pow_1 : [num_users=1] = call_function[target=torch.ops.aten.pow.Tensor_Scalar](args = (%to, 2), kwargs = {})\n    %mean : [num_users=1] = call_function[target=torch.ops.aten.mean.dim](args = (%pow_1, [-1], True), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mean, 1e-06), kwargs = {})\n    %rsqrt : [num_users=1] = call_function[target=torch.ops.aten.rsqrt.default](args = (%add,), kwargs = {})\n    %mul : [num_users=2] = call_function[target=torch.ops.aten.mul.Tensor](args = (%to, %rsqrt), kwargs = {})\n    %_assert_tensor_metadata_default_1 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%mul,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_1 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%mul, torch.bfloat16), kwargs = {})\n    %mul_1 : [num_users=3] = call_function[target=torch.ops.aten.mul.Tensor](args = (%p_layer_input_layernorm_weight, %to_1), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%mul_1, %p_layer_self_attn_q_proj_weight, %p_layer_self_attn_q_proj_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [2, 33, -1, 128]), kwargs = {})\n    %transpose : [num_users=3] = call_function[target=torch.ops.aten.transpose.int](args = (%view, 1, 2), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%mul_1, %p_layer_self_attn_k_proj_weight, %p_layer_self_attn_k_proj_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [2, 33, -1, 128]), kwargs = {})\n    %transpose_1 : [num_users=3] = call_function[target=torch.ops.aten.transpose.int](args = (%view_1, 1, 2), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%mul_1, %p_layer_self_attn_v_proj_weight, %p_layer_self_attn_v_proj_bias), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [2, 33, -1, 128]), kwargs = {})\n    %transpose_2 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%view_2, 1, 2), kwargs = {})\n    %unsqueeze : [num_users=2] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%cos, 1), kwargs = {})\n    %unsqueeze_1 : [num_users=2] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%sin, 1), kwargs = {})\n    %mul_2 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%transpose, %unsqueeze), kwargs = {})\n    %slice_1 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose, 3, 0, 64), kwargs = {})\n    %slice_2 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose, 3, 64, 9223372036854775807), kwargs = {})\n    %neg : [num_users=1] = call_function[target=torch.ops.aten.neg.default](args = (%slice_2,), kwargs = {})\n    %cat : [num_users=1] = call_function[target=torch.ops.aten.cat.default](args = ([%neg, %slice_1], -1), kwargs = {})\n    %mul_3 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%cat, %unsqueeze_1), kwargs = {})\n    %add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_2, %mul_3), kwargs = {})\n    %mul_4 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%transpose_1, %unsqueeze), kwargs = {})\n    %slice_3 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose_1, 3, 0, 64), kwargs = {})\n    %slice_4 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose_1, 3, 64, 9223372036854775807), kwargs = {})\n    %neg_1 : [num_users=1] = call_function[target=torch.ops.aten.neg.default](args = (%slice_4,), kwargs = {})\n    %cat_1 : [num_users=1] = call_function[target=torch.ops.aten.cat.default](args = ([%neg_1, %slice_3], -1), kwargs = {})\n    %mul_5 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%cat_1, %unsqueeze_1), kwargs = {})\n    %add_2 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_4, %mul_5), kwargs = {})\n    %unsqueeze_2 : [num_users=1] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%add_2, 2), kwargs = {})\n    %expand : [num_users=1] = call_function[target=torch.ops.aten.expand.default](args = (%unsqueeze_2, [2, 2, 6, 33, 128]), kwargs = {})\n    %reshape : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%expand, [2, 12, 33, 128]), kwargs = {})\n    %unsqueeze_3 : [num_users=1] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%transpose_2, 2), kwargs = {})\n    %expand_1 : [num_users=1] = call_function[target=torch.ops.aten.expand.default](args = (%unsqueeze_3, [2, 2, 6, 33, 128]), kwargs = {})\n    %reshape_1 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%expand_1, [2, 12, 33, 128]), kwargs = {})\n    %transpose_3 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%reshape, 2, 3), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%add_1, %transpose_3), kwargs = {})\n    %mul_6 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%matmul, 0.08838834764831845), kwargs = {})\n    %alias : [num_users=1] = call_function[target=torch.ops.aten.alias.default](args = (%mask,), kwargs = {})\n    %add_3 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_6, %alias), kwargs = {})\n    %softmax : [num_users=2] = call_function[target=torch.ops.aten.softmax.int](args = (%add_3, -1, torch.float32), kwargs = {})\n    %_assert_tensor_metadata_default_2 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%softmax,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_2 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%softmax, torch.bfloat16), kwargs = {})\n    %dropout : [num_users=2] = call_function[target=torch.ops.aten.dropout.default](args = (%to_2, 0.0, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %reshape_1), kwargs = {})\n    %transpose_4 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%matmul_1, 1, 2), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%transpose_4,), kwargs = {})\n    %reshape_2 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%contiguous, [2, 33, -1]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%reshape_2, %p_layer_self_attn_o_proj_weight), kwargs = {})\n    %add_4 : [num_users=3] = call_function[target=torch.ops.aten.add.Tensor](args = (%x, %linear_3), kwargs = {})\n    %_assert_tensor_metadata_default_3 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%add_4,), kwargs = {dtype: torch.bfloat16, device: cuda:0, layout: torch.strided})\n    %to_3 : [num_users=2] = call_function[target=torch.ops.aten.to.dtype](args = (%add_4, torch.float32), kwargs = {})\n    %pow_2 : [num_users=1] = call_function[target=torch.ops.aten.pow.Tensor_Scalar](args = (%to_3, 2), kwargs = {})\n    %mean_1 : [num_users=1] = call_function[target=torch.ops.aten.mean.dim](args = (%pow_2, [-1], True), kwargs = {})\n    %add_5 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mean_1, 1e-06), kwargs = {})\n    %rsqrt_1 : [num_users=1] = call_function[target=torch.ops.aten.rsqrt.default](args = (%add_5,), kwargs = {})\n    %mul_7 : [num_users=2] = call_function[target=torch.ops.aten.mul.Tensor](args = (%to_3, %rsqrt_1), kwargs = {})\n    %_assert_tensor_metadata_default_4 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%mul_7,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_4 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%mul_7, torch.bfloat16), kwargs = {})\n    %mul_8 : [num_users=2] = call_function[target=torch.ops.aten.mul.Tensor](args = (%p_layer_post_attention_layernorm_weight, %to_4), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%mul_8, %p_layer_mlp_gate_proj_weight), kwargs = {})\n    %silu : [num_users=1] = call_function[target=torch.ops.aten.silu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%mul_8, %p_layer_mlp_up_proj_weight), kwargs = {})\n    %mul_9 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%silu, %linear_5), kwargs = {})\n    %linear_6 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%mul_9, %p_layer_mlp_down_proj_weight), kwargs = {})\n    %add_6 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%add_4, %linear_6), kwargs = {})\n    return (add_6, dropout)",
+   "mixed_fx": "graph():\n    %layer_self_attn_q_proj_weight : [num_users=1] = get_attr[target=layer.self_attn.q_proj.weight]\n    %layer_self_attn_q_proj_bias : [num_users=1] = get_attr[target=layer.self_attn.q_proj.bias]\n    %layer_self_attn_k_proj_weight : [num_users=1] = get_attr[target=layer.self_attn.k_proj.weight]\n    %layer_self_attn_k_proj_bias : [num_users=1] = get_attr[target=layer.self_attn.k_proj.bias]\n    %layer_self_attn_v_proj_weight : [num_users=1] = get_attr[target=layer.self_attn.v_proj.weight]\n    %layer_self_attn_v_proj_bias : [num_users=1] = get_attr[target=layer.self_attn.v_proj.bias]\n    %layer_self_attn_o_proj_weight : [num_users=1] = get_attr[target=layer.self_attn.o_proj.weight]\n    %layer_mlp_gate_proj_weight : [num_users=1] = get_attr[target=layer.mlp.gate_proj.weight]\n    %layer_mlp_up_proj_weight : [num_users=1] = get_attr[target=layer.mlp.up_proj.weight]\n    %layer_mlp_down_proj_weight : [num_users=1] = get_attr[target=layer.mlp.down_proj.weight]\n    %layer_input_layernorm_weight : [num_users=1] = get_attr[target=layer.input_layernorm.weight]\n    %layer_post_attention_layernorm_weight : [num_users=1] = get_attr[target=layer.post_attention_layernorm.weight]\n    %x : [num_users=4] = placeholder[target=x]\n    %cos : [num_users=2] = placeholder[target=cos]\n    %sin : [num_users=2] = placeholder[target=sin]\n    %mask : [num_users=2] = placeholder[target=mask]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%x, %cos, %sin, %mask), kwargs = {})\n    %_assert_tensor_metadata_default : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%x,), kwargs = {dtype: torch.bfloat16, device: cuda:0, layout: torch.strided})\n    %_sparkfuse_region_1 : [num_users=1] = call_module[target=_sparkfuse_region_1](args = (%layer_input_layernorm_weight, %x), kwargs = {})\n    %getitem_2 : [num_users=3] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1, 0), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem_2, %layer_self_attn_q_proj_weight, %layer_self_attn_q_proj_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [2, 33, -1, 128]), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem_2, %layer_self_attn_k_proj_weight, %layer_self_attn_k_proj_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [2, 33, -1, 128]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem_2, %layer_self_attn_v_proj_weight, %layer_self_attn_v_proj_bias), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [2, 33, -1, 128]), kwargs = {})\n    %transpose_2 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%view_2, 1, 2), kwargs = {})\n    %unsqueeze : [num_users=1] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%cos, 1), kwargs = {})\n    %unsqueeze_1 : [num_users=1] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%sin, 1), kwargs = {})\n    %_sparkfuse_rotary_pair_0 : [num_users=2] = call_module[target=_sparkfuse_rotary_pair_0](args = (%view, %view_1, %unsqueeze, %unsqueeze_1), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_rotary_pair_0, 0), kwargs = {})\n    %transpose_int : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%getitem, 1, 2), kwargs = {})\n    %getitem_1 : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_rotary_pair_0, 1), kwargs = {})\n    %transpose_int_1 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%getitem_1, 1, 2), kwargs = {})\n    %unsqueeze_2 : [num_users=1] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%transpose_int_1, 2), kwargs = {})\n    %expand : [num_users=1] = call_function[target=torch.ops.aten.expand.default](args = (%unsqueeze_2, [2, 2, 6, 33, 128]), kwargs = {})\n    %reshape : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%expand, [2, 12, 33, 128]), kwargs = {})\n    %unsqueeze_3 : [num_users=1] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%transpose_2, 2), kwargs = {})\n    %expand_1 : [num_users=1] = call_function[target=torch.ops.aten.expand.default](args = (%unsqueeze_3, [2, 2, 6, 33, 128]), kwargs = {})\n    %reshape_1 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%expand_1, [2, 12, 33, 128]), kwargs = {})\n    %transpose_3 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%reshape, 2, 3), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%transpose_int, %transpose_3), kwargs = {})\n    %alias : [num_users=1] = call_function[target=torch.ops.aten.alias.default](args = (%mask,), kwargs = {})\n    %_sparkfuse_region_2 : [num_users=1] = call_module[target=_sparkfuse_region_2](args = (%matmul, %alias), kwargs = {})\n    %getitem_3 : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_2, 0), kwargs = {})\n    %dropout : [num_users=2] = call_function[target=torch.ops.aten.dropout.default](args = (%getitem_3, 0.0, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %reshape_1), kwargs = {})\n    %transpose_4 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%matmul_1, 1, 2), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%transpose_4,), kwargs = {})\n    %reshape_2 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%contiguous, [2, 33, -1]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%reshape_2, %layer_self_attn_o_proj_weight), kwargs = {})\n    %_sparkfuse_region_3_0 : [num_users=2] = call_module[target=_sparkfuse_region_3_0](args = (%layer_post_attention_layernorm_weight, %x, %linear_3), kwargs = {})\n    %getitem_4 : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_3_0, 0), kwargs = {})\n    %getitem_5 : [num_users=2] = call_function[target=operator.getitem](args = (%_sparkfuse_region_3_0, 1), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem_5, %layer_mlp_gate_proj_weight), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem_5, %layer_mlp_up_proj_weight), kwargs = {})\n    %_sparkfuse_region_4 : [num_users=1] = call_module[target=_sparkfuse_region_4](args = (%linear_4, %linear_5), kwargs = {})\n    %getitem_6 : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_4, 0), kwargs = {})\n    %linear_6 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem_6, %layer_mlp_down_proj_weight), kwargs = {})\n    %add_6 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%getitem_4, %linear_6), kwargs = {})\n    return (add_6, dropout)",
+   "unchanged_records_sha256": {
+    "previous": "390cdca3e047ed2cafd15be01e921831eb7b9b337ffca09a7216cfd3e4492094",
+    "packed": "390cdca3e047ed2cafd15be01e921831eb7b9b337ffca09a7216cfd3e4492094"
+   },
+   "selected": {
+    "previous": "mean_cohort-t256-v4-c1",
+    "packed": "mean_packed_tile-t128-v2-c1"
+   },
+   "kernels": {
+    "previous": {
+     "schedule": {
+      "threads": 256,
+      "layout": "mean_cohort",
+      "cache": true,
+      "vec": 4
+     },
+     "cuda_sha256": "e324483dda942583b2981143d6c9c088c4c418bb0f5261d201fc4abe01b90bfb",
+     "binary_sha256": "64e2dc0fbd1975b0b9a16337e71e99c22e36b45acf1f641f2fc12e5c24d18e59"
+    },
+    "packed": {
+     "schedule": {
+      "threads": 128,
+      "layout": "mean_packed_tile",
+      "cache": true,
+      "vec": 2
+     },
+     "cuda_sha256": "f8ddc2ecdd26588a8b9d33878640d643fce71745209fc92569c3ca313e947601",
+     "binary_sha256": "2b2d3bb849435fe070bc24b0bb4a162b38078d8882c69baf08c08b1cc2cbf5fa"
+    }
+   },
+   "calibration": null,
+   "trials": [
+    {
+     "seed": 618880,
+     "model_input_sha256": [
+      "9ad3bd8c572094806e47f3b2a5722eee4f9534276497e7230a7aaa793912adec",
+      "ba48d937bcd1560038eb6617e3be53b4644db26bc3fee497c630451560f250c8",
+      "262cc0d6fdfa12e944744924b81d149c54bee107dbdc77da6c64d0dfba55f0bd",
+      "a4dadb7b712ff44f125dd98f566d6e01473f83a904c4820ff703ff98b16b953b"
+     ],
+     "live_input_sha256": [
+      "3b09528aa27deaa535c7d41720a05eac4df31f6af3436a9c96395905de47a4de",
+      "9ad3bd8c572094806e47f3b2a5722eee4f9534276497e7230a7aaa793912adec",
+      "f1f151306d46e5db3210651bea82b05e0ad23b29ff3dc20e0de699a50d9a8f24"
+     ],
+     "live_output_sha256": [
+      "a0df3c4ecd7237cd5ae0f0f53203197b8a19dda02bf8608b006e2cbcbbe50072",
+      "2436390c3783133ce5ca3d688239d257562efaf05f146bfa9a1b469a97a03377"
+     ],
+     "model_output_sha256": [
+      "912adb15a5b8768b3ae26765320bd02098863ddb74c49f0ab439fafe70d41c7c",
+      "06cdda2fa7ff4177bdef3ad6c71663a30ce7867cdb6bd8eac44d26e559955d29"
+     ],
+     "isolated": {
+      "eager": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "default": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "previous": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "packed": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      }
+     },
+     "whole": {
+      "eager": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.0029296875,
+       "passed": true
+      },
+      "aten": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.0029296875,
+       "passed": true
+      },
+      "default": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.0029296875,
+       "passed": true
+      },
+      "previous": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.0029296875,
+       "passed": true
+      },
+      "packed": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.0029296875,
+       "passed": true
+      }
+     },
+     "wires": {
+      "default": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "previous": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "packed": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      }
+     }
+    },
+    {
+     "seed": 627970,
+     "model_input_sha256": [
+      "b75e359bad0254b883ed8d6912718159c7973693de88b511f9ed08cde44f42e8",
+      "ba48d937bcd1560038eb6617e3be53b4644db26bc3fee497c630451560f250c8",
+      "262cc0d6fdfa12e944744924b81d149c54bee107dbdc77da6c64d0dfba55f0bd",
+      "a4dadb7b712ff44f125dd98f566d6e01473f83a904c4820ff703ff98b16b953b"
+     ],
+     "live_input_sha256": [
+      "3b09528aa27deaa535c7d41720a05eac4df31f6af3436a9c96395905de47a4de",
+      "b75e359bad0254b883ed8d6912718159c7973693de88b511f9ed08cde44f42e8",
+      "900c2f8646b2a00e6e4be79cb00e59a1b26b7fda13adf5d70bff1152197e0527"
+     ],
+     "live_output_sha256": [
+      "515e202ed1dc3cc2601952dd58fcd69b40b5a0be21dfacb539c43eb7a2137745",
+      "0eb9ae9bcb8a403ca3c8fa220683c22d9351344fcaac53e224aa2e5c3afad8ef"
+     ],
+     "model_output_sha256": [
+      "0589994fda2945f49c4b146b1fed13cc5254c940d0cb60c9fc5448a2c36fd616",
+      "d26bcaaeb1562faf867bf82d9639cf98c6fb23f91714f04e2f8c48ab816da4d6"
+     ],
+     "isolated": {
+      "eager": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "default": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "previous": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "packed": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      }
+     },
+     "whole": {
+      "eager": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true
+      },
+      "aten": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true
+      },
+      "default": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true
+      },
+      "previous": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true
+      },
+      "packed": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true
+      }
+     },
+     "wires": {
+      "default": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "previous": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "packed": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      }
+     }
+    },
+    {
+     "seed": 640976,
+     "model_input_sha256": [
+      "4dd95ef0fe0e30ab074b18d5a6991eaf10c605b2b33b61ba8d18d12e3d9b640b",
+      "ba48d937bcd1560038eb6617e3be53b4644db26bc3fee497c630451560f250c8",
+      "262cc0d6fdfa12e944744924b81d149c54bee107dbdc77da6c64d0dfba55f0bd",
+      "a4dadb7b712ff44f125dd98f566d6e01473f83a904c4820ff703ff98b16b953b"
+     ],
+     "live_input_sha256": [
+      "3b09528aa27deaa535c7d41720a05eac4df31f6af3436a9c96395905de47a4de",
+      "4dd95ef0fe0e30ab074b18d5a6991eaf10c605b2b33b61ba8d18d12e3d9b640b",
+      "aa5ca8d75cb3da3c0b00954028d7bb409c14c7ada8df28c1e49df726413a01a1"
+     ],
+     "live_output_sha256": [
+      "a8566d51e6d57a09507ba50d8c86d6c30944d1dd4c0486c2af0244921b38330b",
+      "de66fe7be970414a1745be091e31852a76a8c91d7e95480b269aae8eb86d7181"
+     ],
+     "model_output_sha256": [
+      "f326597409304c80c28594b90da9745c2cf0686188b5b617a79d54ffb043cb00",
+      "d803929311b1539f372eb4e642c104154859b4127e79601210f2348fa6b1a4b1"
+     ],
+     "isolated": {
+      "eager": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "default": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "previous": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "packed": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      }
+     },
+     "whole": {
+      "eager": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true
+      },
+      "aten": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true
+      },
+      "default": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true
+      },
+      "previous": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true
+      },
+      "packed": {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true
+      }
+     },
+     "wires": {
+      "default": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "previous": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      },
+      "packed": {
+       "residual": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       },
+       "normalized": {
+        "shape": [
+         2,
+         33,
+         1536
+        ],
+        "unequal_bits": 0,
+        "finite": true,
+        "max_abs": 0.0,
+        "tolerance_pass": true
+       }
+      }
+     }
+    }
+   ],
+   "allowed": {
+    "isolated": [
+     "eager",
+     "default",
+     "previous",
+     "packed"
+    ],
+    "whole": [
+     "eager",
+     "aten",
+     "default",
+     "previous",
+     "packed"
+    ]
+   },
+   "isolated": null,
+   "whole": null
+  }
+ ]
+}

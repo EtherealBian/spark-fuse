@@ -119,7 +119,7 @@ def test_compile_fails_closed(bad):
     elif bad == "shape":
         au = make(34)
     elif bad == "mask_dtype":
-        ex, au = [(*a, a[0].new_zeros(1, 1, 1, 33)) for a in (ex, au)]
+        ex, au = [(*a, torch.zeros(1, 1, 1, 33, device="cuda", dtype=torch.bool)) for a in (ex, au)]
     elif bad == "mask_heads":
         ex, au = [(*a, torch.zeros(2, 4, 1, 33, device="cuda")) for a in (ex, au)]
     elif bad == "qwidth":

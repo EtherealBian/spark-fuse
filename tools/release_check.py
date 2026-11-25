@@ -186,6 +186,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "qwen_sdpa_sites",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_sdpa_sites.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-qwen-sdpa-sites.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "stacked_bert_packed_groups",
                 [
                     opt,

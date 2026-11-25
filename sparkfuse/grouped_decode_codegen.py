@@ -1,11 +1,11 @@
 """Alternate partial CTA: adjacent query heads share each logical K/V load."""
 
 
-def grouped_partial(defines, b, r, scale, mask_batch, mask):
+def grouped_partial(defines, b, r, scale, mask_batch, mask, bias_type="float"):
     return (
         defines
         + f"""constexpr int R={r};
-__global__ void decode_group(const T* q,const T* k,const T* v,const float* bias,void* dst){{
+__global__ void decode_group(const T* q,const T* k,const T* v,const {bias_type}* bias,void* dst){{
  const int i=threadIdx.x,l=i&31,w=i>>5,h=blockIdx.y*R,b=blockIdx.z,chunk=blockIdx.x;
  const int begin=chunk*Tile,count=min(Tile,S-begin),kv=((b*G+h/(H/G))*S)*D,qi=(b*H+h)*D;
  __shared__ float scores[R][Tile],rowmax[R],mass[R];float qreg[R][D/32];
@@ -42,6 +42,6 @@ __global__ void decode_group(const T* q,const T* k,const T* v,const float* bias,
  else{{if(i<D)((float*)dst)[base+i]=acc[u];if(!i){{((float*)dst)[base+D]=rowmax[u];((float*)dst)[base+D+1]=mass[u];}}}}
  }}
 }}
-extern "C" int launch(void** p,int,void* stream){{decode_group<<<dim3(C,H/R,{b}),NT,0,(cudaStream_t)stream>>>((T*)p[0],(T*)p[1],(T*)p[2],{("(float*)p[3]" if mask_batch else "nullptr")},p[{4 if mask_batch else 3}]);return int(cudaGetLastError());}}
+extern "C" int launch(void** p,int,void* stream){{decode_group<<<dim3(C,H/R,{b}),NT,0,(cudaStream_t)stream>>>((T*)p[0],(T*)p[1],(T*)p[2],{(f"({bias_type}*)p[3]" if mask_batch else "nullptr")},p[{4 if mask_batch else 3}]);return int(cudaGetLastError());}}
 """
     )
