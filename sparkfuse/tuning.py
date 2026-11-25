@@ -67,6 +67,8 @@ def compile_tuned(ep, path, device="cuda"):
 def candidates(p):
     choices = []
     layouts = ["block", "warp"] if p.red is not None else ["flat", "warp", "block"]
+    if p.red is not None and p.vals[p.red].op == "softmax" and 32 <= p.width <= 1024:
+        layouts.append("warp_xor")
     caches = (
         [True, False]
         if p.red is not None and any(p.vals[i].shape == p.domain for i in p.outputs)
@@ -74,7 +76,7 @@ def candidates(p):
     )
     for layout in layouts:
         for threads in (32, 64, 128, 256, 512):
-            if layout == "warp" and threads == 32:
+            if layout in ("warp", "warp_xor") and threads == 32:
                 continue
             for vec in (1, 2, 4, 8):
                 for cache in caches:
@@ -86,6 +88,10 @@ def candidates(p):
                     if cache and (p.width + 31) // (32 if layout == "warp" else threads) > 160:
                         continue
                     choices.append(s)
+    if p.red is not None and p.vals[p.red].op == "layer_norm" and p.width % 4 == 0:
+        for cache in caches:
+            if not cache or p.width <= 128 * 160:
+                choices.append(Schedule(128, "block_welford", cache, 4))
     return choices
 
 

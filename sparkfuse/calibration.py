@@ -40,7 +40,7 @@ def calibrate_export(
     """Three positional-argument tuples from independent requests; weights may be shared.
 
     Publishes selected schedules transactionally only after comparing the entire mixed graph
-    against the original on `audit`. The memory limit bounds storage retained by the temporary
+    against the original on train, holdout, and audit requests. The memory limit bounds storage retained by the temporary
     input hooks, not allocator peak. No captured tensors are stored on disk.
     """
     if budget < 1 or capture_bytes_limit < 1:
@@ -113,11 +113,20 @@ def calibrate_export(
         applied = {r["module"]: r["schedule"] for r in actual if "module" in r}
         if applied != {n: r["selected"] for n, r in records.items()}:
             raise RuntimeError("repartition did not apply proposed schedules")
-        errors = compare(tuned(*audit), ep.module()(*audit), exact=exact_outputs)
+        eager = ep.module()
+        whole_errors = {}
+        for phase, request in (("train", train), ("holdout", holdout), ("audit", audit)):
+            try:
+                whole_errors[phase] = compare(tuned(*request), eager(*request), exact=exact_outputs)
+            except AssertionError as e:
+                raise AssertionError(
+                    f"whole-graph {phase} rejected; dispatch not published: {e}"
+                ) from e
     _save(target, records.values())
     return tuned, dict(
         records=records,
-        mixed_audit_errors=errors,
+        mixed_audit_errors=whole_errors["audit"],
+        mixed_request_errors=whole_errors,
         captured_distinct_storage_bytes=retained_bytes,
         actual_regions=actual,
     )

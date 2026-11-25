@@ -1,0 +1,624 @@
+{
+  "scope": "Diagnostic only; one BF16 BertLayer. 1=fused default, 0=original ATen region, order follows region_names. No timing or promotion.",
+  "shape": [
+    1,
+    33,
+    768
+  ],
+  "region_names": [
+    "_sparkfuse_region_0",
+    "_sparkfuse_region_1_0",
+    "_sparkfuse_region_1_1"
+  ],
+  "decisions": [
+    {
+      "ops": [
+        "div",
+        "softmax"
+      ],
+      "module": "_sparkfuse_region_0",
+      "live_ins": [
+        "matmul"
+      ],
+      "live_outs": [
+        "softmax"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block",
+        "cache": true,
+        "vec": 1
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add",
+        "layer_norm"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 101376
+      },
+      "module": "_sparkfuse_region_1_0",
+      "live_ins": [
+        "attention_output_layer_norm_weight",
+        "attention_output_layer_norm_bias",
+        "hidden_states",
+        "dropout_1"
+      ],
+      "live_outs": [
+        "layer_norm"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block",
+        "cache": true,
+        "vec": 1
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add_1",
+        "layer_norm_1"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 101376
+      },
+      "module": "_sparkfuse_region_1_1",
+      "live_ins": [
+        "output_layer_norm_weight",
+        "output_layer_norm_bias",
+        "getitem_1",
+        "dropout_2"
+      ],
+      "live_outs": [
+        "layer_norm_1"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block",
+        "cache": true,
+        "vec": 1
+      },
+      "host_backend": "native"
+    }
+  ],
+  "records": {
+    "exported_aten": [
+      {
+        "seed": 794,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 933,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 1665,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 3023,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5853,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 9419,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 4123,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5227,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      }
+    ],
+    "000": [
+      {
+        "seed": 794,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 933,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 1665,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 3023,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5853,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 9419,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 4123,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5227,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      }
+    ],
+    "001": [
+      {
+        "seed": 794,
+        "passed": true,
+        "unequal": 3,
+        "max_abs": 0.00048828125,
+        "mean_abs": 2.167515056328284e-08
+      },
+      {
+        "seed": 933,
+        "passed": true,
+        "unequal": 1,
+        "max_abs": 2.384185791015625e-07,
+        "mean_abs": 9.407298724728452e-12
+      },
+      {
+        "seed": 1665,
+        "passed": true,
+        "unequal": 1,
+        "max_abs": 6.103515625e-05,
+        "mean_abs": 2.4082684735304838e-09
+      },
+      {
+        "seed": 3023,
+        "passed": true,
+        "unequal": 2,
+        "max_abs": 0.00048828125,
+        "mean_abs": 2.167441692790817e-08
+      },
+      {
+        "seed": 5853,
+        "passed": true,
+        "unequal": 4,
+        "max_abs": 0.001953125,
+        "mean_abs": 9.633408382114794e-08
+      },
+      {
+        "seed": 9419,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 4123,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5227,
+        "passed": true,
+        "unequal": 3,
+        "max_abs": 0.0001220703125,
+        "mean_abs": 5.423307580798564e-09
+      }
+    ],
+    "010": [
+      {
+        "seed": 794,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 933,
+        "passed": false,
+        "unequal": 24,
+        "max_abs": 0.0078125,
+        "mean_abs": 1.2986587307750597e-06
+      },
+      {
+        "seed": 1665,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 3023,
+        "passed": false,
+        "unequal": 69,
+        "max_abs": 0.0078125,
+        "mean_abs": 4.973074283043388e-06
+      },
+      {
+        "seed": 5853,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 9419,
+        "passed": false,
+        "unequal": 8,
+        "max_abs": 0.00390625,
+        "mean_abs": 4.816536716134578e-07
+      },
+      {
+        "seed": 4123,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5227,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      }
+    ],
+    "011": [
+      {
+        "seed": 794,
+        "passed": true,
+        "unequal": 3,
+        "max_abs": 0.00048828125,
+        "mean_abs": 2.167515056328284e-08
+      },
+      {
+        "seed": 933,
+        "passed": false,
+        "unequal": 25,
+        "max_abs": 0.0078125,
+        "mean_abs": 1.2986681667825906e-06
+      },
+      {
+        "seed": 1665,
+        "passed": true,
+        "unequal": 1,
+        "max_abs": 6.103515625e-05,
+        "mean_abs": 2.4082684735304838e-09
+      },
+      {
+        "seed": 3023,
+        "passed": false,
+        "unequal": 71,
+        "max_abs": 0.0078125,
+        "mean_abs": 4.99474890602869e-06
+      },
+      {
+        "seed": 5853,
+        "passed": true,
+        "unequal": 4,
+        "max_abs": 0.001953125,
+        "mean_abs": 9.633408382114794e-08
+      },
+      {
+        "seed": 9419,
+        "passed": false,
+        "unequal": 8,
+        "max_abs": 0.00390625,
+        "mean_abs": 4.816536716134578e-07
+      },
+      {
+        "seed": 4123,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5227,
+        "passed": true,
+        "unequal": 3,
+        "max_abs": 0.0001220703125,
+        "mean_abs": 5.423307580798564e-09
+      }
+    ],
+    "100": [
+      {
+        "seed": 794,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 933,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 1665,
+        "passed": false,
+        "unequal": 156,
+        "max_abs": 0.015625,
+        "mean_abs": 1.5941534002195112e-05
+      },
+      {
+        "seed": 3023,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5853,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 9419,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 4123,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5227,
+        "passed": false,
+        "unequal": 120,
+        "max_abs": 0.015625,
+        "mean_abs": 1.0103137356054503e-05
+      }
+    ],
+    "101": [
+      {
+        "seed": 794,
+        "passed": true,
+        "unequal": 3,
+        "max_abs": 0.00048828125,
+        "mean_abs": 2.167515056328284e-08
+      },
+      {
+        "seed": 933,
+        "passed": true,
+        "unequal": 1,
+        "max_abs": 2.384185791015625e-07,
+        "mean_abs": 9.407298724728452e-12
+      },
+      {
+        "seed": 1665,
+        "passed": false,
+        "unequal": 157,
+        "max_abs": 0.015625,
+        "mean_abs": 1.5943940525176004e-05
+      },
+      {
+        "seed": 3023,
+        "passed": true,
+        "unequal": 2,
+        "max_abs": 0.00048828125,
+        "mean_abs": 2.167441692790817e-08
+      },
+      {
+        "seed": 5853,
+        "passed": true,
+        "unequal": 4,
+        "max_abs": 0.001953125,
+        "mean_abs": 9.633408382114794e-08
+      },
+      {
+        "seed": 9419,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 4123,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5227,
+        "passed": false,
+        "unequal": 123,
+        "max_abs": 0.015625,
+        "mean_abs": 1.0108560672961175e-05
+      }
+    ],
+    "110": [
+      {
+        "seed": 794,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 933,
+        "passed": false,
+        "unequal": 24,
+        "max_abs": 0.0078125,
+        "mean_abs": 1.2986587307750597e-06
+      },
+      {
+        "seed": 1665,
+        "passed": false,
+        "unequal": 156,
+        "max_abs": 0.015625,
+        "mean_abs": 1.5941534002195112e-05
+      },
+      {
+        "seed": 3023,
+        "passed": false,
+        "unequal": 69,
+        "max_abs": 0.0078125,
+        "mean_abs": 4.973074283043388e-06
+      },
+      {
+        "seed": 5853,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 9419,
+        "passed": false,
+        "unequal": 8,
+        "max_abs": 0.00390625,
+        "mean_abs": 4.816536716134578e-07
+      },
+      {
+        "seed": 4123,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5227,
+        "passed": false,
+        "unequal": 120,
+        "max_abs": 0.015625,
+        "mean_abs": 1.0103137356054503e-05
+      }
+    ],
+    "111": [
+      {
+        "seed": 794,
+        "passed": true,
+        "unequal": 3,
+        "max_abs": 0.00048828125,
+        "mean_abs": 2.167515056328284e-08
+      },
+      {
+        "seed": 933,
+        "passed": false,
+        "unequal": 25,
+        "max_abs": 0.0078125,
+        "mean_abs": 1.2986681667825906e-06
+      },
+      {
+        "seed": 1665,
+        "passed": false,
+        "unequal": 157,
+        "max_abs": 0.015625,
+        "mean_abs": 1.5943940525176004e-05
+      },
+      {
+        "seed": 3023,
+        "passed": false,
+        "unequal": 71,
+        "max_abs": 0.0078125,
+        "mean_abs": 4.99474890602869e-06
+      },
+      {
+        "seed": 5853,
+        "passed": true,
+        "unequal": 4,
+        "max_abs": 0.001953125,
+        "mean_abs": 9.633408382114794e-08
+      },
+      {
+        "seed": 9419,
+        "passed": false,
+        "unequal": 8,
+        "max_abs": 0.00390625,
+        "mean_abs": 4.816536716134578e-07
+      },
+      {
+        "seed": 4123,
+        "passed": true,
+        "unequal": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      {
+        "seed": 5227,
+        "passed": false,
+        "unequal": 123,
+        "max_abs": 0.015625,
+        "mean_abs": 1.0108560672961175e-05
+      }
+    ]
+  },
+  "provenance": {
+    "git_head_at_capture": "9c3067aa8dc0791461e8f55ac43fea85f56dd737",
+    "source_tree_sha256": "206be6d09732bcf560a8f50ab039ce3e108b37cd680529eec2a3c4eb6512551f",
+    "archive": "sources/206be6d09732bcf560a8f50ab039ce3e108b37cd680529eec2a3c4eb6512551f.tar.gz"
+  }
+}

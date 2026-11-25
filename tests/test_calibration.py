@@ -58,3 +58,28 @@ def test_composed_failure_does_not_publish(monkeypatch, tmp_path):
     with pytest.raises(AssertionError, match="injected final failure"):
         cal.calibrate_export(ep, *args[:3], db, budget=1, exact_outputs=(1,))
     assert not db.exists() and not list(tmp_path.glob(".sparkfuse-calibration-*"))
+
+
+@pytest.mark.parametrize("failing_stage", ["train", "holdout", "audit"])
+def test_all_composed_requests_guard_existing_database(monkeypatch, tmp_path, failing_stage):
+    _, ep, args = fixture()
+    db = tmp_path / "dispatch.sqlite"
+    with sqlite3.connect(db) as conn:
+        conn.execute("CREATE TABLE sentinel(v)")
+        conn.execute("INSERT INTO sentinel VALUES(42)")
+    before = db.read_bytes()
+    real = cal.compare
+    calls = []
+
+    def check(out, ref, exact=()):
+        if exact == (1,):
+            phase = ("train", "holdout", "audit")[len(calls)]
+            calls.append(phase)
+            if phase == failing_stage:
+                raise AssertionError("injected at this input only")
+        return real(out, ref, exact=exact)
+
+    monkeypatch.setattr(cal, "compare", check)
+    with pytest.raises(AssertionError, match="whole-graph " + failing_stage):
+        cal.calibrate_export(ep, *args[:3], db, budget=1, exact_outputs=(1,))
+    assert calls[-1] == failing_stage and db.read_bytes() == before

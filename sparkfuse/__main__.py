@@ -57,7 +57,9 @@ def main(argv=None):
         "--out", type=Path, help="emit into a NEW directory; never overwrite an existing directory"
     )
     p.add_argument("--threads", type=int, default=128)
-    p.add_argument("--layout", choices=("block", "warp", "flat"), default="block")
+    p.add_argument(
+        "--layout", choices=("block", "warp", "flat", "warp_xor", "block_welford"), default="block"
+    )
     p.add_argument("--vec", type=int, default=1)
     p.add_argument("--cache", action="store_true")
     a = p.parse_args(argv)

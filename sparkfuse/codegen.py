@@ -32,9 +32,28 @@ class Schedule:
         if self.threads not in (32, 64, 128, 256, 512, 1024) or self.layout not in (
             "block",
             "warp",
+            "warp_xor",
+            "block_welford",
             "flat",
         ):
             raise Unsupported("unknown schedule")
+        if self.layout == "block_welford" and (
+            p.red is None
+            or p.vals[p.red].op != "layer_norm"
+            or self.threads != 128
+            or self.vec != 4
+            or p.width % 4 != 0
+        ):
+            raise Unsupported(
+                "block_welford requires LayerNorm, 128 threads, four-element vectors and a multiple-of-four width"
+            )
+        if self.layout == "warp_xor" and (
+            p.red is None
+            or p.vals[p.red].op != "softmax"
+            or self.vec != 1
+            or not 32 <= p.width <= 1024
+        ):
+            raise Unsupported("warp_xor requires scalar last-axis softmax, width 32..1024")
         if self.layout == "flat" and (
             p.red is not None or any(p.vals[i].shape != p.domain for i in p.outputs)
         ):

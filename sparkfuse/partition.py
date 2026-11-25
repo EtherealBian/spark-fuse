@@ -1,6 +1,8 @@
 """Partition a functional exported graph; unsupported ops remain in PyTorch."""
 
 from dataclasses import dataclass
+from collections import deque
+from math import prod
 import operator
 from types import SimpleNamespace
 import torch
@@ -8,6 +10,7 @@ from torch import fx, nn
 from torch.utils import _pytree as tree
 from .ir import Unsupported, lower
 from .runtime import compile_export
+from .codegen import Schedule
 from .tuning import compile_tuned
 
 CALLS = frozenset(
@@ -100,6 +103,68 @@ def _region(members, pos):
     return ep, incoming, outgoing, anchor
 
 
+_COLLECTIVES = frozenset(
+    (
+        "aten.mean.dim",
+        "aten.rms_norm.default",
+        "aten.layer_norm.default",
+        "aten.softmax.int",
+        "aten._softmax.default",
+    )
+)
+
+
+def _costed_slices(group, pos, min_ops):
+    """Bounded contiguous topological intervals. This is a structural objective, not a latency model."""
+    n = len(group)
+    if n > 48 or sum(str(v.target) in _COLLECTIVES for v in group) < 2:
+        return None
+
+    def connected(nodes):
+        active = set(nodes)
+        todo = [nodes[0]]
+        seen = {nodes[0]}
+        while todo:
+            v = todo.pop()
+            for u in (*v.all_input_nodes, *v.users):
+                if u in active and u not in seen:
+                    seen.add(u)
+                    todo.append(u)
+        return len(seen) == len(nodes)
+
+    # Lexicographic objective: cover most operators, fewer GPU launches, then fewer
+    # logical boundary bytes. An unsupported singleton can stay in PyTorch.
+    best = [None] * (n + 1)
+    best[n] = ((0, 0, 0), [])
+    for i in reversed(range(n)):
+        score, tail = best[i + 1]
+        best[i] = (score, [(i, i + 1, False)] + tail)
+        reds = count = 0
+        for j in range(i + 1, n + 1):
+            op = str(group[j - 1].target)
+            reds += op in _COLLECTIVES
+            count += op != "aten._assert_tensor_metadata.default"
+            if reds > 1:
+                break
+            if count < min_ops or not connected(group[i:j]):
+                continue
+            try:
+                rep, *_ = _region(group[i:j], pos)
+                plan = lower(rep)
+            except Unsupported:
+                continue
+            written = sum(
+                prod(plan.vals[o].shape) * (4 if plan.vals[o].dt == "f32" else 2)
+                for o in plan.outputs
+            )
+            suffix, blocks = best[j]
+            key = (count + suffix[0], suffix[1] - 1, suffix[2] - written)
+            if key > best[i][0]:
+                best[i] = (key, [(i, j, True)] + blocks)
+    score, blocks = best[0]
+    return (blocks, score) if score[0] else None
+
+
 class _RegionModule(nn.Module):
     def __init__(self, k, host_backend):
         super().__init__()
@@ -115,7 +180,26 @@ class _RegionModule(nn.Module):
         return self.dispatch(*args)
 
 
-def partition_export(ep, device="cuda", database=None, min_ops=2, host_backend="python"):
+def ordered_collectives(plan):
+    """Optional fixed reduction orders for supported dense rows; other regions use the existing path."""
+    if plan.red is not None:
+        kind = plan.vals[plan.red].op
+        if kind == "layer_norm" and plan.width % 4 == 0:
+            return Schedule(128, "block_welford", plan.width <= 4096, 4)
+        if kind == "softmax" and 32 <= plan.width <= 1024:
+            return Schedule(128, "warp_xor", True)
+    return None
+
+
+def partition_export(
+    ep,
+    device="cuda",
+    database=None,
+    min_ops=2,
+    host_backend="python",
+    split_collectives=True,
+    schedule_policy=None,
+):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
     if host_backend not in ("python", "native"):
         raise ValueError("unknown host backend")
@@ -144,9 +228,16 @@ def partition_export(ep, device="cuda", database=None, min_ops=2, host_backend="
                     pot.remove(u)
         components.append(sorted(comp, key=pos.get))
     records = []
-    for ci, group in enumerate(components):
+    pending = deque((str(ci), g, None, False) for ci, g in enumerate(components))
+    while pending:
+        ci, group, parent, skip = pending.popleft()
         rec = {"ops": [n.name for n in group]}
+        if parent is not None:
+            rec["split"] = parent
         records.append(rec)
+        if skip:
+            rec["fallback"] = "not included in a legal multi-collective split"
+            continue
         if sum(str(n.target) != "aten._assert_tensor_metadata.default" for n in group) < min_ops:
             rec["fallback"] = "below minimum region size"
             continue
@@ -154,9 +245,41 @@ def partition_export(ep, device="cuda", database=None, min_ops=2, host_backend="
             # Re-evaluate topological positions because earlier contractions can replace live-ins.
             positions = {n: i for i, n in enumerate(gm.graph.nodes)}
             rep, inputs, outputs, anchor = _region(group, positions)
-            lower(rep)
-            k = compile_tuned(rep, database, device) if database else compile_export(rep, device)
+            plan = lower(rep)
+            override = schedule_policy(plan) if schedule_policy is not None else None
+            if override is not None:
+                k = compile_export(rep, device, schedule=override)
+            else:
+                k = (
+                    compile_tuned(rep, database, device)
+                    if database
+                    else compile_export(rep, device)
+                )
         except Unsupported as e:
+            selection = (
+                _costed_slices(group, positions, min_ops)
+                if split_collectives and parent is None
+                else None
+            )
+            if selection:
+                blocks, score = selection
+                records.pop()
+                info = {
+                    "component": ci,
+                    "original_rejection": str(e),
+                    "covered_ops": score[0],
+                    "planned_regions": -score[1],
+                    "logical_output_bytes": -score[2],
+                }
+                pending.extendleft(
+                    reversed(
+                        [
+                            (f"{ci}_{k}", group[i:j], info, not fused)
+                            for k, (i, j, fused) in enumerate(blocks)
+                        ]
+                    )
+                )
+                continue
             rec["fallback"] = str(e)
             continue
         label = f"_sparkfuse_region_{ci}"

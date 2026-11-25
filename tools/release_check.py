@@ -70,6 +70,18 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "bert_encoder_layer_fixed_order",
+                [
+                    opt,
+                    str(ROOT / "tools/bert_layer.py"),
+                    "--verify-only",
+                    "--output",
+                    str(report.with_name(report.stem + "-bert-layer.json")),
+                ],
+            )
+        )
     for name, cmd in commands:
         left = until - time.time() - 3
         if left < 1:

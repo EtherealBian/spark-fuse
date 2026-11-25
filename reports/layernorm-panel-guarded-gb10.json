@@ -1,0 +1,4499 @@
+{
+  "panel": "layernorm",
+  "expected_cases": 6,
+  "records": [
+    {
+      "job": {
+        "case": "layernorm2",
+        "rows": 1,
+        "width": 768,
+        "dtype": "bfloat16",
+        "budget": 14,
+        "seed": 8100,
+        "profile": false
+      },
+      "provenance": {
+        "git_head_at_capture": "9c3067aa8dc0791461e8f55ac43fea85f56dd737",
+        "source_tree_sha256": "f70dcb1d23d3ef4132a1a82aae22d7052129a43a2000548dc9f87678015ea097",
+        "archive": "sources/f70dcb1d23d3ef4132a1a82aae22d7052129a43a2000548dc9f87678015ea097.tar.gz"
+      },
+      "tuning": {
+        "key": "b60feec486565bf07ebb7e07ab40ebf775114ca9a91bf2d4ff039d3366b44f52",
+        "compiler": "8bdb1aee47d4da273701110a09049ce8f8a6ec20e481e145330c2fdbd12ff9dc",
+        "seed": 8100,
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "selected": {
+          "threads": 512,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "candidate": {
+          "threads": 512,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "admitted": true,
+        "heldout_speedup_vs_default": 1.8149311165701336,
+        "paired_holdout_us": [
+          {
+            "default": 3.4686665361126265,
+            "candidate": 1.9083333512147267
+          },
+          {
+            "candidate": 1.9110000381867092,
+            "default": 3.468333433071772
+          },
+          {
+            "default": 3.468333433071772,
+            "candidate": 1.9110000381867092
+          },
+          {
+            "candidate": 1.9113332964479923,
+            "default": 3.4686665361126265
+          },
+          {
+            "default": 3.468333433071772,
+            "candidate": 1.9110000381867092
+          }
+        ],
+        "heldout_errors": [
+          {
+            "max_abs": 0.0,
+            "mean_abs": 0.0,
+            "unequal": 0,
+            "finite_pairs": 768,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0.012,
+            "atol": 0.0002
+          },
+          {
+            "max_abs": 0.0,
+            "mean_abs": 0.0,
+            "unequal": 0,
+            "finite_pairs": 768,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0,
+            "atol": 0
+          }
+        ],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "9f01ca6be9aa0ebaac5570e84fa3574dde748721802f9fea271842ee743f358b",
+            "device": {
+              "median_us": 1.9020000472664833,
+              "p10_us": 1.8800000349680583,
+              "p90_us": 1.9026667190094788,
+              "samples_us": [
+                1.8800000349680583,
+                1.9046667342384656,
+                1.8986666885515053,
+                1.9020000472664833,
+                1.9026667190094788,
+                1.9020000472664833,
+                1.8973333450655143
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "85f216ab7412be812ea2df352e5506e7c0d1ecea368b3f4a8b1b27aec015ba95",
+            "device": {
+              "median_us": 1.9026667190094788,
+              "p10_us": 1.8800000349680583,
+              "p90_us": 1.90400006249547,
+              "samples_us": [
+                1.8800000349680583,
+                1.9026667190094788,
+                1.90400006249547,
+                1.90400006249547,
+                1.90400006249547,
+                1.9026667190094788,
+                1.8973333450655143
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "5fdd818e4f9e4490f169393db5e719ba97470a40e70602cd3d2a8861f14d6e7f",
+            "device": {
+              "median_us": 1.9533333058158557,
+              "p10_us": 1.9406666979193687,
+              "p90_us": 1.978000005086263,
+              "samples_us": [
+                1.9653333971897762,
+                1.978000005086263,
+                1.9519999623298645,
+                1.9793333485722542,
+                1.9533333058158557,
+                1.9453334001203377,
+                1.9406666979193687
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": false,
+              "vec": 8
+            },
+            "kernel_cache_id": "84014259d01f9c2be8ac29327cdf9da36b3629395e2b63b12d64a4e446e38285",
+            "device": {
+              "median_us": 1.9660000689327717,
+              "p10_us": 1.946666743606329,
+              "p90_us": 1.9793333485722542,
+              "samples_us": [
+                1.9660000689327717,
+                1.9793333485722542,
+                1.9506666188438733,
+                1.946666743606329,
+                1.981333363801241,
+                1.9533333058158557,
+                1.973333302885294
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "ec60460dd5f05352b3615b3ec5378f2f2258e491b0f927fe92d3a996c74167d7",
+            "device": {
+              "median_us": 2.646000124514103,
+              "p10_us": 2.6273333157102265,
+              "p90_us": 2.662666762868563,
+              "samples_us": [
+                2.646000124514103,
+                2.6273333157102265,
+                2.6640001063545546,
+                2.6373332366347313,
+                2.662666762868563,
+                2.636666720112165,
+                2.6573333889245987
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "1e73bdad3ea9a2ba6f96da8eb54f53b820771a25ec230b521ae9e707e0b29a23",
+            "device": {
+              "median_us": 2.7993333836396537,
+              "p10_us": 2.7926666662096977,
+              "p90_us": 2.8006667271256447,
+              "samples_us": [
+                2.8179998820026717,
+                2.79999990016222,
+                2.796666696667671,
+                2.8006667271256447,
+                2.7993333836396537,
+                2.798666556676229,
+                2.7926666662096977
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": true,
+              "vec": 8
+            },
+            "kernel_cache_id": "eaa416b3f560b4c51209c4c6a030feaf4fa446dcf993f7864730da22239a8e1a",
+            "device": {
+              "median_us": 3.397333435714245,
+              "p10_us": 3.3539999276399612,
+              "p90_us": 3.397999952236811,
+              "samples_us": [
+                3.406666529675325,
+                3.3539999276399612,
+                3.397999952236811,
+                3.39666660875082,
+                3.397333435714245,
+                3.397333435714245,
+                3.3920000617702804
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "2b51eaf7e3dcf660703a76a5535fd8f65ae136a7baf49d24a6a54eafb2f99ca2",
+            "device": {
+              "median_us": 3.480666627486547,
+              "p10_us": 3.475333253542582,
+              "p90_us": 3.4813334544499717,
+              "samples_us": [
+                3.4986666093269982,
+                3.480666627486547,
+                3.480666627486547,
+                3.4813334544499717,
+                3.4813334544499717,
+                3.480666627486547,
+                3.475333253542582
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 32,
+              "layout": "block",
+              "cache": false,
+              "vec": 8
+            },
+            "kernel_cache_id": "fd3750e3ad23371e22e830269dead1484045b2f418955e2b79f33f104c4b490a",
+            "device": {
+              "median_us": 3.9079999551177025,
+              "p10_us": 3.902000064651171,
+              "p90_us": 3.9093332986036935,
+              "samples_us": [
+                3.9240000769495964,
+                3.9079999551177025,
+                3.9079999551177025,
+                3.907333438595136,
+                3.9093332986036935,
+                3.9066666116317115,
+                3.902000064651171
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "919d46915dcba9020c995157a7c0a3fd23fc2d30a140bb6532c4b4808b699b58",
+            "device": {
+              "median_us": 4.027999937534332,
+              "p10_us": 4.001333378255367,
+              "p90_us": 4.030000107983748,
+              "samples_us": [
+                4.017333189646403,
+                4.027999937534332,
+                4.029333281020324,
+                4.001333378255367,
+                4.027999937534332,
+                4.0353334819277125,
+                4.030000107983748
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 32,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "068b4bb9b258c8350aad8d4538cb3c0040a945aa265deb5038eae5c27ab64ef9",
+            "device": {
+              "median_us": 4.355999951561292,
+              "p10_us": 4.340000140170257,
+              "p90_us": 4.369333386421204,
+              "samples_us": [
+                4.355999951561292,
+                4.36999990294377,
+                4.340000140170257,
+                4.368000042935212,
+                4.344666687150796,
+                4.369333386421204,
+                4.340000140170257
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "6bec619d7599dff6fb450ac15558f093f5e75d60ac03e5c46027577b31ee96bf",
+            "device": {
+              "median_us": 5.996000021696091,
+              "p10_us": 5.9726666659116745,
+              "p90_us": 5.999999741713206,
+              "samples_us": [
+                5.9726666659116745,
+                5.995333194732666,
+                5.996000021696091,
+                5.996000021696091,
+                5.999999741713206,
+                5.999333535631497,
+                6.0159998635451
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 32,
+              "layout": "block",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "765539ca7a14783a062f271163da8e4f1d18df29ddb7f708de67a3f000d10ff1",
+            "device": {
+              "median_us": 6.724666804075241,
+              "p10_us": 6.719333430131276,
+              "p90_us": 6.730000178019206,
+              "samples_us": [
+                6.734666724999745,
+                6.724666804075241,
+                6.722000117103259,
+                6.730000178019206,
+                6.719333430131276,
+                6.723333150148392,
+                6.725333631038666
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "53ffe12e1271bdebc530c059d1117ae8db056071f5af3450322e490a9f9eb7fa",
+            "device": {
+              "median_us": 9.795999775330225,
+              "p10_us": 9.790666401386261,
+              "p90_us": 9.800000116229057,
+              "samples_us": [
+                9.808666383226713,
+                9.791333228349686,
+                9.800000116229057,
+                9.79666660229365,
+                9.795999775330225,
+                9.793333088358244,
+                9.790666401386261
+              ]
+            }
+          }
+        ],
+        "invalid": [],
+        "case": "layernorm2",
+        "rows": 1,
+        "width": 768,
+        "dtype": "torch.bfloat16"
+      },
+      "comparison": {
+        "case": "layernorm2",
+        "shape": [
+          1,
+          768
+        ],
+        "dtype": "torch.bfloat16",
+        "seed": 10100,
+        "device": "NVIDIA GB10",
+        "torch": "2.13.0+cu130",
+        "cuda": "13.0",
+        "python": "3.12.3",
+        "schedule": {
+          "threads": 512,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "export_ms": 6.64456095546484,
+        "sparkfuse_build_or_load_ms": 0.29869284480810165,
+        "inductor_wrapper_plus_first_call_ms": 1011.1523531377316,
+        "plan": {
+          "domain": [
+            1,
+            768
+          ],
+          "reduction": 5,
+          "input_ids": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "output_ids": [
+            8,
+            4
+          ],
+          "values": [
+            {
+              "op": "input",
+              "shape": [
+                1,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 0
+            },
+            {
+              "op": "input",
+              "shape": [
+                1,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 1
+            },
+            {
+              "op": "input",
+              "shape": [
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 2
+            },
+            {
+              "op": "input",
+              "shape": [
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 3
+            },
+            {
+              "op": "add",
+              "shape": [
+                1,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [
+                0,
+                1
+              ],
+              "imm": null
+            },
+            {
+              "op": "layer_norm",
+              "shape": [
+                1,
+                768
+              ],
+              "dt": "f32",
+              "deps": [
+                4
+              ],
+              "imm": 1e-05
+            },
+            {
+              "op": "mul",
+              "shape": [
+                1,
+                768
+              ],
+              "dt": "f32",
+              "deps": [
+                5,
+                2
+              ],
+              "imm": null
+            },
+            {
+              "op": "add",
+              "shape": [
+                1,
+                768
+              ],
+              "dt": "f32",
+              "deps": [
+                6,
+                3
+              ],
+              "imm": null
+            },
+            {
+              "op": "cast",
+              "shape": [
+                1,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [
+                7
+              ],
+              "imm": null
+            }
+          ],
+          "launches": 1,
+          "global_intermediate_bytes": 0
+        },
+        "torch_export_graph": "graph():\n    %x : [num_users=1] = placeholder[target=x]\n    %skip : [num_users=1] = placeholder[target=skip]\n    %weight : [num_users=1] = placeholder[target=weight]\n    %bias : [num_users=1] = placeholder[target=bias]\n    %add : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%x, %skip), kwargs = {})\n    %layer_norm : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [768], %weight, %bias, 1e-05, False), kwargs = {})\n    return (layer_norm, add)",
+        "backends": {
+          "eager": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 768,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 768,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 3.3839999232441187,
+              "p10_us": 3.378000110387802,
+              "p90_us": 3.4054999705404043,
+              "samples_us": [
+                3.3919999841600657,
+                3.378000110387802,
+                3.3795000053942204,
+                3.378499997779727,
+                3.3795000053942204,
+                3.4054999705404043,
+                3.3839999232441187,
+                3.4054999705404043,
+                3.5880000796169043
+              ]
+            },
+            "host_sync": {
+              "median_us": 15.248,
+              "p10_us": 14.528,
+              "p90_us": 24.88,
+              "samples_us": [
+                21.712,
+                16.016,
+                15.633,
+                14.72,
+                18.144,
+                15.248,
+                16.961,
+                31.808,
+                14.864,
+                14.769,
+                14.928,
+                15.376,
+                17.536,
+                14.8,
+                28.721,
+                24.88,
+                14.784,
+                14.497,
+                14.528,
+                15.12,
+                16.176,
+                14.337,
+                15.216,
+                28.368,
+                23.665,
+                14.416,
+                15.568,
+                14.56,
+                14.8,
+                18.049,
+                14.544
+              ]
+            }
+          },
+          "inductor": {
+            "parity": "fail",
+            "diagnostic": "Tensor-likes are not close!\n\nMismatched elements: 14 / 768 (1.8%)\nGreatest absolute difference: 0.00390625 at index (0, 238) (up to 0.0002 allowed)\nGreatest relative difference: 0.09814453125 at index (0, 187) (up to 0.012 allowed)"
+          },
+          "sparkfuse": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 768,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 768,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 1.8649999983608723,
+              "p10_us": 1.8479999853298068,
+              "p90_us": 1.8700000364333391,
+              "samples_us": [
+                1.8584999488666654,
+                1.867000013589859,
+                1.8500000005587935,
+                1.8700000364333391,
+                1.8479999853298068,
+                1.8665000097826123,
+                1.8754999618977308,
+                1.8479999853298068,
+                1.8649999983608723
+              ]
+            },
+            "host_sync": {
+              "median_us": 88.481,
+              "p10_us": 86.786,
+              "p90_us": 128.546,
+              "samples_us": [
+                128.546,
+                93.778,
+                101.745,
+                89.281,
+                88.13,
+                89.425,
+                88.737,
+                91.538,
+                174.21,
+                90.657,
+                89.89,
+                87.521,
+                93.905,
+                86.498,
+                87.009,
+                86.641,
+                86.53,
+                86.945,
+                87.361,
+                159.442,
+                86.786,
+                87.649,
+                87.057,
+                91.842,
+                86.881,
+                88.017,
+                88.481,
+                90.258,
+                88.177,
+                86.977,
+                160.083
+              ]
+            }
+          }
+        }
+      },
+      "status": "parity-failure",
+      "failed_backends": [
+        "inductor"
+      ],
+      "elapsed_s": 2.086396673694253,
+      "worker_stderr": "parity failed for inductor; retained report: case-0.rejected.json\n"
+    },
+    {
+      "job": {
+        "case": "layernorm2",
+        "rows": 32,
+        "width": 768,
+        "dtype": "bfloat16",
+        "budget": 14,
+        "seed": 8123,
+        "profile": true
+      },
+      "provenance": {
+        "git_head_at_capture": "9c3067aa8dc0791461e8f55ac43fea85f56dd737",
+        "source_tree_sha256": "4cec8e4991d4d8824d6fcffd96e092c62523f94265352c9282b14be953ea5d48",
+        "archive": "sources/4cec8e4991d4d8824d6fcffd96e092c62523f94265352c9282b14be953ea5d48.tar.gz"
+      },
+      "tuning": {
+        "key": "ac018884352ea0c4aa1c001f5956d7866e2c5f5662d13379b501e4d9ee2a0ecc",
+        "compiler": "8bdb1aee47d4da273701110a09049ce8f8a6ec20e481e145330c2fdbd12ff9dc",
+        "seed": 8123,
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "selected": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "candidate": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "admitted": true,
+        "heldout_speedup_vs_default": 1.7766773744113842,
+        "paired_holdout_us": [
+          {
+            "default": 3.468333433071772,
+            "candidate": 1.9523333758115768
+          },
+          {
+            "candidate": 1.9499999471008778,
+            "default": 3.4686665361126265
+          },
+          {
+            "default": 3.4686665361126265,
+            "candidate": 1.9523333758115768
+          },
+          {
+            "candidate": 1.9539999775588512,
+            "default": 3.468333433071772
+          },
+          {
+            "default": 3.467333192626635,
+            "candidate": 1.9486666036148865
+          }
+        ],
+        "heldout_errors": [
+          {
+            "max_abs": 0.000244140625,
+            "mean_abs": 1.0559839817384878e-08,
+            "unequal": 3,
+            "finite_pairs": 24576,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0.012,
+            "atol": 0.0002
+          },
+          {
+            "max_abs": 0.0,
+            "mean_abs": 0.0,
+            "unequal": 0,
+            "finite_pairs": 24576,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0,
+            "atol": 0
+          }
+        ],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "85f216ab7412be812ea2df352e5506e7c0d1ecea368b3f4a8b1b27aec015ba95",
+            "device": {
+              "median_us": 2.0746666317184768,
+              "p10_us": 2.0699999295175076,
+              "p90_us": 2.0919999418159327,
+              "samples_us": [
+                2.0919999418159327,
+                2.0746666317184768,
+                2.0699999295175076,
+                2.07266661648949,
+                2.0746666317184768,
+                2.105333376675844,
+                2.07266661648949
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "5fdd818e4f9e4490f169393db5e719ba97470a40e70602cd3d2a8861f14d6e7f",
+            "device": {
+              "median_us": 2.239333310474952,
+              "p10_us": 2.2179999699195228,
+              "p90_us": 2.2419999974469342,
+              "samples_us": [
+                2.2179999699195228,
+                2.239333310474952,
+                2.24266666918993,
+                2.2419999974469342,
+                2.2419999974469342,
+                2.239333310474952,
+                2.2386666387319565
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": false,
+              "vec": 8
+            },
+            "kernel_cache_id": "af18a5ca24aca97df6c264325112f5760ec7f2cc4c0d8efff5e4f0c9c5750109",
+            "device": {
+              "median_us": 2.24266666918993,
+              "p10_us": 2.2206666568915048,
+              "p90_us": 2.2433333409329257,
+              "samples_us": [
+                2.2206666568915048,
+                2.24266666918993,
+                2.244000012675921,
+                2.2433333409329257,
+                2.2433333409329257,
+                2.239333310474952,
+                2.239333310474952
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": false,
+              "vec": 8
+            },
+            "kernel_cache_id": "84014259d01f9c2be8ac29327cdf9da36b3629395e2b63b12d64a4e446e38285",
+            "device": {
+              "median_us": 2.2433333409329257,
+              "p10_us": 2.2213333286345005,
+              "p90_us": 2.244000012675921,
+              "samples_us": [
+                2.2213333286345005,
+                2.2433333409329257,
+                2.2433333409329257,
+                2.244000012675921,
+                2.2446666844189167,
+                2.2433333409329257,
+                2.2386666387319565
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "cc445e0c440bcf603772e4ebd83bf264696970585e73a8c5d1f0b2a985b33fbe",
+            "device": {
+              "median_us": 2.479999947051207,
+              "p10_us": 2.4606666217247644,
+              "p90_us": 2.4873333362241588,
+              "samples_us": [
+                2.479999947051207,
+                2.486666664481163,
+                2.4666666674117246,
+                2.4873333362241588,
+                2.4639999804397426,
+                2.4906666949391365,
+                2.4606666217247644
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "63c368381dd0a4c7a2d5d8b22d7aacd40f264f0aada2ade13778c48aab5fc2a0",
+            "device": {
+              "median_us": 2.582666619370381,
+              "p10_us": 2.561999950557947,
+              "p90_us": 2.5846666345993676,
+              "samples_us": [
+                2.561999950557947,
+                2.580666604141394,
+                2.5846666345993676,
+                2.5846666345993676,
+                2.582666619370381,
+                2.5866666498283544,
+                2.5773334006468454
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "2eab9246ac901b9b04a7feb8ec7a22683181c0a64ed64433648b2b456f07144e",
+            "device": {
+              "median_us": 2.5846666345993676,
+              "p10_us": 2.560666607071956,
+              "p90_us": 2.5853333063423634,
+              "samples_us": [
+                2.560666607071956,
+                2.5846666345993676,
+                2.5853333063423634,
+                2.5853333063423634,
+                2.5846666345993676,
+                2.5853333063423634,
+                2.579999932398399
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 32,
+              "layout": "block",
+              "cache": true,
+              "vec": 8
+            },
+            "kernel_cache_id": "ee621a1cf2a1bc71a2634a4098432e7c8cdefef339fa71b2c86956e26586ab5c",
+            "device": {
+              "median_us": 3.2673332219322524,
+              "p10_us": 3.2433333496252694,
+              "p90_us": 3.268000048895677,
+              "samples_us": [
+                3.2433333496252694,
+                3.269333392381668,
+                3.2673332219322524,
+                3.2653333619236946,
+                3.268000048895677,
+                3.268000048895677,
+                3.2619998479882875
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "2b51eaf7e3dcf660703a76a5535fd8f65ae136a7baf49d24a6a54eafb2f99ca2",
+            "device": {
+              "median_us": 3.582666628062725,
+              "p10_us": 3.567333333194256,
+              "p90_us": 3.6059999838471413,
+              "samples_us": [
+                3.582666628062725,
+                3.6059999838471413,
+                3.567999849716822,
+                3.567333333194256,
+                3.567999849716822,
+                3.6059999838471413,
+                3.601999953389168
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "6a1af01c06017513d04f590ca2f64db106093b108afb1ec48a02bf5cee3a4dc3",
+            "device": {
+              "median_us": 3.950000119705995,
+              "p10_us": 3.9253334204355874,
+              "p90_us": 3.950000119705995,
+              "samples_us": [
+                3.9253334204355874,
+                3.9460000892480216,
+                3.950000119705995,
+                3.951333463191986,
+                3.950000119705995,
+                3.950000119705995,
+                3.945333262284597
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 32,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "9a503ba5431ff63a1d056c60bc8e5331a3d3ce41eebb5a6ccd5d0dc7c1844b2b",
+            "device": {
+              "median_us": 4.289333398143451,
+              "p10_us": 4.2660000423590345,
+              "p90_us": 4.291333258152008,
+              "samples_us": [
+                4.2660000423590345,
+                4.287333227694035,
+                4.2926666016379995,
+                4.291333258152008,
+                4.289333398143451,
+                4.291333258152008,
+                4.286666711171468
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "3effb44d91fbf431a52b4c7f405787119a492f98e4a1f2fbf514c3dd8d63ed15",
+            "device": {
+              "median_us": 4.291333258152008,
+              "p10_us": 4.2666665588816,
+              "p90_us": 4.292000085115433,
+              "samples_us": [
+                4.2666665588816,
+                4.291333258152008,
+                4.292000085115433,
+                4.291333258152008,
+                4.2926666016379995,
+                4.292000085115433,
+                4.287333227694035
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "919d46915dcba9020c995157a7c0a3fd23fc2d30a140bb6532c4b4808b699b58",
+            "device": {
+              "median_us": 4.468666700025399,
+              "p10_us": 4.455333265165488,
+              "p90_us": 4.498666773239772,
+              "samples_us": [
+                4.522666645546754,
+                4.498666773239772,
+                4.468666700025399,
+                4.498666773239772,
+                4.461333466072877,
+                4.460666639109452,
+                4.455333265165488
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "53ffe12e1271bdebc530c059d1117ae8db056071f5af3450322e490a9f9eb7fa",
+            "device": {
+              "median_us": 10.051333035031954,
+              "p10_us": 10.043333594997724,
+              "p90_us": 10.053333515922228,
+              "samples_us": [
+                10.06066674987475,
+                10.04733331501484,
+                10.051333035031954,
+                10.051333035031954,
+                10.051333035031954,
+                10.053333515922228,
+                10.043333594997724
+              ]
+            }
+          }
+        ],
+        "invalid": [],
+        "case": "layernorm2",
+        "rows": 32,
+        "width": 768,
+        "dtype": "torch.bfloat16"
+      },
+      "comparison": {
+        "case": "layernorm2",
+        "shape": [
+          32,
+          768
+        ],
+        "dtype": "torch.bfloat16",
+        "seed": 10123,
+        "device": "NVIDIA GB10",
+        "torch": "2.13.0+cu130",
+        "cuda": "13.0",
+        "python": "3.12.3",
+        "schedule": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "export_ms": 6.711296737194061,
+        "sparkfuse_build_or_load_ms": 0.3532376140356064,
+        "inductor_wrapper_plus_first_call_ms": 1026.8886731937528,
+        "plan": {
+          "domain": [
+            32,
+            768
+          ],
+          "reduction": 5,
+          "input_ids": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "output_ids": [
+            8,
+            4
+          ],
+          "values": [
+            {
+              "op": "input",
+              "shape": [
+                32,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 0
+            },
+            {
+              "op": "input",
+              "shape": [
+                32,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 1
+            },
+            {
+              "op": "input",
+              "shape": [
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 2
+            },
+            {
+              "op": "input",
+              "shape": [
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 3
+            },
+            {
+              "op": "add",
+              "shape": [
+                32,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [
+                0,
+                1
+              ],
+              "imm": null
+            },
+            {
+              "op": "layer_norm",
+              "shape": [
+                32,
+                768
+              ],
+              "dt": "f32",
+              "deps": [
+                4
+              ],
+              "imm": 1e-05
+            },
+            {
+              "op": "mul",
+              "shape": [
+                32,
+                768
+              ],
+              "dt": "f32",
+              "deps": [
+                5,
+                2
+              ],
+              "imm": null
+            },
+            {
+              "op": "add",
+              "shape": [
+                32,
+                768
+              ],
+              "dt": "f32",
+              "deps": [
+                6,
+                3
+              ],
+              "imm": null
+            },
+            {
+              "op": "cast",
+              "shape": [
+                32,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [
+                7
+              ],
+              "imm": null
+            }
+          ],
+          "launches": 1,
+          "global_intermediate_bytes": 0
+        },
+        "torch_export_graph": "graph():\n    %x : [num_users=1] = placeholder[target=x]\n    %skip : [num_users=1] = placeholder[target=skip]\n    %weight : [num_users=1] = placeholder[target=weight]\n    %bias : [num_users=1] = placeholder[target=bias]\n    %add : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%x, %skip), kwargs = {})\n    %layer_norm : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [768], %weight, %bias, 1e-05, False), kwargs = {})\n    return (layer_norm, add)",
+        "backends": {
+          "eager": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 24576,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 24576,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 3.381500020623207,
+              "p10_us": 3.3770001027733088,
+              "p90_us": 3.4034999553114176,
+              "samples_us": [
+                3.392999991774559,
+                3.378499997779727,
+                3.3774999901652336,
+                3.3770001027733088,
+                3.4064999781548977,
+                3.3825000282377005,
+                3.4034999553114176,
+                3.381500020623207,
+                3.3770001027733088
+              ]
+            },
+            "host_sync": {
+              "median_us": 14.352,
+              "p10_us": 14.257,
+              "p90_us": 14.928,
+              "samples_us": [
+                19.841,
+                15.824,
+                14.752,
+                14.624,
+                14.465,
+                14.464,
+                14.352,
+                14.368,
+                14.208,
+                14.273,
+                14.256,
+                14.352,
+                14.368,
+                14.288,
+                14.257,
+                14.352,
+                14.304,
+                14.288,
+                14.417,
+                14.336,
+                14.464,
+                14.288,
+                14.352,
+                14.257,
+                14.608,
+                14.352,
+                14.432,
+                35.697,
+                14.928,
+                14.672,
+                14.24
+              ]
+            },
+            "gpu_events": [
+              "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat16>, std::array<char*, 3ul> >(int, at::native::CUDAFunctor_add<c10::BFloat16>, std::array<char*, 3ul>)",
+              "void at::native::(anonymous namespace)::vectorized_layer_norm_kernel<c10::BFloat16, float, false>(int, float, c10::BFloat16 const*, c10::BFloat16 const*, c10::BFloat16 const*, float*, float*, c10::BFloat16*)"
+            ],
+            "allocation_peak_above_entry_bytes": 99328
+          },
+          "inductor": {
+            "parity": "fail",
+            "diagnostic": "Tensor-likes are not close!\n\nMismatched elements: 493 / 24576 (2.0%)\nGreatest absolute difference: 0.01171875 at index (14, 720) (up to 0.0002 allowed)\nGreatest relative difference: 7.25 at index (24, 753) (up to 0.012 allowed)"
+          },
+          "sparkfuse": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.000244140625,
+                "mean_abs": 2.2506962219874062e-08,
+                "unequal": 4,
+                "finite_pairs": 24576,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 24576,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 2.067500026896596,
+              "p10_us": 2.064500004053116,
+              "p90_us": 2.0685000345110893,
+              "samples_us": [
+                2.0794998854398727,
+                2.067500026896596,
+                2.064500004053116,
+                2.064500004053116,
+                2.0685000345110893,
+                2.0669999066740274,
+                2.067999914288521,
+                2.067999914288521,
+                2.0669999066740274
+              ]
+            },
+            "host_sync": {
+              "median_us": 92.529,
+              "p10_us": 90.817,
+              "p90_us": 151.89,
+              "samples_us": [
+                151.89,
+                101.889,
+                97.762,
+                105.313,
+                201.987,
+                99.329,
+                93.81,
+                93.697,
+                92.737,
+                91.554,
+                90.817,
+                91.665,
+                92.226,
+                91.201,
+                94.481,
+                175.619,
+                91.473,
+                91.713,
+                91.858,
+                92.257,
+                90.129,
+                92.514,
+                92.529,
+                93.393,
+                92.178,
+                92.689,
+                171.715,
+                94.833,
+                92.113,
+                90.338,
+                89.921
+              ]
+            },
+            "gpu_events": [
+              "fused(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, int)"
+            ],
+            "allocation_peak_above_entry_bytes": 98304
+          }
+        }
+      },
+      "status": "parity-failure",
+      "failed_backends": [
+        "inductor"
+      ],
+      "elapsed_s": 2.1281501315534115,
+      "worker_stderr": "USDT:2026-11-25 23:11:21 2150489:2150489 SyncActivityProfilerHandler.cpp:52] profiler_start\nUSDT:2026-11-25 23:11:21 2150489:2150489 SyncActivityProfilerHandler.cpp:59] profiler_stop\nUSDT:2026-11-25 23:11:21 2150489:2150489 SyncActivityProfilerHandler.cpp:52] profiler_start\nUSDT:2026-11-25 23:11:21 2150489:2150489 SyncActivityProfilerHandler.cpp:59] profiler_stop\nparity failed for inductor; retained report: case-1.rejected.json\n"
+    },
+    {
+      "job": {
+        "case": "layernorm2",
+        "rows": 128,
+        "width": 768,
+        "dtype": "bfloat16",
+        "budget": 14,
+        "seed": 8146,
+        "profile": false
+      },
+      "provenance": {
+        "git_head_at_capture": "9c3067aa8dc0791461e8f55ac43fea85f56dd737",
+        "source_tree_sha256": "4cec8e4991d4d8824d6fcffd96e092c62523f94265352c9282b14be953ea5d48",
+        "archive": "sources/4cec8e4991d4d8824d6fcffd96e092c62523f94265352c9282b14be953ea5d48.tar.gz"
+      },
+      "tuning": {
+        "key": "29ada0443effdb8abe99c9617790deee75617b56a00abad0c1bbac79ccebe532",
+        "compiler": "8bdb1aee47d4da273701110a09049ce8f8a6ec20e481e145330c2fdbd12ff9dc",
+        "seed": 8146,
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "selected": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "candidate": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "admitted": true,
+        "heldout_speedup_vs_default": 1.604607639634353,
+        "paired_holdout_us": [
+          {
+            "default": 3.703999953965346,
+            "candidate": 2.314333338290453
+          },
+          {
+            "candidate": 2.3150000100334487,
+            "default": 3.7146667018532753
+          },
+          {
+            "default": 3.711000084877014,
+            "candidate": 2.3146665965517363
+          },
+          {
+            "candidate": 2.3153332682947316,
+            "default": 3.7233332792917886
+          },
+          {
+            "default": 3.7280001367131868,
+            "candidate": 2.315666681776444
+          }
+        ],
+        "heldout_errors": [
+          {
+            "max_abs": 0.000244140625,
+            "mean_abs": 2.483526865641276e-09,
+            "unequal": 1,
+            "finite_pairs": 98304,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0.012,
+            "atol": 0.0002
+          },
+          {
+            "max_abs": 0.0,
+            "mean_abs": 0.0,
+            "unequal": 0,
+            "finite_pairs": 98304,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0,
+            "atol": 0
+          }
+        ],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "85f216ab7412be812ea2df352e5506e7c0d1ecea368b3f4a8b1b27aec015ba95",
+            "device": {
+              "median_us": 2.4659999956687293,
+              "p10_us": 2.4573332630097866,
+              "p90_us": 2.486666664481163,
+              "samples_us": [
+                2.481999962280194,
+                2.486666664481163,
+                2.4659999956687293,
+                2.4573332630097866,
+                2.4593332782387733,
+                2.4886666797101498,
+                2.461999965210756
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "5fdd818e4f9e4490f169393db5e719ba97470a40e70602cd3d2a8861f14d6e7f",
+            "device": {
+              "median_us": 2.5819999476273856,
+              "p10_us": 2.57666672890385,
+              "p90_us": 2.585999978085359,
+              "samples_us": [
+                2.6019999446968236,
+                2.58133327588439,
+                2.5819999476273856,
+                2.58133327588439,
+                2.5819999476273856,
+                2.585999978085359,
+                2.57666672890385
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": false,
+              "vec": 8
+            },
+            "kernel_cache_id": "af18a5ca24aca97df6c264325112f5760ec7f2cc4c0d8efff5e4f0c9c5750109",
+            "device": {
+              "median_us": 2.7099999909599624,
+              "p10_us": 2.6706665133436522,
+              "p90_us": 2.7333333467443786,
+              "samples_us": [
+                2.7333333467443786,
+                2.714666537940502,
+                2.7099999909599624,
+                2.681333261231581,
+                2.6706665133436522,
+                2.7440000946323075,
+                2.7099999909599624
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "9e75ddf266719dbd300fb4583ab63ba3efa4723568dbebbafbf1d6031532987c",
+            "device": {
+              "median_us": 2.8846667458613715,
+              "p10_us": 2.878666544953982,
+              "p90_us": 2.9026667277018228,
+              "samples_us": [
+                2.9026667277018228,
+                2.8846667458613715,
+                2.8846667458613715,
+                2.9239999130368233,
+                2.8813332319259644,
+                2.878666544953982,
+                2.8799998884399733
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "ec60460dd5f05352b3615b3ec5378f2f2258e491b0f927fe92d3a996c74167d7",
+            "device": {
+              "median_us": 3.0940001209576926,
+              "p10_us": 3.0713332816958427,
+              "p90_us": 3.098000151415666,
+              "samples_us": [
+                3.0713332816958427,
+                3.0940001209576926,
+                3.0986666679382324,
+                3.098000151415666,
+                3.0940001209576926,
+                3.0940001209576926,
+                3.090000090499719
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 8
+            },
+            "kernel_cache_id": "f117746163956c7ef853564a4a62c73b72f3ebbeacedf19ad13c00e7b25e6464",
+            "device": {
+              "median_us": 3.7726666778326035,
+              "p10_us": 3.7380000576376915,
+              "p90_us": 3.7773332248131433,
+              "samples_us": [
+                3.7546666959921517,
+                3.738666574160258,
+                3.776666708290577,
+                3.7773332248131433,
+                3.7380000576376915,
+                3.7773332248131433,
+                3.7726666778326035
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "2b51eaf7e3dcf660703a76a5535fd8f65ae136a7baf49d24a6a54eafb2f99ca2",
+            "device": {
+              "median_us": 3.7773332248131433,
+              "p10_us": 3.7546666959921517,
+              "p90_us": 3.7773332248131433,
+              "samples_us": [
+                3.7546666959921517,
+                3.7773332248131433,
+                3.7773332248131433,
+                3.7773332248131433,
+                3.7793333952625594,
+                3.7726666778326035,
+                3.7726666778326035
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": true,
+              "vec": 8
+            },
+            "kernel_cache_id": "eaa416b3f560b4c51209c4c6a030feaf4fa446dcf993f7864730da22239a8e1a",
+            "device": {
+              "median_us": 4.49733342975378,
+              "p10_us": 4.466000013053417,
+              "p90_us": 4.505333180228869,
+              "samples_us": [
+                4.515333411594232,
+                4.502666803697745,
+                4.505333180228869,
+                4.466000013053417,
+                4.49733342975378,
+                4.466000013053417,
+                4.495333259304364
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "8be34f9bde201640ef59e797ef9a0b0bbc21d3d7140c577cdf41999ef2ec79c7",
+            "device": {
+              "median_us": 4.501999976734321,
+              "p10_us": 4.456000092128913,
+              "p90_us": 4.503333320220311,
+              "samples_us": [
+                4.515999928116798,
+                4.461333466072877,
+                4.464666669567426,
+                4.503333320220311,
+                4.501999976734321,
+                4.501999976734321,
+                4.456000092128913
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "919d46915dcba9020c995157a7c0a3fd23fc2d30a140bb6532c4b4808b699b58",
+            "device": {
+              "median_us": 4.630666536589463,
+              "p10_us": 4.606666664282481,
+              "p90_us": 4.632666707038879,
+              "samples_us": [
+                4.606666664282481,
+                4.630666536589463,
+                4.632666707038879,
+                4.629333193103473,
+                4.630666536589463,
+                4.634666567047437,
+                4.625333473086357
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "warp",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "16b7b6799ed0dcb8f0043a1f9a00f6f25448115503d5fa528f7ecb3a4bd501d6",
+            "device": {
+              "median_us": 5.604666968186696,
+              "p10_us": 5.54200013478597,
+              "p90_us": 5.615999922156334,
+              "samples_us": [
+                5.54200013478597,
+                5.697333564360936,
+                5.614666889111201,
+                5.568666383624077,
+                5.615999922156334,
+                5.575333411494891,
+                5.604666968186696
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "warp",
+              "cache": true,
+              "vec": 8
+            },
+            "kernel_cache_id": "172787ec8502d802b82c4c5ae2a0e40579ce63862cbd81ca990c983b22f88a8d",
+            "device": {
+              "median_us": 6.165999919176102,
+              "p10_us": 6.157999858260155,
+              "p90_us": 6.175333634018898,
+              "samples_us": [
+                6.185999761025111,
+                6.170666466156642,
+                6.16333323220412,
+                6.175333634018898,
+                6.157999858260155,
+                6.165999919176102,
+                6.165333092212677
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "53ffe12e1271bdebc530c059d1117ae8db056071f5af3450322e490a9f9eb7fa",
+            "device": {
+              "median_us": 9.993333369493484,
+              "p10_us": 9.966000293691954,
+              "p90_us": 9.9973330895106,
+              "samples_us": [
+                9.993333369493484,
+                9.996000056465467,
+                9.971999873717627,
+                9.9973330895106,
+                9.973999733726183,
+                9.999999776482582,
+                9.966000293691954
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "warp",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "a61adfbecd5dbb689909f9f2bb2bf2a6ed55be99b3873821ada0cc3be1b89184",
+            "device": {
+              "median_us": 12.954667210578918,
+              "p10_us": 12.932666887839636,
+              "p90_us": 12.991999586423239,
+              "samples_us": [
+                12.971332917610804,
+                12.954667210578918,
+                12.992666413386663,
+                12.991999586423239,
+                12.954000383615494,
+                12.932666887839636,
+                12.945999701817831
+              ]
+            }
+          }
+        ],
+        "invalid": [],
+        "case": "layernorm2",
+        "rows": 128,
+        "width": 768,
+        "dtype": "torch.bfloat16"
+      },
+      "comparison": {
+        "case": "layernorm2",
+        "shape": [
+          128,
+          768
+        ],
+        "dtype": "torch.bfloat16",
+        "seed": 10146,
+        "device": "NVIDIA GB10",
+        "torch": "2.13.0+cu130",
+        "cuda": "13.0",
+        "python": "3.12.3",
+        "schedule": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "export_ms": 6.683660671114922,
+        "sparkfuse_build_or_load_ms": 0.3483891487121582,
+        "inductor_wrapper_plus_first_call_ms": 1013.8527546077967,
+        "plan": {
+          "domain": [
+            128,
+            768
+          ],
+          "reduction": 5,
+          "input_ids": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "output_ids": [
+            8,
+            4
+          ],
+          "values": [
+            {
+              "op": "input",
+              "shape": [
+                128,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 0
+            },
+            {
+              "op": "input",
+              "shape": [
+                128,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 1
+            },
+            {
+              "op": "input",
+              "shape": [
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 2
+            },
+            {
+              "op": "input",
+              "shape": [
+                768
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 3
+            },
+            {
+              "op": "add",
+              "shape": [
+                128,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [
+                0,
+                1
+              ],
+              "imm": null
+            },
+            {
+              "op": "layer_norm",
+              "shape": [
+                128,
+                768
+              ],
+              "dt": "f32",
+              "deps": [
+                4
+              ],
+              "imm": 1e-05
+            },
+            {
+              "op": "mul",
+              "shape": [
+                128,
+                768
+              ],
+              "dt": "f32",
+              "deps": [
+                5,
+                2
+              ],
+              "imm": null
+            },
+            {
+              "op": "add",
+              "shape": [
+                128,
+                768
+              ],
+              "dt": "f32",
+              "deps": [
+                6,
+                3
+              ],
+              "imm": null
+            },
+            {
+              "op": "cast",
+              "shape": [
+                128,
+                768
+              ],
+              "dt": "bf16",
+              "deps": [
+                7
+              ],
+              "imm": null
+            }
+          ],
+          "launches": 1,
+          "global_intermediate_bytes": 0
+        },
+        "torch_export_graph": "graph():\n    %x : [num_users=1] = placeholder[target=x]\n    %skip : [num_users=1] = placeholder[target=skip]\n    %weight : [num_users=1] = placeholder[target=weight]\n    %bias : [num_users=1] = placeholder[target=bias]\n    %add : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%x, %skip), kwargs = {})\n    %layer_norm : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [768], %weight, %bias, 1e-05, False), kwargs = {})\n    return (layer_norm, add)",
+        "backends": {
+          "eager": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 3.7304998841136694,
+              "p10_us": 3.7239999510347843,
+              "p90_us": 3.74249997548759,
+              "samples_us": [
+                3.74249997548759,
+                3.7295001093298197,
+                3.7295001093298197,
+                3.7304998841136694,
+                3.731000004336238,
+                3.728999989107251,
+                3.731000004336238,
+                3.746999893337488,
+                3.7239999510347843
+              ]
+            },
+            "host_sync": {
+              "median_us": 14.88,
+              "p10_us": 14.112,
+              "p90_us": 15.537,
+              "samples_us": [
+                22.049,
+                16.144,
+                15.568,
+                15.392,
+                15.152,
+                15.537,
+                15.008,
+                15.104,
+                15.008,
+                14.945,
+                15.056,
+                14.768,
+                15.024,
+                14.864,
+                14.737,
+                14.704,
+                14.88,
+                14.912,
+                14.64,
+                13.857,
+                14.56,
+                15.44,
+                14.16,
+                14.928,
+                14.257,
+                14.112,
+                14.176,
+                14.112,
+                14.112,
+                13.841,
+                14.528
+              ]
+            }
+          },
+          "inductor": {
+            "parity": "fail",
+            "diagnostic": "Tensor-likes are not close!\n\nMismatched elements: 1969 / 98304 (2.0%)\nGreatest absolute difference: 0.015625 at index (72, 302) (up to 0.0002 allowed)\nGreatest relative difference: 115.5 at index (2, 446) (up to 0.012 allowed)"
+          },
+          "sparkfuse": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.0078125,
+                "mean_abs": 8.230805785084763e-08,
+                "unequal": 7,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 2.4484999012202024,
+              "p10_us": 2.432500012218952,
+              "p90_us": 2.4510000366717577,
+              "samples_us": [
+                2.432500012218952,
+                2.4480000138282776,
+                2.452000044286251,
+                2.4510000366717577,
+                2.4484999012202024,
+                2.4484999012202024,
+                2.447000006213784,
+                2.449000021442771,
+                2.4449999909847975
+              ]
+            },
+            "host_sync": {
+              "median_us": 88.305,
+              "p10_us": 86.193,
+              "p90_us": 127.202,
+              "samples_us": [
+                127.202,
+                93.745,
+                89.745,
+                88.881,
+                87.25,
+                86.433,
+                88.305,
+                91.521,
+                165.699,
+                88.481,
+                86.385,
+                89.233,
+                87.842,
+                85.473,
+                89.441,
+                88.497,
+                87.921,
+                88.962,
+                86.993,
+                158.786,
+                90.961,
+                91.938,
+                87.985,
+                86.817,
+                86.673,
+                87.602,
+                86.577,
+                86.193,
+                84.689,
+                85.361,
+                155.763
+              ]
+            }
+          }
+        }
+      },
+      "status": "parity-failure",
+      "failed_backends": [
+        "inductor"
+      ],
+      "elapsed_s": 2.0916828429326415,
+      "worker_stderr": "parity failed for inductor; retained report: case-2.rejected.json\n"
+    },
+    {
+      "job": {
+        "case": "layernorm2",
+        "rows": 17,
+        "width": 769,
+        "dtype": "float32",
+        "budget": 14,
+        "seed": 8169,
+        "profile": false
+      },
+      "provenance": {
+        "git_head_at_capture": "9c3067aa8dc0791461e8f55ac43fea85f56dd737",
+        "source_tree_sha256": "4cec8e4991d4d8824d6fcffd96e092c62523f94265352c9282b14be953ea5d48",
+        "archive": "sources/4cec8e4991d4d8824d6fcffd96e092c62523f94265352c9282b14be953ea5d48.tar.gz"
+      },
+      "tuning": {
+        "key": "cfb5299f63fb540cebe77ec84e12de20b21b329d96111991a1ffdb3ea30133db",
+        "compiler": "8bdb1aee47d4da273701110a09049ce8f8a6ec20e481e145330c2fdbd12ff9dc",
+        "seed": 8169,
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "selected": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "candidate": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "admitted": true,
+        "heldout_speedup_vs_default": 1.7464377778577,
+        "paired_holdout_us": [
+          {
+            "default": 3.595333235959212,
+            "candidate": 2.058666665107012
+          },
+          {
+            "candidate": 2.058999923368295,
+            "default": 3.5969999929269156
+          },
+          {
+            "default": 3.595333235959212,
+            "candidate": 2.058999923368295
+          },
+          {
+            "candidate": 2.058666665107012,
+            "default": 3.595000132918358
+          },
+          {
+            "default": 3.595000132918358,
+            "candidate": 2.0583334068457284
+          }
+        ],
+        "heldout_errors": [
+          {
+            "max_abs": 9.5367431640625e-07,
+            "mean_abs": 5.455676328826577e-08,
+            "unequal": 6423,
+            "finite_pairs": 13073,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 2e-05,
+            "atol": 2e-06
+          },
+          {
+            "max_abs": 0.0,
+            "mean_abs": 0.0,
+            "unequal": 0,
+            "finite_pairs": 13073,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0,
+            "atol": 0
+          }
+        ],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "57c2dfebd61657a808679bae083cfeabe3e2f0912bb3b70503a9254bfce895d0",
+            "device": {
+              "median_us": 2.0699999295175076,
+              "p10_us": 2.047333400696516,
+              "p90_us": 2.073999959975481,
+              "samples_us": [
+                2.047333400696516,
+                2.0699999295175076,
+                2.0746666317184768,
+                2.073999959975481,
+                2.0733332882324853,
+                2.069333257774512,
+                2.0686667412519455
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "e7fe8ea6298d77b937d6720e66eb73a8cab4ffcace37074ef10e0f3890455c6a",
+            "device": {
+              "median_us": 2.075333303461472,
+              "p10_us": 2.0680000695089498,
+              "p90_us": 2.077333318690459,
+              "samples_us": [
+                2.0853333796064057,
+                2.077333318690459,
+                2.075333303461472,
+                2.0733332882324853,
+                2.075333303461472,
+                2.0706666012605033,
+                2.0680000695089498
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "876c29c910bf9cdff630c0cfe686d111c0f71182c74ff76fe677081c047d07bc",
+            "device": {
+              "median_us": 2.2406666539609432,
+              "p10_us": 2.1973333011070886,
+              "p90_us": 2.2419999974469342,
+              "samples_us": [
+                2.2213333286345005,
+                2.2419999974469342,
+                2.2399999822179475,
+                2.2419999974469342,
+                2.2406666539609432,
+                2.2419999974469342,
+                2.1973333011070886
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "5d640a884d56db2cbee16dca3727fa1f790f8fba1dcbed6ca31d40e00f77376e",
+            "device": {
+              "median_us": 2.244000012675921,
+              "p10_us": 2.218666641662518,
+              "p90_us": 2.2446666844189167,
+              "samples_us": [
+                2.218666641662518,
+                2.2399999822179475,
+                2.2460000279049077,
+                2.2446666844189167,
+                2.244000012675921,
+                2.244000012675921,
+                2.2386666387319565
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "511c4405b06b49424534ae6a0c21058ec1d84f6b8d3adf312b6a2c517a4e892e",
+            "device": {
+              "median_us": 2.2480000431338945,
+              "p10_us": 2.1119999388853707,
+              "p90_us": 3.0280000840624175,
+              "samples_us": [
+                3.6026667803525925,
+                2.181333334495624,
+                3.0280000840624175,
+                2.1119999388853707,
+                2.1220000150303044,
+                2.2480000431338945,
+                2.463333308696747
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "028a692338031cd2e3fcce90f9e22f504eda5cbaca0672d0a68671d2ea6d8fe4",
+            "device": {
+              "median_us": 3.6146665612856546,
+              "p10_us": 3.6006666099031768,
+              "p90_us": 3.6339998866120973,
+              "samples_us": [
+                3.6339998866120973,
+                3.6040001238385835,
+                3.615999904771646,
+                3.605333467324575,
+                3.6493331814805665,
+                3.6146665612856546,
+                3.6006666099031768
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "9200e00c40ef291ae7bb7dec4ec75adbd8e6a2ac99d84e09bdeaaada16911b1a",
+            "device": {
+              "median_us": 4.970666641990344,
+              "p10_us": 4.94999997317791,
+              "p90_us": 4.9746666724483175,
+              "samples_us": [
+                4.94999997317791,
+                4.969333298504353,
+                4.970666641990344,
+                4.973999845484893,
+                4.9746666724483175,
+                4.975333188970883,
+                4.970000125467777
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "2f37b88193093af3328989fa321061bdd9fa37ad1c46f1c2a9fdb11b81dd4554",
+            "device": {
+              "median_us": 6.209333116809527,
+              "p10_us": 6.165999919176102,
+              "p90_us": 6.294666479031245,
+              "samples_us": [
+                6.186666587988536,
+                6.209333116809527,
+                6.294666479031245,
+                6.175999840100606,
+                6.283333525061607,
+                6.339333330591519,
+                6.165999919176102
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "b83febffdc8ae284ea535d5067247e9748eaaa83f867b4049f4469afdc8c6ee3",
+            "device": {
+              "median_us": 7.967333619793256,
+              "p10_us": 7.956000044941902,
+              "p90_us": 8.021333565314611,
+              "samples_us": [
+                8.021333565314611,
+                8.047333608071009,
+                7.967333619793256,
+                7.956000044941902,
+                7.964666932821274,
+                7.957333077987035,
+                8.00333358347416
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "9d77aa31f26232647b1dc3a2fa027f294d0ac5da2be2d09d9933040281d74268",
+            "device": {
+              "median_us": 8.046666781107584,
+              "p10_us": 8.021333565314611,
+              "p90_us": 8.047333608071009,
+              "samples_us": [
+                8.021333565314611,
+                8.048666641116142,
+                8.044666921099028,
+                8.047333608071009,
+                8.046666781107584,
+                8.046666781107584,
+                8.042666440208754
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "e7b9273318a00a5bdbc077aa1c731b28c522c0bf5db30b2f782a2d5af2315c87",
+            "device": {
+              "median_us": 8.089333151777586,
+              "p10_us": 8.044666921099028,
+              "p90_us": 8.125333115458488,
+              "samples_us": [
+                8.146666611234346,
+                8.089333151777586,
+                8.049333468079567,
+                8.125333115458488,
+                8.089333151777586,
+                8.095333352684975,
+                8.044666921099028
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "9b150a263d24c58633eb43606491685bd50696a34196dfc6ac4475e3f64ee0b4",
+            "device": {
+              "median_us": 9.070666506886482,
+              "p10_us": 9.045333291093508,
+              "p90_us": 9.071333333849907,
+              "samples_us": [
+                9.045333291093508,
+                9.070666506886482,
+                9.072000160813332,
+                9.070666506886482,
+                9.071333333849907,
+                9.067333613832792,
+                9.065999959905943
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 32,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "650dcabe163ea8db3c22b55567f79de283264e0d191061ac4ad468b176921e0a",
+            "device": {
+              "median_us": 9.241333231329918,
+              "p10_us": 9.216666842500368,
+              "p90_us": 9.242666885256767,
+              "samples_us": [
+                9.216666842500368,
+                9.241333231329918,
+                9.243333091338476,
+                9.242000058293343,
+                9.23933337132136,
+                9.242666885256767,
+                9.237333511312803
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "warp",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "2e65308cdcf3bc989774174a19ef6d21aea74e03f0bf8e2bbcaf109f9bfeb89b",
+            "device": {
+              "median_us": 12.629333883523941,
+              "p10_us": 12.608000387748083,
+              "p90_us": 12.65533392628034,
+              "samples_us": [
+                12.629333883523941,
+                12.608000387748083,
+                12.654667099316915,
+                12.610666453838348,
+                12.655999511480331,
+                12.65533392628034,
+                12.627333402633667
+              ]
+            }
+          }
+        ],
+        "invalid": [],
+        "case": "layernorm2",
+        "rows": 17,
+        "width": 769,
+        "dtype": "torch.float32"
+      },
+      "comparison": {
+        "case": "layernorm2",
+        "shape": [
+          17,
+          769
+        ],
+        "dtype": "torch.float32",
+        "seed": 10169,
+        "device": "NVIDIA GB10",
+        "torch": "2.13.0+cu130",
+        "cuda": "13.0",
+        "python": "3.12.3",
+        "schedule": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "export_ms": 6.891166791319847,
+        "sparkfuse_build_or_load_ms": 0.3488529473543167,
+        "inductor_wrapper_plus_first_call_ms": 711.0057212412357,
+        "plan": {
+          "domain": [
+            17,
+            769
+          ],
+          "reduction": 5,
+          "input_ids": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "output_ids": [
+            8,
+            4
+          ],
+          "values": [
+            {
+              "op": "input",
+              "shape": [
+                17,
+                769
+              ],
+              "dt": "f32",
+              "deps": [],
+              "imm": 0
+            },
+            {
+              "op": "input",
+              "shape": [
+                17,
+                769
+              ],
+              "dt": "f32",
+              "deps": [],
+              "imm": 1
+            },
+            {
+              "op": "input",
+              "shape": [
+                769
+              ],
+              "dt": "f32",
+              "deps": [],
+              "imm": 2
+            },
+            {
+              "op": "input",
+              "shape": [
+                769
+              ],
+              "dt": "f32",
+              "deps": [],
+              "imm": 3
+            },
+            {
+              "op": "add",
+              "shape": [
+                17,
+                769
+              ],
+              "dt": "f32",
+              "deps": [
+                0,
+                1
+              ],
+              "imm": null
+            },
+            {
+              "op": "layer_norm",
+              "shape": [
+                17,
+                769
+              ],
+              "dt": "f32",
+              "deps": [
+                4
+              ],
+              "imm": 1e-05
+            },
+            {
+              "op": "mul",
+              "shape": [
+                17,
+                769
+              ],
+              "dt": "f32",
+              "deps": [
+                5,
+                2
+              ],
+              "imm": null
+            },
+            {
+              "op": "add",
+              "shape": [
+                17,
+                769
+              ],
+              "dt": "f32",
+              "deps": [
+                6,
+                3
+              ],
+              "imm": null
+            },
+            {
+              "op": "cast",
+              "shape": [
+                17,
+                769
+              ],
+              "dt": "f32",
+              "deps": [
+                7
+              ],
+              "imm": null
+            }
+          ],
+          "launches": 1,
+          "global_intermediate_bytes": 0
+        },
+        "torch_export_graph": "graph():\n    %x : [num_users=1] = placeholder[target=x]\n    %skip : [num_users=1] = placeholder[target=skip]\n    %weight : [num_users=1] = placeholder[target=weight]\n    %bias : [num_users=1] = placeholder[target=bias]\n    %add : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%x, %skip), kwargs = {})\n    %layer_norm : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [769], %weight, %bias, 1e-05, False), kwargs = {})\n    return (layer_norm, add)",
+        "backends": {
+          "eager": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 13073,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 13073,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 4.850999917834997,
+              "p10_us": 4.848000127822161,
+              "p90_us": 4.851500038057566,
+              "samples_us": [
+                4.863500129431486,
+                4.8500001430511475,
+                4.850499797612429,
+                4.851500038057566,
+                4.851500038057566,
+                4.850999917834997,
+                4.850499797612429,
+                4.851500038057566,
+                4.848000127822161
+              ]
+            },
+            "host_sync": {
+              "median_us": 17.248,
+              "p10_us": 16.432,
+              "p90_us": 18.4,
+              "samples_us": [
+                27.424,
+                17.505,
+                17.008,
+                18.272,
+                17.232,
+                18.225,
+                17.088,
+                18.4,
+                16.512,
+                17.937,
+                17.232,
+                17.264,
+                17.216,
+                18.241,
+                15.76,
+                16.688,
+                17.248,
+                17.184,
+                24.496,
+                15.712,
+                16.816,
+                21.281,
+                18.32,
+                16.368,
+                17.28,
+                17.089,
+                18.288,
+                16.432,
+                18.224,
+                17.377,
+                17.248
+              ]
+            }
+          },
+          "inductor": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 9.5367431640625e-07,
+                "mean_abs": 2.3855182936302943e-08,
+                "unequal": 2921,
+                "finite_pairs": 13073,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 13073,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 1.4845000114291906,
+              "p10_us": 1.461499952711165,
+              "p90_us": 1.4909999445080757,
+              "samples_us": [
+                1.4779999619349837,
+                1.4619999565184116,
+                1.4845000114291906,
+                1.4939999673515558,
+                1.485500019043684,
+                1.4654999831691384,
+                1.485500019043684,
+                1.4909999445080757,
+                1.461499952711165
+              ]
+            },
+            "host_sync": {
+              "median_us": 27.264,
+              "p10_us": 26.912,
+              "p90_us": 31.248,
+              "samples_us": [
+                42.529,
+                31.248,
+                28.593,
+                27.232,
+                28.609,
+                30.448,
+                28.336,
+                27.809,
+                27.712,
+                35.873,
+                27.872,
+                27.088,
+                27.089,
+                27.36,
+                27.201,
+                27.008,
+                27.296,
+                33.041,
+                27.504,
+                27.169,
+                26.928,
+                27.264,
+                26.993,
+                26.336,
+                26.912,
+                26.913,
+                26.736,
+                26.449,
+                27.008,
+                27.088,
+                29.361
+              ]
+            }
+          },
+          "sparkfuse": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 9.5367431640625e-07,
+                "mean_abs": 6.393677393372916e-08,
+                "unequal": 7046,
+                "finite_pairs": 13073,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 13073,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 2.0359999034553766,
+              "p10_us": 2.032000105828047,
+              "p90_us": 2.036500023677945,
+              "samples_us": [
+                2.0485001150518656,
+                2.0359999034553766,
+                2.0359999034553766,
+                2.0359999034553766,
+                2.0349998958408833,
+                2.0345000084489584,
+                2.0359999034553766,
+                2.036500023677945,
+                2.032000105828047
+              ]
+            },
+            "host_sync": {
+              "median_us": 87.537,
+              "p10_us": 85.186,
+              "p90_us": 121.906,
+              "samples_us": [
+                121.906,
+                92.753,
+                88.657,
+                87.394,
+                88.337,
+                86.977,
+                88.241,
+                92.194,
+                163.57,
+                96.337,
+                88.625,
+                87.042,
+                85.425,
+                85.905,
+                86.593,
+                86.945,
+                88.274,
+                85.793,
+                84.689,
+                157.73,
+                90.305,
+                88.514,
+                87.825,
+                87.537,
+                86.353,
+                86.049,
+                85.186,
+                85.649,
+                84.689,
+                85.025,
+                161.33
+              ]
+            }
+          }
+        }
+      },
+      "status": "ok",
+      "elapsed_s": 1.7401068797335029
+    },
+    {
+      "job": {
+        "case": "layernorm2",
+        "rows": 97,
+        "width": 1024,
+        "dtype": "float16",
+        "budget": 14,
+        "seed": 8192,
+        "profile": false
+      },
+      "provenance": {
+        "git_head_at_capture": "9c3067aa8dc0791461e8f55ac43fea85f56dd737",
+        "source_tree_sha256": "4cec8e4991d4d8824d6fcffd96e092c62523f94265352c9282b14be953ea5d48",
+        "archive": "sources/4cec8e4991d4d8824d6fcffd96e092c62523f94265352c9282b14be953ea5d48.tar.gz"
+      },
+      "tuning": {
+        "key": "a2d55d8adf1c813ca717d8a70f3f01da25436ab457c21ab645cce4adff3eb810",
+        "compiler": "8bdb1aee47d4da273701110a09049ce8f8a6ec20e481e145330c2fdbd12ff9dc",
+        "seed": 8192,
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "selected": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "candidate": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "admitted": true,
+        "heldout_speedup_vs_default": 1.5543450642356071,
+        "paired_holdout_us": [
+          {
+            "default": 4.232999868690968,
+            "candidate": 2.723333425819874
+          },
+          {
+            "candidate": 2.722333185374737,
+            "default": 4.216000127295653
+          },
+          {
+            "default": 4.223666774729888,
+            "candidate": 2.9956667373577752
+          },
+          {
+            "candidate": 2.70033348351717,
+            "default": 4.213666543364525
+          },
+          {
+            "default": 4.213999956846237,
+            "candidate": 2.7033332735300064
+          }
+        ],
+        "heldout_errors": [
+          {
+            "max_abs": 0.001953125,
+            "mean_abs": 4.9421304510426277e-08,
+            "unequal": 30,
+            "finite_pairs": 99328,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0.0018,
+            "atol": 3e-05
+          },
+          {
+            "max_abs": 0.0,
+            "mean_abs": 0.0,
+            "unequal": 0,
+            "finite_pairs": 99328,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0,
+            "atol": 0
+          }
+        ],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "db2e5865e2756f1c3371ab2e01992a4c7c47a0c5940ba04e423cf2385e7a8754",
+            "device": {
+              "median_us": 2.7540000155568123,
+              "p10_us": 2.749999985098839,
+              "p90_us": 2.7566667025287948,
+              "samples_us": [
+                2.773333340883255,
+                2.7526666720708213,
+                2.7526666720708213,
+                2.7566667025287948,
+                2.7540000155568123,
+                2.7553333590428033,
+                2.749999985098839
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "20d57e4496bebc1426c8ef426c0d7d27c673c31bd7eac7113c8fc65fd7eceb1a",
+            "device": {
+              "median_us": 2.9239999130368233,
+              "p10_us": 2.9026667277018228,
+              "p90_us": 2.9273334269722304,
+              "samples_us": [
+                2.9026667277018228,
+                2.9226665695508323,
+                2.9273334269722304,
+                2.9239999130368233,
+                2.9279999434947968,
+                2.9239999130368233,
+                2.918666539092859
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "6ec3ea2b693ecb7fa656ed16e65731ab855e6beaddbc0c215801c8c2ffe36b4e",
+            "device": {
+              "median_us": 2.9239999130368233,
+              "p10_us": 2.9040000711878142,
+              "p90_us": 2.9273334269722304,
+              "samples_us": [
+                2.9040000711878142,
+                2.9273334269722304,
+                2.9293332869807878,
+                2.9193333660562835,
+                2.9273334269722304,
+                2.9239999130368233,
+                2.9193333660562835
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "6fd4907d65f773c683aa71666c3678fb1934ac4a9ec302525620a38af65a9e89",
+            "device": {
+              "median_us": 2.932666800916195,
+              "p10_us": 2.830666800340017,
+              "p90_us": 3.53333322952191,
+              "samples_us": [
+                2.932666800916195,
+                3.53333322952191,
+                3.3679998790224395,
+                8.05200015505155,
+                2.842666581273079,
+                2.932666800916195,
+                2.830666800340017
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": true,
+              "vec": 8
+            },
+            "kernel_cache_id": "74e5425a639039c5e379655bf64349e737540bf5de6c8c3bfe60db25993f3efa",
+            "device": {
+              "median_us": 3.26466653496027,
+              "p10_us": 3.221999853849411,
+              "p90_us": 3.2653333619236946,
+              "samples_us": [
+                3.7546666959921517,
+                3.2653333619236946,
+                3.226666711270809,
+                3.2653333619236946,
+                3.26466653496027,
+                3.2226666808128357,
+                3.221999853849411
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "7f4bd37b85992e0dcaf8a239d313e92ffea42a9c8fdf1f920ee7db3cdb364bc4",
+            "device": {
+              "median_us": 4.289333398143451,
+              "p10_us": 4.2666665588816,
+              "p90_us": 4.289333398143451,
+              "samples_us": [
+                4.2666665588816,
+                4.288000054657459,
+                4.289333398143451,
+                4.289333398143451,
+                4.289333398143451,
+                4.290666741629441,
+                4.287333227694035
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "0841edb9562fd387ab253371793a0334983e716a2dd4d31df341955e296005fa",
+            "device": {
+              "median_us": 4.758000063399474,
+              "p10_us": 4.757333236436049,
+              "p90_us": 4.7626666103800135,
+              "samples_us": [
+                4.76933332780997,
+                4.7626666103800135,
+                4.7626666103800135,
+                4.758000063399474,
+                4.758000063399474,
+                4.758000063399474,
+                4.757333236436049
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "a98b4c733ab1f82b09833a9b4c9f22724c1a40da0e25eae3bac84bdae77d14f6",
+            "device": {
+              "median_us": 5.018666697045167,
+              "p10_us": 5.0066666056712466,
+              "p90_us": 5.035333335399628,
+              "samples_us": [
+                5.035333335399628,
+                5.046666599810123,
+                5.019333213567734,
+                5.018666697045167,
+                5.016000010073185,
+                5.01066663612922,
+                5.0066666056712466
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "78a95c16de84599e13381ee67216c4b5875b64ea70954ba30d03fa84ce71a95b",
+            "device": {
+              "median_us": 5.359333629409472,
+              "p10_us": 5.3513335684935255,
+              "p90_us": 5.437999963760376,
+              "samples_us": [
+                5.375999957323074,
+                5.3566669424374895,
+                5.358666802446048,
+                5.359333629409472,
+                5.440666650732358,
+                5.437999963760376,
+                5.3513335684935255
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "warp",
+              "cache": false,
+              "vec": 8
+            },
+            "kernel_cache_id": "4d5bfe138edb00c5f972320a3bce1ed4ba17d8843ae2cd23cc48dcb903c4e157",
+            "device": {
+              "median_us": 6.555999939640363,
+              "p10_us": 6.5486667056878405,
+              "p90_us": 6.583999842405319,
+              "samples_us": [
+                6.653999909758568,
+                6.55466690659523,
+                6.555999939640363,
+                6.5486667056878405,
+                6.549999738732974,
+                6.555999939640363,
+                6.583999842405319
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "9984f423ab40e9cdf62f7ba85b4df5a8cb57a5b217c3da74790f5e46c0da640f",
+            "device": {
+              "median_us": 6.849333023031552,
+              "p10_us": 6.826666494210561,
+              "p90_us": 7.019999747474988,
+              "samples_us": [
+                6.826666494210561,
+                6.84799998998642,
+                6.850666676958402,
+                6.84799998998642,
+                6.849333023031552,
+                7.688666383425395,
+                7.019999747474988
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "d4ddb8d03fdb69b8433a850dec174085892579def91e6ab4a913cb5a1adf7781",
+            "device": {
+              "median_us": 7.01933354139328,
+              "p10_us": 6.9973332186539965,
+              "p90_us": 7.02400008837382,
+              "samples_us": [
+                6.9973332186539965,
+                7.019999747474988,
+                7.024666915337245,
+                7.01933354139328,
+                7.02400008837382,
+                7.01933354139328,
+                7.014666373531024
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "face94c44aa13aabf94e7a8f3b730c1220b043c6e7443012c70e2155afed77e3",
+            "device": {
+              "median_us": 8.38466671605905,
+              "p10_us": 8.362666393319765,
+              "p90_us": 8.389333263039589,
+              "samples_us": [
+                8.362666393319765,
+                8.38466671605905,
+                8.38466671605905,
+                8.389333263039589,
+                8.389333263039589,
+                8.389333263039589,
+                8.380666375160217
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "9ca5248fcc1960d7200b08f93d033d7f09f7ae3481e27f0fbc37e44a791aef6c",
+            "device": {
+              "median_us": 12.267333765824636,
+              "p10_us": 12.229333321253458,
+              "p90_us": 12.272000312805176,
+              "samples_us": [
+                12.28800043463707,
+                12.267333765824636,
+                12.272000312805176,
+                12.229333321253458,
+                12.268000592788061,
+                12.237999588251114,
+                12.236667176087698
+              ]
+            }
+          }
+        ],
+        "invalid": [],
+        "case": "layernorm2",
+        "rows": 97,
+        "width": 1024,
+        "dtype": "torch.float16"
+      },
+      "comparison": {
+        "case": "layernorm2",
+        "shape": [
+          97,
+          1024
+        ],
+        "dtype": "torch.float16",
+        "seed": 10192,
+        "device": "NVIDIA GB10",
+        "torch": "2.13.0+cu130",
+        "cuda": "13.0",
+        "python": "3.12.3",
+        "schedule": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "export_ms": 6.479864940047264,
+        "sparkfuse_build_or_load_ms": 0.28925202786922455,
+        "inductor_wrapper_plus_first_call_ms": 738.7055549770594,
+        "plan": {
+          "domain": [
+            97,
+            1024
+          ],
+          "reduction": 5,
+          "input_ids": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "output_ids": [
+            8,
+            4
+          ],
+          "values": [
+            {
+              "op": "input",
+              "shape": [
+                97,
+                1024
+              ],
+              "dt": "f16",
+              "deps": [],
+              "imm": 0
+            },
+            {
+              "op": "input",
+              "shape": [
+                97,
+                1024
+              ],
+              "dt": "f16",
+              "deps": [],
+              "imm": 1
+            },
+            {
+              "op": "input",
+              "shape": [
+                1024
+              ],
+              "dt": "f16",
+              "deps": [],
+              "imm": 2
+            },
+            {
+              "op": "input",
+              "shape": [
+                1024
+              ],
+              "dt": "f16",
+              "deps": [],
+              "imm": 3
+            },
+            {
+              "op": "add",
+              "shape": [
+                97,
+                1024
+              ],
+              "dt": "f16",
+              "deps": [
+                0,
+                1
+              ],
+              "imm": null
+            },
+            {
+              "op": "layer_norm",
+              "shape": [
+                97,
+                1024
+              ],
+              "dt": "f32",
+              "deps": [
+                4
+              ],
+              "imm": 1e-05
+            },
+            {
+              "op": "mul",
+              "shape": [
+                97,
+                1024
+              ],
+              "dt": "f32",
+              "deps": [
+                5,
+                2
+              ],
+              "imm": null
+            },
+            {
+              "op": "add",
+              "shape": [
+                97,
+                1024
+              ],
+              "dt": "f32",
+              "deps": [
+                6,
+                3
+              ],
+              "imm": null
+            },
+            {
+              "op": "cast",
+              "shape": [
+                97,
+                1024
+              ],
+              "dt": "f16",
+              "deps": [
+                7
+              ],
+              "imm": null
+            }
+          ],
+          "launches": 1,
+          "global_intermediate_bytes": 0
+        },
+        "torch_export_graph": "graph():\n    %x : [num_users=1] = placeholder[target=x]\n    %skip : [num_users=1] = placeholder[target=skip]\n    %weight : [num_users=1] = placeholder[target=weight]\n    %bias : [num_users=1] = placeholder[target=bias]\n    %add : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%x, %skip), kwargs = {})\n    %layer_norm : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [1024], %weight, %bias, 1e-05, False), kwargs = {})\n    return (layer_norm, add)",
+        "backends": {
+          "eager": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 99328,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.0018,
+                "atol": 3e-05
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 99328,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 3.986000083386898,
+              "p10_us": 3.9550000801682472,
+              "p90_us": 3.9874999783933163,
+              "samples_us": [
+                3.9670001715421677,
+                3.9874999783933163,
+                3.9874999783933163,
+                3.986000083386898,
+                3.9869998581707478,
+                3.9874999783933163,
+                3.9550000801682472,
+                3.9555002003908157,
+                3.983499947935343
+              ]
+            },
+            "host_sync": {
+              "median_us": 14.928,
+              "p10_us": 14.832,
+              "p90_us": 15.441,
+              "samples_us": [
+                20.08,
+                16.128,
+                15.441,
+                15.168,
+                15.04,
+                14.976,
+                14.96,
+                15.105,
+                19.024,
+                14.896,
+                14.864,
+                15.072,
+                14.849,
+                14.752,
+                14.864,
+                14.896,
+                14.864,
+                14.753,
+                15.024,
+                14.928,
+                14.976,
+                14.832,
+                14.913,
+                14.88,
+                14.896,
+                14.832,
+                14.801,
+                14.976,
+                15.008,
+                14.864,
+                14.992
+              ]
+            }
+          },
+          "inductor": {
+            "parity": "fail",
+            "diagnostic": "Tensor-likes are not close!\n\nMismatched elements: 1577 / 99328 (1.6%)\nGreatest absolute difference: 0.001953125 at index (82, 943) (up to 3e-05 allowed)\nGreatest relative difference: 5.1796875 at index (17, 353) (up to 0.0018 allowed)"
+          },
+          "sparkfuse": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.000244140625,
+                "mean_abs": 1.0930438593183595e-08,
+                "unequal": 25,
+                "finite_pairs": 99328,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.0018,
+                "atol": 3e-05
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 99328,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 2.7344999834895134,
+              "p10_us": 2.707500010728836,
+              "p90_us": 2.7364999987185,
+              "samples_us": [
+                2.725000027567148,
+                2.707500010728836,
+                2.7085000183433294,
+                2.7364999987185,
+                2.7344999834895134,
+                2.7115000411868095,
+                2.7344999834895134,
+                2.7389999013394117,
+                2.7344999834895134
+              ]
+            },
+            "host_sync": {
+              "median_us": 89.361,
+              "p10_us": 86.081,
+              "p90_us": 115.953,
+              "samples_us": [
+                115.953,
+                95.778,
+                91.441,
+                95.857,
+                89.361,
+                92.754,
+                91.009,
+                159.106,
+                92.049,
+                89.89,
+                87.617,
+                86.113,
+                86.081,
+                92.257,
+                87.97,
+                86.497,
+                86.465,
+                85.857,
+                152.786,
+                88.657,
+                86.674,
+                86.993,
+                90.385,
+                87.057,
+                92.593,
+                88.353,
+                86.065,
+                85.553,
+                87.313,
+                159.234,
+                91.65
+              ]
+            }
+          }
+        }
+      },
+      "status": "parity-failure",
+      "failed_backends": [
+        "inductor"
+      ],
+      "elapsed_s": 1.9000216098502278,
+      "worker_stderr": "parity failed for inductor; retained report: case-4.rejected.json\n"
+    },
+    {
+      "job": {
+        "case": "layernorm2",
+        "rows": 512,
+        "width": 1024,
+        "dtype": "bfloat16",
+        "budget": 14,
+        "seed": 8215,
+        "profile": false
+      },
+      "provenance": {
+        "git_head_at_capture": "9c3067aa8dc0791461e8f55ac43fea85f56dd737",
+        "source_tree_sha256": "4cec8e4991d4d8824d6fcffd96e092c62523f94265352c9282b14be953ea5d48",
+        "archive": "sources/4cec8e4991d4d8824d6fcffd96e092c62523f94265352c9282b14be953ea5d48.tar.gz"
+      },
+      "tuning": {
+        "key": "c0e478c22b8c5c789ed47fb6021e0866c13783bf0e1223d79129393f0746cf3e",
+        "compiler": "8bdb1aee47d4da273701110a09049ce8f8a6ec20e481e145330c2fdbd12ff9dc",
+        "seed": 8215,
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "selected": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "candidate": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "admitted": true,
+        "heldout_speedup_vs_default": 1.7630224010345699,
+        "paired_holdout_us": [
+          {
+            "default": 9.84533317387104,
+            "candidate": 5.535666520396869
+          },
+          {
+            "candidate": 5.55833304921786,
+            "default": 9.813333551088968
+          },
+          {
+            "default": 9.815333411097527,
+            "candidate": 5.567333350578944
+          },
+          {
+            "candidate": 5.659999946753184,
+            "default": 9.825333332022032
+          },
+          {
+            "default": 9.823666885495186,
+            "candidate": 5.581666405002276
+          }
+        ],
+        "heldout_errors": [
+          {
+            "max_abs": 0.0009765625,
+            "mean_abs": 5.141785663909104e-09,
+            "unequal": 14,
+            "finite_pairs": 524288,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0.012,
+            "atol": 0.0002
+          },
+          {
+            "max_abs": 0.0,
+            "mean_abs": 0.0,
+            "unequal": 0,
+            "finite_pairs": 524288,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0,
+            "atol": 0
+          }
+        ],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "2b1ecb4d7d3c2fecd690cea38e38e893cdeda9070ed75fe42a29de84a5af6e8f",
+            "device": {
+              "median_us": 5.636666590968768,
+              "p10_us": 5.588666846354802,
+              "p90_us": 5.653333539764087,
+              "samples_us": [
+                5.636666590968768,
+                5.610666548212369,
+                5.614666889111201,
+                5.658666913708051,
+                5.653333539764087,
+                5.653333539764087,
+                5.588666846354802
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "364ce9acca55cd5b6ecf46662c03ae1301df04d8636e6e862e98bdce8297311a",
+            "device": {
+              "median_us": 6.169333433111508,
+              "p10_us": 6.160666545232137,
+              "p90_us": 6.170000260074933,
+              "samples_us": [
+                6.1953334758679075,
+                6.160666545232137,
+                6.169333433111508,
+                6.170000260074933,
+                6.169333433111508,
+                6.170000260074933,
+                6.165333092212677
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "117bd5da40fcc36c5c972ad41e6e26ce1695521f8012c6d503d609eb77c76a8f",
+            "device": {
+              "median_us": 7.232666636506717,
+              "p10_us": 7.184666891892751,
+              "p90_us": 7.237333183487256,
+              "samples_us": [
+                7.2093332807223005,
+                7.232666636506717,
+                7.241333524386088,
+                7.184666891892751,
+                7.237333183487256,
+                7.233333463470141,
+                7.226666435599327
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "e7fdb17d6721a0d5471318dfa125d6763a0eedb562a32a0ab0cfc03bd9220f99",
+            "device": {
+              "median_us": 8.21333316465219,
+              "p10_us": 8.192000289758047,
+              "p90_us": 8.21733350555102,
+              "samples_us": [
+                8.192000289758047,
+                8.21333316465219,
+                8.21733350555102,
+                8.21333316465219,
+                8.21333316465219,
+                8.21733350555102,
+                8.208666617671648
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "d530359fdfe4f6dd75148b8e3adf9e4caacbebd5d2d0ced87e8b22d6f09cbbe3",
+            "device": {
+              "median_us": 8.299333353837332,
+              "p10_us": 8.290000259876251,
+              "p90_us": 8.338666831453642,
+              "samples_us": [
+                8.320000022649765,
+                8.299333353837332,
+                8.344666411479315,
+                8.338666831453642,
+                8.290000259876251,
+                8.29466680685679,
+                8.290000259876251
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "e54f99a41c22ba15261fc0a79d1fbe3d4252bdb118bd8fbd762de34eddea8c76",
+            "device": {
+              "median_us": 9.028000136216482,
+              "p10_us": 8.980666597684225,
+              "p90_us": 9.045333291093508,
+              "samples_us": [
+                9.045333291093508,
+                9.028000136216482,
+                9.023333589235941,
+                9.02399979531765,
+                9.028666963179907,
+                9.072000160813332,
+                8.980666597684225
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "fd4a56d06e6b00a906346d918c5fd800db6fabef8430db6e7fcc4848d4fd72ab",
+            "device": {
+              "median_us": 9.385999913016954,
+              "p10_us": 9.294000143806139,
+              "p90_us": 9.408000235756239,
+              "samples_us": [
+                9.385999913016954,
+                9.36999979118506,
+                9.294000143806139,
+                9.397999693950018,
+                9.411999955773354,
+                9.365333244204521,
+                9.408000235756239
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "f769a4ec0735a840470c25fd245bb6729b2aa7acd9e36050a4cad4aab9588be2",
+            "device": {
+              "median_us": 9.403333067893982,
+              "p10_us": 9.364666417241096,
+              "p90_us": 9.407333408792814,
+              "samples_us": [
+                9.387333566943804,
+                9.407333408792814,
+                9.36999979118506,
+                9.411999955773354,
+                9.364666417241096,
+                9.407333408792814,
+                9.403333067893982
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": true,
+              "vec": 8
+            },
+            "kernel_cache_id": "ec531150ee2358ff23fbf0b94ae382da298914cf3f15aeed7fbe176777e0d745",
+            "device": {
+              "median_us": 9.408666441837946,
+              "p10_us": 9.343999748428663,
+              "p90_us": 9.413333609700203,
+              "samples_us": [
+                9.343999748428663,
+                9.364666417241096,
+                9.369333585103353,
+                9.434000278512636,
+                9.40933326880137,
+                9.413333609700203,
+                9.408666441837946
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "99f39bd56f35eb5c3911d2d0c8ea6a10ac0af263da69ef70fcbfcc026865bbfc",
+            "device": {
+              "median_us": 9.62533305088679,
+              "p10_us": 9.601333489020666,
+              "p90_us": 9.753333404660225,
+              "samples_us": [
+                11.002667248249054,
+                9.621333330869675,
+                9.753333404660225,
+                9.601333489020666,
+                9.62533305088679,
+                9.629333391785622,
+                9.616666783889135
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "27e788f782970ef6af06418fdecd4914df42178dc4328ba20161c64368055e1a",
+            "device": {
+              "median_us": 9.706666693091393,
+              "p10_us": 9.625999877850214,
+              "p90_us": 9.72800018886725,
+              "samples_us": [
+                9.643333032727242,
+                9.625999877850214,
+                9.666000182429949,
+                9.72800018886725,
+                9.711333240071932,
+                9.749999890724817,
+                9.706666693091393
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "7b8b621b3f201ef54f3b627aba500b9f7d02b5f22903bdda0a8e0b9146d82dc1",
+            "device": {
+              "median_us": 11.808666090170542,
+              "p10_us": 11.780666808287302,
+              "p90_us": 11.84666653474172,
+              "samples_us": [
+                11.780666808287302,
+                11.796000103155771,
+                11.866666376590729,
+                11.84066633383433,
+                11.84666653474172,
+                11.799332996209463,
+                11.808666090170542
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "8ddd07339280d9059dd80f6c8ce4326fdf3e77f5d1cdd650593702e77f33cbaf",
+            "device": {
+              "median_us": 13.013333082199097,
+              "p10_us": 12.990667174259821,
+              "p90_us": 13.194666554530462,
+              "samples_us": [
+                14.472667127847672,
+                13.194666554530462,
+                12.993333240350088,
+                13.160667071739832,
+                12.991999586423239,
+                13.013333082199097,
+                12.990667174259821
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "406cabccd39b65d96cb1c310c4dc6515d260f70d1c1b4ead57a8ab2f181bde4c",
+            "device": {
+              "median_us": 17.391332735617954,
+              "p10_us": 17.329999556144077,
+              "p90_us": 17.408666511376698,
+              "samples_us": [
+                17.36533393462499,
+                17.391332735617954,
+                17.433999727169674,
+                17.390667150417965,
+                17.408666511376698,
+                17.391332735617954,
+                17.329999556144077
+              ]
+            }
+          }
+        ],
+        "invalid": [],
+        "case": "layernorm2",
+        "rows": 512,
+        "width": 1024,
+        "dtype": "torch.bfloat16"
+      },
+      "comparison": {
+        "case": "layernorm2",
+        "shape": [
+          512,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "seed": 10215,
+        "device": "NVIDIA GB10",
+        "torch": "2.13.0+cu130",
+        "cuda": "13.0",
+        "python": "3.12.3",
+        "schedule": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "export_ms": 7.046639919281006,
+        "sparkfuse_build_or_load_ms": 0.3792690113186836,
+        "inductor_wrapper_plus_first_call_ms": 733.3320351317525,
+        "plan": {
+          "domain": [
+            512,
+            1024
+          ],
+          "reduction": 5,
+          "input_ids": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "output_ids": [
+            8,
+            4
+          ],
+          "values": [
+            {
+              "op": "input",
+              "shape": [
+                512,
+                1024
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 0
+            },
+            {
+              "op": "input",
+              "shape": [
+                512,
+                1024
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 1
+            },
+            {
+              "op": "input",
+              "shape": [
+                1024
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 2
+            },
+            {
+              "op": "input",
+              "shape": [
+                1024
+              ],
+              "dt": "bf16",
+              "deps": [],
+              "imm": 3
+            },
+            {
+              "op": "add",
+              "shape": [
+                512,
+                1024
+              ],
+              "dt": "bf16",
+              "deps": [
+                0,
+                1
+              ],
+              "imm": null
+            },
+            {
+              "op": "layer_norm",
+              "shape": [
+                512,
+                1024
+              ],
+              "dt": "f32",
+              "deps": [
+                4
+              ],
+              "imm": 1e-05
+            },
+            {
+              "op": "mul",
+              "shape": [
+                512,
+                1024
+              ],
+              "dt": "f32",
+              "deps": [
+                5,
+                2
+              ],
+              "imm": null
+            },
+            {
+              "op": "add",
+              "shape": [
+                512,
+                1024
+              ],
+              "dt": "f32",
+              "deps": [
+                6,
+                3
+              ],
+              "imm": null
+            },
+            {
+              "op": "cast",
+              "shape": [
+                512,
+                1024
+              ],
+              "dt": "bf16",
+              "deps": [
+                7
+              ],
+              "imm": null
+            }
+          ],
+          "launches": 1,
+          "global_intermediate_bytes": 0
+        },
+        "torch_export_graph": "graph():\n    %x : [num_users=1] = placeholder[target=x]\n    %skip : [num_users=1] = placeholder[target=skip]\n    %weight : [num_users=1] = placeholder[target=weight]\n    %bias : [num_users=1] = placeholder[target=bias]\n    %add : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%x, %skip), kwargs = {})\n    %layer_norm : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [1024], %weight, %bias, 1e-05, False), kwargs = {})\n    return (layer_norm, add)",
+        "backends": {
+          "eager": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 524288,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 524288,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 6.198999937623739,
+              "p10_us": 6.180999800562859,
+              "p90_us": 6.219500210136175,
+              "samples_us": [
+                6.23599998652935,
+                6.196000147610903,
+                6.198999937623739,
+                6.191499996930361,
+                6.180999800562859,
+                6.219500210136175,
+                6.199500057846308,
+                6.192000117152929,
+                6.21700007468462
+              ]
+            },
+            "host_sync": {
+              "median_us": 16.657,
+              "p10_us": 15.921,
+              "p90_us": 17.376,
+              "samples_us": [
+                193.187,
+                24.736,
+                17.28,
+                17.616,
+                16.241,
+                16.832,
+                16.304,
+                17.376,
+                16.753,
+                15.872,
+                15.984,
+                16.016,
+                16.864,
+                15.809,
+                17.072,
+                16.784,
+                16.848,
+                15.921,
+                16.768,
+                16.72,
+                16.48,
+                16.672,
+                16.657,
+                16.656,
+                15.456,
+                16.384,
+                16.321,
+                16.624,
+                16.736,
+                16.064,
+                16.304
+              ]
+            }
+          },
+          "inductor": {
+            "parity": "fail",
+            "diagnostic": "Tensor-likes are not close!\n\nMismatched elements: 11035 / 524288 (2.1%)\nGreatest absolute difference: 0.015625 at index (2, 476) (up to 0.0002 allowed)\nGreatest relative difference: 153.0 at index (424, 233) (up to 0.012 allowed)"
+          },
+          "sparkfuse": {
+            "parity": "pass",
+            "errors": [
+              {
+                "max_abs": 0.00390625,
+                "mean_abs": 1.0422468221804593e-08,
+                "unequal": 21,
+                "finite_pairs": 524288,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 524288,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ],
+            "device": {
+              "median_us": 5.555999930948019,
+              "p10_us": 5.52350003272295,
+              "p90_us": 5.587500054389238,
+              "samples_us": [
+                5.5959997698664665,
+                5.5240001529455185,
+                5.586499813944101,
+                5.555999930948019,
+                5.52350003272295,
+                5.566000007092953,
+                5.587500054389238,
+                5.53049985319376,
+                5.545500200241804
+              ]
+            },
+            "host_sync": {
+              "median_us": 89.217,
+              "p10_us": 87.281,
+              "p90_us": 124.914,
+              "samples_us": [
+                124.914,
+                95.889,
+                93.761,
+                91.09,
+                91.249,
+                89.921,
+                93.697,
+                170.899,
+                92.993,
+                90.129,
+                89.185,
+                87.217,
+                86.818,
+                88.097,
+                87.457,
+                87.473,
+                87.281,
+                86.833,
+                161.123,
+                91.201,
+                88.545,
+                89.041,
+                88.529,
+                89.97,
+                89.057,
+                89.217,
+                87.793,
+                88.865,
+                88.178,
+                163.266,
+                91.841
+              ]
+            }
+          }
+        }
+      },
+      "status": "parity-failure",
+      "failed_backends": [
+        "inductor"
+      ],
+      "elapsed_s": 1.997412320226431,
+      "worker_stderr": "parity failed for inductor; retained report: case-5.rejected.json\n"
+    }
+  ],
+  "all_passed": false
+}

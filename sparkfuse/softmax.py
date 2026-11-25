@@ -6,7 +6,9 @@ from .codegen import CT, LOAD, STORE
 def generate_rowwise(p, s, emit, index):
     h = p.width
     t = s.threads
-    warp = s.layout == "warp"
+    online = s.layout == "block_welford"
+    xor = s.layout == "warp_xor"
+    warp = xor or s.layout == "warp"
     stride = 32 if warp else t
     inp = p.vals[p.red].deps[0]
     params = [f"const {CT[p.vals[i].dt]}* __restrict__ in{k}" for k, i in enumerate(p.inputs)] + [
@@ -29,6 +31,12 @@ def generate_rowwise(p, s, emit, index):
         from .vector import HEADER, TAIL_HEADER
 
         src[:4] = [HEADER + (TAIL_HEADER if tail else "")]
+    if online:
+        from .layernorm import WELFORD_SRC
+
+        src.insert(
+            next(i for i, line in enumerate(src) if line.startswith("__global__")), WELFORD_SRC
+        )
     off = f"j/{stride}" if v == 1 else f"(first/{stride * v})*{v}+q"
     if s.cache:
         src.append(f"float held[{((h + stride * v - 1) // (stride * v)) * v}];")
@@ -94,6 +102,15 @@ def generate_rowwise(p, s, emit, index):
         shuffle = (
             f"for(int d=16;d;d>>=1) {acc}=" + op(acc, f"__shfl_down_sync(0xffffffff,{acc},d)") + ";"
         )
+        if xor:
+            # Keep each lane's butterfly association and its own result. Broadcasting
+            # lane zero would impose a different floating-point evaluation order.
+            shuffle = (
+                f"for(int d=16;d;d>>=1) {acc}="
+                + op(acc, f"__shfl_xor_sync(0xffffffff,{acc},d)")
+                + ";"
+            )
+            return [shuffle, f"const float {name}={acc};"]
         if warp:
             return [shuffle, f"float {name}=__shfl_sync(0xffffffff,{acc},0);"]
         # Distinct scratch arrays for the two phases: no scratch overwrite race.
@@ -119,7 +136,11 @@ def generate_rowwise(p, s, emit, index):
         return [text, f"mass+=expf({operand}-rowmax);"]
 
     norm = p.vals[p.red].op == "layer_norm"
-    if norm:
+    if online:
+        from .layernorm import online_statistics
+
+        src += online_statistics(h, inp, p.vals[p.red].imm, s.cache, off, emit, phase)
+    elif norm:
         from .layernorm import statistics
 
         src += statistics(h, inp, p.vals[p.red].imm, s.cache, off, emit, phase, collective)
@@ -154,6 +175,12 @@ def generate_rowwise(p, s, emit, index):
                 out += ["float logit; {", text, f"logit={operand}; }}"]
                 known[inp] = "logit"
                 prob = "((logit-origin)-center)*inv" if norm else "expf(logit-rowmax)*inv"
+            if online:
+                sample = f"held[{off}]" if s.cache else "logit"
+                prob = f"({sample}-center)*inv"
+            if xor:
+                numerator = f"held[{off}]" if s.cache else "expf(logit-rowmax)"
+                prob = f"__fdiv_rn({numerator},rowsum)"
             dt = p.vals[p.red].dt
             out += ["const float prob=" + LOAD[dt](STORE[dt](prob)) + ";"]
             known[p.red] = "prob"

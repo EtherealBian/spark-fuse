@@ -1,0 +1,2456 @@
+{
+  "scope": "One real randomly initialized BERT encoder layer, eval, BF16, batch 1. Eager self-attention, no mask. Not entire BERT.",
+  "torch": "2.13.0+cu130",
+  "transformers": "4.51.3",
+  "compiler": "29ab755b687d339d01729536acfd2fd36956e4a8e6d609c058d0e0edfaeb1bfa",
+  "device": "NVIDIA GB10",
+  "weight_seed": 2643,
+  "seeds": [
+    794,
+    933,
+    1665,
+    3023
+  ],
+  "seq": 33,
+  "decisions": {
+    "unsplit": {
+      "regions": [
+        {
+          "ops": [
+            "div",
+            "softmax"
+          ],
+          "module": "_sparkfuse_region_0",
+          "live_ins": [
+            "matmul"
+          ],
+          "live_outs": [
+            "softmax"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        },
+        {
+          "ops": [
+            "add",
+            "layer_norm",
+            "add_1",
+            "layer_norm_1"
+          ],
+          "fallback": "no legal insertion point between live-ins and live-outs"
+        }
+      ],
+      "fx": "graph():\n    %attention_self_query_weight : [num_users=1] = get_attr[target=attention.self.query.weight]\n    %attention_self_query_bias : [num_users=1] = get_attr[target=attention.self.query.bias]\n    %attention_self_key_weight : [num_users=1] = get_attr[target=attention.self.key.weight]\n    %attention_self_key_bias : [num_users=1] = get_attr[target=attention.self.key.bias]\n    %attention_self_value_weight : [num_users=1] = get_attr[target=attention.self.value.weight]\n    %attention_self_value_bias : [num_users=1] = get_attr[target=attention.self.value.bias]\n    %attention_output_dense_weight : [num_users=1] = get_attr[target=attention.output.dense.weight]\n    %attention_output_dense_bias : [num_users=1] = get_attr[target=attention.output.dense.bias]\n    %attention_output_layer_norm_weight : [num_users=1] = get_attr[target=attention.output.LayerNorm.weight]\n    %attention_output_layer_norm_bias : [num_users=1] = get_attr[target=attention.output.LayerNorm.bias]\n    %intermediate_dense_weight : [num_users=1] = get_attr[target=intermediate.dense.weight]\n    %intermediate_dense_bias : [num_users=1] = get_attr[target=intermediate.dense.bias]\n    %output_dense_weight : [num_users=1] = get_attr[target=output.dense.weight]\n    %output_dense_bias : [num_users=1] = get_attr[target=output.dense.bias]\n    %output_layer_norm_weight : [num_users=1] = get_attr[target=output.LayerNorm.weight]\n    %output_layer_norm_bias : [num_users=1] = get_attr[target=output.LayerNorm.bias]\n    %hidden_states : [num_users=5] = placeholder[target=hidden_states]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states,), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_query_weight, %attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_key_weight, %attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [1, 33, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_value_weight, %attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [1, 33, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [1, 33, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %_sparkfuse_region_0 : [num_users=1] = call_module[target=_sparkfuse_region_0](args = (%matmul,), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_0, 0), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%getitem, 0.1, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 33, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %attention_output_dense_weight, %attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.1, False), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_1, %hidden_states), kwargs = {})\n    %layer_norm : [num_users=2] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [768], %attention_output_layer_norm_weight, %attention_output_layer_norm_bias, 1e-12, False), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%layer_norm, %intermediate_dense_weight, %intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %output_dense_weight, %output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.1, False), kwargs = {})\n    %add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_2, %layer_norm), kwargs = {})\n    %layer_norm_1 : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add_1, [768], %output_layer_norm_weight, %output_layer_norm_bias, 1e-12, False), kwargs = {})\n    return (layer_norm_1,)",
+      "build_or_load_ms": 26.840906590223312
+    },
+    "split": {
+      "regions": [
+        {
+          "ops": [
+            "div",
+            "softmax"
+          ],
+          "module": "_sparkfuse_region_0",
+          "live_ins": [
+            "matmul"
+          ],
+          "live_outs": [
+            "softmax"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        },
+        {
+          "ops": [
+            "add",
+            "layer_norm"
+          ],
+          "split": {
+            "component": "1",
+            "original_rejection": "no legal insertion point between live-ins and live-outs",
+            "covered_ops": 4,
+            "planned_regions": 2,
+            "logical_output_bytes": 101376
+          },
+          "module": "_sparkfuse_region_1_0",
+          "live_ins": [
+            "attention_output_layer_norm_weight",
+            "attention_output_layer_norm_bias",
+            "hidden_states",
+            "dropout_1"
+          ],
+          "live_outs": [
+            "layer_norm"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        },
+        {
+          "ops": [
+            "add_1",
+            "layer_norm_1"
+          ],
+          "split": {
+            "component": "1",
+            "original_rejection": "no legal insertion point between live-ins and live-outs",
+            "covered_ops": 4,
+            "planned_regions": 2,
+            "logical_output_bytes": 101376
+          },
+          "module": "_sparkfuse_region_1_1",
+          "live_ins": [
+            "output_layer_norm_weight",
+            "output_layer_norm_bias",
+            "getitem_1",
+            "dropout_2"
+          ],
+          "live_outs": [
+            "layer_norm_1"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        }
+      ],
+      "fx": "graph():\n    %attention_self_query_weight : [num_users=1] = get_attr[target=attention.self.query.weight]\n    %attention_self_query_bias : [num_users=1] = get_attr[target=attention.self.query.bias]\n    %attention_self_key_weight : [num_users=1] = get_attr[target=attention.self.key.weight]\n    %attention_self_key_bias : [num_users=1] = get_attr[target=attention.self.key.bias]\n    %attention_self_value_weight : [num_users=1] = get_attr[target=attention.self.value.weight]\n    %attention_self_value_bias : [num_users=1] = get_attr[target=attention.self.value.bias]\n    %attention_output_dense_weight : [num_users=1] = get_attr[target=attention.output.dense.weight]\n    %attention_output_dense_bias : [num_users=1] = get_attr[target=attention.output.dense.bias]\n    %attention_output_layer_norm_weight : [num_users=1] = get_attr[target=attention.output.LayerNorm.weight]\n    %attention_output_layer_norm_bias : [num_users=1] = get_attr[target=attention.output.LayerNorm.bias]\n    %intermediate_dense_weight : [num_users=1] = get_attr[target=intermediate.dense.weight]\n    %intermediate_dense_bias : [num_users=1] = get_attr[target=intermediate.dense.bias]\n    %output_dense_weight : [num_users=1] = get_attr[target=output.dense.weight]\n    %output_dense_bias : [num_users=1] = get_attr[target=output.dense.bias]\n    %output_layer_norm_weight : [num_users=1] = get_attr[target=output.LayerNorm.weight]\n    %output_layer_norm_bias : [num_users=1] = get_attr[target=output.LayerNorm.bias]\n    %hidden_states : [num_users=5] = placeholder[target=hidden_states]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states,), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_query_weight, %attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_key_weight, %attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [1, 33, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_value_weight, %attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [1, 33, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [1, 33, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %_sparkfuse_region_0 : [num_users=1] = call_module[target=_sparkfuse_region_0](args = (%matmul,), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_0, 0), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%getitem, 0.1, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 33, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %attention_output_dense_weight, %attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.1, False), kwargs = {})\n    %_sparkfuse_region_1_0 : [num_users=1] = call_module[target=_sparkfuse_region_1_0](args = (%attention_output_layer_norm_weight, %attention_output_layer_norm_bias, %hidden_states, %dropout_1), kwargs = {})\n    %getitem_1 : [num_users=2] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_0, 0), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem_1, %intermediate_dense_weight, %intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %output_dense_weight, %output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.1, False), kwargs = {})\n    %_sparkfuse_region_1_1 : [num_users=1] = call_module[target=_sparkfuse_region_1_1](args = (%output_layer_norm_weight, %output_layer_norm_bias, %getitem_1, %dropout_2), kwargs = {})\n    %getitem_2 : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_1, 0), kwargs = {})\n    return (getitem_2,)",
+      "build_or_load_ms": 7.1380240842700005
+    }
+  },
+  "fx": "graph():\n    %p_attention_self_query_weight : [num_users=1] = placeholder[target=p_attention_self_query_weight]\n    %p_attention_self_query_bias : [num_users=1] = placeholder[target=p_attention_self_query_bias]\n    %p_attention_self_key_weight : [num_users=1] = placeholder[target=p_attention_self_key_weight]\n    %p_attention_self_key_bias : [num_users=1] = placeholder[target=p_attention_self_key_bias]\n    %p_attention_self_value_weight : [num_users=1] = placeholder[target=p_attention_self_value_weight]\n    %p_attention_self_value_bias : [num_users=1] = placeholder[target=p_attention_self_value_bias]\n    %p_attention_output_dense_weight : [num_users=1] = placeholder[target=p_attention_output_dense_weight]\n    %p_attention_output_dense_bias : [num_users=1] = placeholder[target=p_attention_output_dense_bias]\n    %p_attention_output_layernorm_weight : [num_users=1] = placeholder[target=p_attention_output_layernorm_weight]\n    %p_attention_output_layernorm_bias : [num_users=1] = placeholder[target=p_attention_output_layernorm_bias]\n    %p_intermediate_dense_weight : [num_users=1] = placeholder[target=p_intermediate_dense_weight]\n    %p_intermediate_dense_bias : [num_users=1] = placeholder[target=p_intermediate_dense_bias]\n    %p_output_dense_weight : [num_users=1] = placeholder[target=p_output_dense_weight]\n    %p_output_dense_bias : [num_users=1] = placeholder[target=p_output_dense_bias]\n    %p_output_layernorm_weight : [num_users=1] = placeholder[target=p_output_layernorm_weight]\n    %p_output_layernorm_bias : [num_users=1] = placeholder[target=p_output_layernorm_bias]\n    %hidden_states : [num_users=4] = placeholder[target=hidden_states]\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_attention_self_query_weight, %p_attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_attention_self_key_weight, %p_attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [1, 33, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_attention_self_value_weight, %p_attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [1, 33, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [1, 33, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %div : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%matmul, 8.0), kwargs = {})\n    %softmax : [num_users=1] = call_function[target=torch.ops.aten.softmax.int](args = (%div, -1), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%softmax, 0.1, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 33, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %p_attention_output_dense_weight, %p_attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.1, False), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_1, %hidden_states), kwargs = {})\n    %layer_norm : [num_users=2] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [768], %p_attention_output_layernorm_weight, %p_attention_output_layernorm_bias, 1e-12, False), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%layer_norm, %p_intermediate_dense_weight, %p_intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %p_output_dense_weight, %p_output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.1, False), kwargs = {})\n    %add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_2, %layer_norm), kwargs = {})\n    %layer_norm_1 : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add_1, [768], %p_output_layernorm_weight, %p_output_layernorm_bias, 1e-12, False), kwargs = {})\n    return (layer_norm_1,)",
+  "ordered_regions": [
+    {
+      "ops": [
+        "div",
+        "softmax"
+      ],
+      "module": "_sparkfuse_region_0",
+      "live_ins": [
+        "matmul"
+      ],
+      "live_outs": [
+        "softmax"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "warp_xor",
+        "cache": true,
+        "vec": 1
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add",
+        "layer_norm"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 101376
+      },
+      "module": "_sparkfuse_region_1_0",
+      "live_ins": [
+        "attention_output_layer_norm_weight",
+        "attention_output_layer_norm_bias",
+        "hidden_states",
+        "dropout_1"
+      ],
+      "live_outs": [
+        "layer_norm"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block_welford",
+        "cache": true,
+        "vec": 4
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add_1",
+        "layer_norm_1"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 101376
+      },
+      "module": "_sparkfuse_region_1_1",
+      "live_ins": [
+        "output_layer_norm_weight",
+        "output_layer_norm_bias",
+        "getitem_1",
+        "dropout_2"
+      ],
+      "live_outs": [
+        "layer_norm_1"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block_welford",
+        "cache": true,
+        "vec": 4
+      },
+      "host_backend": "native"
+    }
+  ],
+  "calibration": {
+    "records": {
+      "_sparkfuse_region_0": {
+        "key": "7d0128117ac9ed9a1421b10884ad816b602932231afd209d21576d6f5755eaf0",
+        "compiler": "29ab755b687d339d01729536acfd2fd36956e4a8e6d609c058d0e0edfaeb1bfa",
+        "seed": 2929,
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "selected": {
+          "threads": 64,
+          "layout": "warp",
+          "cache": true,
+          "vec": 1
+        },
+        "candidate": {
+          "threads": 64,
+          "layout": "warp",
+          "cache": true,
+          "vec": 1
+        },
+        "admitted": true,
+        "heldout_speedup_vs_default": 1.1976264249088424,
+        "paired_holdout_us": [
+          {
+            "default": 1.5473333187401295,
+            "candidate": 1.2923333172996838
+          },
+          {
+            "candidate": 1.2919999814281862,
+            "default": 1.5473333187401295
+          },
+          {
+            "default": 1.5470000604788463,
+            "candidate": 1.2919999814281862
+          },
+          {
+            "candidate": 1.290333302070697,
+            "default": 1.5483334039648373
+          },
+          {
+            "default": 1.549000075707833,
+            "candidate": 1.2913333096851904
+          }
+        ],
+        "heldout_errors": [
+          {
+            "max_abs": 0.0,
+            "mean_abs": 0.0,
+            "unequal": 0,
+            "finite_pairs": 13068,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0.012,
+            "atol": 0.0002
+          }
+        ],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "0913d3a86c56a20e8bdee04eb642ec728a79fa91a30609bcb06901619a5c7db5",
+            "device": {
+              "median_us": 1.348000019788742,
+              "p10_us": 1.343333317587773,
+              "p90_us": 1.3506667067607243,
+              "samples_us": [
+                1.3639999864002068,
+                1.3506667067607243,
+                1.3486666915317376,
+                1.348000019788742,
+                1.3473333480457466,
+                1.3473333480457466,
+                1.343333317587773
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "10dc94a19efc729ed58d8c91c35dfe5dd9e66ffdf5056bc58259b5ddae8e9241",
+            "device": {
+              "median_us": 1.348000019788742,
+              "p10_us": 1.343333317587773,
+              "p90_us": 1.3506667067607243,
+              "samples_us": [
+                1.3646666581432025,
+                1.3506667067607243,
+                1.3473333480457466,
+                1.348000019788742,
+                1.348000019788742,
+                1.348000019788742,
+                1.343333317587773
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "953203e4779e33345d158b93420ac891eb5dc5e853d49ed23bfa17b364e13ba1",
+            "device": {
+              "median_us": 1.3900000291566055,
+              "p10_us": 1.3853333269556363,
+              "p90_us": 1.3933333878715832,
+              "samples_us": [
+                1.4026666370530922,
+                1.3933333878715832,
+                1.3900000291566055,
+                1.3900000291566055,
+                1.390666700899601,
+                1.3900000291566055,
+                1.3853333269556363
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "0203027ce69030670d0b2b2b7c03d4c46010bc8d40371eefee225978a271ee04",
+            "device": {
+              "median_us": 1.4346667254964511,
+              "p10_us": 1.4280000080664952,
+              "p90_us": 1.439333272476991,
+              "samples_us": [
+                1.4466666616499424,
+                1.439333272476991,
+                1.43333338201046,
+                1.4326667102674644,
+                1.4346667254964511,
+                1.4353333972394466,
+                1.4280000080664952
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "4ba1e88ebf64927b394fadc5420ba170561b3c2d0bffcedcd4f905dcf274dce9",
+            "device": {
+              "median_us": 1.55933341011405,
+              "p10_us": 1.5540000361700852,
+              "p90_us": 1.5633332853515942,
+              "samples_us": [
+                1.5753333767255147,
+                1.5633332853515942,
+                1.5573333948850632,
+                1.560666598379612,
+                1.5566667231420677,
+                1.55933341011405,
+                1.5540000361700852
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "9263d7914d75bda3b02e5508b59ccf4bf907560bd94c084b4b43857df3b2ba36",
+            "device": {
+              "median_us": 1.5613332701226075,
+              "p10_us": 1.5366667260726292,
+              "p90_us": 1.5619999418656032,
+              "samples_us": [
+                1.5366667260726292,
+                1.56399995709459,
+                1.5613332701226075,
+                1.5613332701226075,
+                1.5619999418656032,
+                1.5613332701226075,
+                1.5566667231420677
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "2eeab4893e48af12b97d5071a3dc23c038329aa25cb7d2d3a7615935b7db2021",
+            "device": {
+              "median_us": 1.8613333813846111,
+              "p10_us": 1.855333335697651,
+              "p90_us": 1.8793333632250626,
+              "samples_us": [
+                1.8793333632250626,
+                1.8613333813846111,
+                1.8593333661556244,
+                1.86000003789862,
+                1.8626667248706024,
+                1.9000000320374966,
+                1.855333335697651
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "007fceb83bb4188ebc0bc05e92db22a38c5b80a9732b067b08cca23988ab4f3b",
+            "device": {
+              "median_us": 2.883999918897947,
+              "p10_us": 2.880666715403398,
+              "p90_us": 2.9013333842158318,
+              "samples_us": [
+                2.9013333842158318,
+                2.883999918897947,
+                2.8846667458613715,
+                2.883999918897947,
+                2.88333340237538,
+                2.9273334269722304,
+                2.880666715403398
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 8
+            },
+            "kernel_cache_id": "570cab062d52a1c0c8bd911e409d541ef40f9635815faae4d2249491b4c01a58",
+            "device": {
+              "median_us": 3.346666693687439,
+              "p10_us": 3.3193333074450493,
+              "p90_us": 3.397999952236811,
+              "samples_us": [
+                3.4100000436107316,
+                3.320000134408474,
+                3.3853333443403244,
+                3.3193333074450493,
+                3.3440000067154565,
+                3.397999952236811,
+                3.346666693687439
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "ce51ecd05bf52888c038e9338589e047cbb5d7f73b0ab9253d0f1b0f14c0f08a",
+            "device": {
+              "median_us": 4.935333194832007,
+              "p10_us": 4.927999960879485,
+              "p90_us": 4.972666812439759,
+              "samples_us": [
+                4.948666629691918,
+                4.9746666724483175,
+                4.935333194832007,
+                4.972666812439759,
+                4.931999991337459,
+                4.933333334823449,
+                4.927999960879485
+              ]
+            }
+          }
+        ],
+        "invalid": [],
+        "third_input_errors": [
+          {
+            "max_abs": 0.0,
+            "mean_abs": 0.0,
+            "unequal": 0,
+            "finite_pairs": 13068,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0.012,
+            "atol": 0.0002
+          }
+        ]
+      },
+      "_sparkfuse_region_1_0": {
+        "key": "21f6e1c0a13327d97fa89ac5cccc1f1d379d4fa706baa9e7b8f7f60871418b3b",
+        "compiler": "29ab755b687d339d01729536acfd2fd36956e4a8e6d609c058d0e0edfaeb1bfa",
+        "seed": 2930,
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "selected": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "candidate": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "admitted": true,
+        "heldout_speedup_vs_default": 1.7838536430705112,
+        "paired_holdout_us": [
+          {
+            "default": 3.4469999372959137,
+            "candidate": 1.9323333787421386
+          },
+          {
+            "candidate": 1.9323333787421386,
+            "default": 3.4316666424274445
+          },
+          {
+            "default": 3.447333350777626,
+            "candidate": 1.9323333787421386
+          },
+          {
+            "candidate": 1.9303333635131519,
+            "default": 3.4463334207733474
+          },
+          {
+            "default": 3.4453331803282103,
+            "candidate": 1.9323333787421386
+          }
+        ],
+        "heldout_errors": [
+          {
+            "max_abs": 6.103515625e-05,
+            "mean_abs": 2.4082684757733588e-09,
+            "unequal": 1,
+            "finite_pairs": 25344,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0.012,
+            "atol": 0.0002
+          }
+        ],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "126fedc28822b16379284ae34eba3c9a3e9d80716129c145693d165813a28715",
+            "device": {
+              "median_us": 1.9453334001203377,
+              "p10_us": 1.9400000261763732,
+              "p90_us": 1.9533333058158557,
+              "samples_us": [
+                1.9673332571983337,
+                1.9533333058158557,
+                1.9460000718633335,
+                1.9446667283773422,
+                1.9453334001203377,
+                1.9400000261763732,
+                1.9406666979193687
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "c77a57d6a4b987a081bbc7b974b5db61dd9533e01a0163f16f3943260a4edf32",
+            "device": {
+              "median_us": 2.0713332730034986,
+              "p10_us": 2.0466667289535203,
+              "p90_us": 2.0733332882324853,
+              "samples_us": [
+                2.0466667289535203,
+                2.0699999295175076,
+                2.0733332882324853,
+                2.0733332882324853,
+                2.0759999752044678,
+                2.0713332730034986,
+                2.0699999295175076
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "1a93fdf076823614a8f49a6f8b2c5b6f4f48635e224c4db10afda64bd8f46174",
+            "device": {
+              "median_us": 2.411333378404379,
+              "p10_us": 2.3666666820645332,
+              "p90_us": 2.4146667371193566,
+              "samples_us": [
+                2.3900000378489494,
+                2.411333378404379,
+                2.4120000501473746,
+                2.4146667371193566,
+                2.411333378404379,
+                2.4146667371193566,
+                2.3666666820645332
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "7c3b718d0ff8413fa9be359f50cd07673a9d8df9895962d69a0006bb76ab7251",
+            "device": {
+              "median_us": 2.9226665695508323,
+              "p10_us": 2.901999900738398,
+              "p90_us": 2.9266666000088057,
+              "samples_us": [
+                2.901999900738398,
+                2.9266666000088057,
+                2.9266666000088057,
+                2.9220000530282655,
+                2.926000083486239,
+                2.9226665695508323,
+                2.9220000530282655
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "66c5cf5b310ceaddf5fff71b48835a207a3decfe56704bfc474507c996741fbf",
+            "device": {
+              "median_us": 3.4386667733391127,
+              "p10_us": 3.4153334175546965,
+              "p90_us": 3.4386667733391127,
+              "samples_us": [
+                3.4153334175546965,
+                3.4386667733391127,
+                3.437999946375688,
+                3.4386667733391127,
+                3.4386667733391127,
+                3.4386667733391127,
+                3.4339999159177146
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "1deebf67a641de5ac7875276885a93ddb2c8df4448b2e876da00a1c1f1cb72db",
+            "device": {
+              "median_us": 3.9486667762200036,
+              "p10_us": 3.9253334204355874,
+              "p90_us": 3.9506666362285614,
+              "samples_us": [
+                3.9253334204355874,
+                3.946666605770588,
+                3.951333463191986,
+                3.9486667762200036,
+                3.9506666362285614,
+                3.950000119705995,
+                3.9460000892480216
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "f33dcb363e2d81858de57a9001592114ea14abe8c7adb62b58e7f940604fc70f",
+            "device": {
+              "median_us": 4.074000132580598,
+              "p10_us": 4.0433332324028015,
+              "p90_us": 4.078666679561138,
+              "samples_us": [
+                4.0433332324028015,
+                4.078666679561138,
+                4.078666679561138,
+                4.0459999193747835,
+                4.067999931673209,
+                4.078666679561138,
+                4.074000132580598
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "b3bafc6e50eef54efc5c82945cd04d267b2ea25096a430e37e37ceaf05cea7a8",
+            "device": {
+              "median_us": 5.782666926582654,
+              "p10_us": 5.78066644569238,
+              "p90_us": 5.788000300526619,
+              "samples_us": [
+                5.798666427532832,
+                5.782666926582654,
+                5.78066644569238,
+                5.78666664659977,
+                5.788000300526619,
+                5.782000099619229,
+                5.782000099619229
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "warp",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "cc28352f0ed1738d26e1399a0cff977fa766162eb238f43d50de4c666c4203cc",
+            "device": {
+              "median_us": 7.194666812817256,
+              "p10_us": 7.184666891892751,
+              "p90_us": 7.197333499789238,
+              "samples_us": [
+                7.2093332807223005,
+                7.193333158890407,
+                7.194666812817256,
+                7.187999784946442,
+                7.194666812817256,
+                7.197333499789238,
+                7.184666891892751
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "d015a676478be116a32a54ebf1e760975d6ceeb77fb064eda7bcbdfbbd208000",
+            "device": {
+              "median_us": 9.7526665776968,
+              "p10_us": 9.705999866127968,
+              "p90_us": 10.582000017166138,
+              "samples_us": [
+                10.582000017166138,
+                14.12200058499972,
+                9.877333417534828,
+                9.731999908884367,
+                9.710666413108507,
+                9.7526665776968,
+                9.705999866127968
+              ]
+            }
+          }
+        ],
+        "invalid": [],
+        "third_input_errors": [
+          {
+            "max_abs": 0.0,
+            "mean_abs": 0.0,
+            "unequal": 0,
+            "finite_pairs": 25344,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0.012,
+            "atol": 0.0002
+          }
+        ]
+      },
+      "_sparkfuse_region_1_1": {
+        "key": "21f6e1c0a13327d97fa89ac5cccc1f1d379d4fa706baa9e7b8f7f60871418b3b",
+        "compiler": "29ab755b687d339d01729536acfd2fd36956e4a8e6d609c058d0e0edfaeb1bfa",
+        "seed": 2931,
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "selected": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "candidate": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "admitted": true,
+        "heldout_speedup_vs_default": 1.6905346061256727,
+        "paired_holdout_us": [
+          {
+            "default": 3.447333350777626,
+            "candidate": 2.0389999262988567
+          },
+          {
+            "candidate": 2.0389999262988567,
+            "default": 3.4469999372959137
+          },
+          {
+            "default": 3.4469999372959137,
+            "candidate": 2.0389999262988567
+          },
+          {
+            "candidate": 2.0389999262988567,
+            "default": 3.447333350777626
+          },
+          {
+            "default": 3.447333350777626,
+            "candidate": 2.0396665980418525
+          }
+        ],
+        "heldout_errors": [
+          {
+            "max_abs": 2.384185791015625e-07,
+            "mean_abs": 9.407298733489683e-12,
+            "unequal": 1,
+            "finite_pairs": 25344,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0.012,
+            "atol": 0.0002
+          }
+        ],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "126fedc28822b16379284ae34eba3c9a3e9d80716129c145693d165813a28715",
+            "device": {
+              "median_us": 2.07266661648949,
+              "p10_us": 2.049999932448069,
+              "p90_us": 2.07266661648949,
+              "samples_us": [
+                2.049999932448069,
+                2.07266661648949,
+                2.073999959975481,
+                2.0719999447464943,
+                2.07266661648949,
+                2.07266661648949,
+                2.0686667412519455
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "c77a57d6a4b987a081bbc7b974b5db61dd9533e01a0163f16f3943260a4edf32",
+            "device": {
+              "median_us": 2.239333310474952,
+              "p10_us": 2.201333331565062,
+              "p90_us": 2.244000012675921,
+              "samples_us": [
+                2.2213333286345005,
+                2.244000012675921,
+                2.201333331565062,
+                2.2399999822179475,
+                2.2446666844189167,
+                2.2386666387319565,
+                2.239333310474952
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "6b5c936886ccb0fda73835dbd9b8efa5c4d790b88683e4922b391ca98cf08b57",
+            "device": {
+              "median_us": 2.3720000560084977,
+              "p10_us": 2.3666666820645332,
+              "p90_us": 2.3720000560084977,
+              "samples_us": [
+                2.3893333661059537,
+                2.3713333842655024,
+                2.3720000560084977,
+                2.3720000560084977,
+                2.3713333842655024,
+                2.3720000560084977,
+                2.3666666820645332
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": true,
+              "vec": 2
+            },
+            "kernel_cache_id": "ac15ded1442a867628a1a6ea1808a1d793184bddf62568ad70aeb944d90117f9",
+            "device": {
+              "median_us": 2.4146667371193566,
+              "p10_us": 2.3893333661059537,
+              "p90_us": 2.4146667371193566,
+              "samples_us": [
+                2.3893333661059537,
+                2.4146667371193566,
+                2.4146667371193566,
+                2.4153334088623524,
+                2.4146667371193566,
+                2.4140000653763614,
+                2.409333363175392
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "a2b2d7bc37ea93e51ee59ddb93d4a12545ab932fc9704c98636df0353259b5c6",
+            "device": {
+              "median_us": 2.5426666252315044,
+              "p10_us": 2.537333406507969,
+              "p90_us": 2.5846666345993676,
+              "samples_us": [
+                2.5593332635859647,
+                2.5426666252315044,
+                2.5419999534885087,
+                2.5426666252315044,
+                2.5846666345993676,
+                2.585999978085359,
+                2.537333406507969
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "66c5cf5b310ceaddf5fff71b48835a207a3decfe56704bfc474507c996741fbf",
+            "device": {
+              "median_us": 3.4986666093269982,
+              "p10_us": 3.4813334544499717,
+              "p90_us": 3.51200004418691,
+              "samples_us": [
+                3.4986666093269982,
+                3.4813334544499717,
+                3.51200004418691,
+                3.4893332049250603,
+                3.51200004418691,
+                3.4906665484110513,
+                3.509999873737494
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "72097ea0074eb73716749d091eea88032454690a24c94b771e14a8c5016c54b7",
+            "device": {
+              "median_us": 3.7799999117851257,
+              "p10_us": 3.7740000213185945,
+              "p90_us": 3.7813332552711167,
+              "samples_us": [
+                3.8053334380189576,
+                3.7799999117851257,
+                3.7793333952625594,
+                3.7793333952625594,
+                3.7799999117851257,
+                3.7813332552711167,
+                3.7740000213185945
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "1deebf67a641de5ac7875276885a93ddb2c8df4448b2e876da00a1c1f1cb72db",
+            "device": {
+              "median_us": 3.99799986431996,
+              "p10_us": 3.9913334573308625,
+              "p90_us": 4.018666533132394,
+              "samples_us": [
+                4.005333408713341,
+                3.99799986431996,
+                3.9946666608254113,
+                4.037999858458837,
+                3.9913334573308625,
+                3.994000144302845,
+                4.018666533132394
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "0e175e4c341615f9119c1a2013b4577dd5c932975b57977fa961502c818af252",
+            "device": {
+              "median_us": 4.291333258152008,
+              "p10_us": 4.2666665588816,
+              "p90_us": 4.292000085115433,
+              "samples_us": [
+                4.2666665588816,
+                4.292000085115433,
+                4.292000085115433,
+                4.291333258152008,
+                4.292000085115433,
+                4.291333258152008,
+                4.286666711171468
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "d015a676478be116a32a54ebf1e760975d6ceeb77fb064eda7bcbdfbbd208000",
+            "device": {
+              "median_us": 9.92400012910366,
+              "p10_us": 9.876666590571404,
+              "p90_us": 10.094000026583672,
+              "samples_us": [
+                14.943999548753103,
+                10.094000026583672,
+                10.094000026583672,
+                9.901999806364378,
+                9.919999788204828,
+                9.92400012910366,
+                9.876666590571404
+              ]
+            }
+          }
+        ],
+        "invalid": [],
+        "third_input_errors": [
+          {
+            "max_abs": 6.103515625e-05,
+            "mean_abs": 2.4082684757733588e-09,
+            "unequal": 1,
+            "finite_pairs": 25344,
+            "matched_nan": 0,
+            "matched_posinf": 0,
+            "matched_neginf": 0,
+            "rtol": 0.012,
+            "atol": 0.0002
+          }
+        ]
+      }
+    },
+    "mixed_audit_errors": [
+      {
+        "max_abs": 6.103515625e-05,
+        "mean_abs": 2.4082684757733588e-09,
+        "unequal": 1,
+        "finite_pairs": 25344,
+        "matched_nan": 0,
+        "matched_posinf": 0,
+        "matched_neginf": 0,
+        "rtol": 0.012,
+        "atol": 0.0002
+      }
+    ],
+    "captured_distinct_storage_bytes": 692808,
+    "actual_regions": [
+      {
+        "ops": [
+          "div",
+          "softmax"
+        ],
+        "module": "_sparkfuse_region_0",
+        "live_ins": [
+          "matmul"
+        ],
+        "live_outs": [
+          "softmax"
+        ],
+        "schedule": {
+          "threads": 64,
+          "layout": "warp",
+          "cache": true,
+          "vec": 1
+        },
+        "host_backend": "native"
+      },
+      {
+        "ops": [
+          "add",
+          "layer_norm"
+        ],
+        "split": {
+          "component": "1",
+          "original_rejection": "no legal insertion point between live-ins and live-outs",
+          "covered_ops": 4,
+          "planned_regions": 2,
+          "logical_output_bytes": 101376
+        },
+        "module": "_sparkfuse_region_1_0",
+        "live_ins": [
+          "attention_output_layer_norm_weight",
+          "attention_output_layer_norm_bias",
+          "hidden_states",
+          "dropout_1"
+        ],
+        "live_outs": [
+          "layer_norm"
+        ],
+        "schedule": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "host_backend": "native"
+      },
+      {
+        "ops": [
+          "add_1",
+          "layer_norm_1"
+        ],
+        "split": {
+          "component": "1",
+          "original_rejection": "no legal insertion point between live-ins and live-outs",
+          "covered_ops": 4,
+          "planned_regions": 2,
+          "logical_output_bytes": 101376
+        },
+        "module": "_sparkfuse_region_1_1",
+        "live_ins": [
+          "output_layer_norm_weight",
+          "output_layer_norm_bias",
+          "getitem_1",
+          "dropout_2"
+        ],
+        "live_outs": [
+          "layer_norm_1"
+        ],
+        "schedule": {
+          "threads": 256,
+          "layout": "block",
+          "cache": true,
+          "vec": 4
+        },
+        "host_backend": "native"
+      }
+    ]
+  },
+  "orderings": [
+    [
+      "ordered",
+      "exported_aten",
+      "eager"
+    ],
+    [
+      "exported_aten",
+      "ordered",
+      "eager"
+    ],
+    [
+      "eager",
+      "ordered",
+      "exported_aten"
+    ],
+    [
+      "eager",
+      "exported_aten",
+      "ordered"
+    ],
+    [
+      "ordered",
+      "exported_aten",
+      "eager"
+    ],
+    [
+      "ordered",
+      "eager",
+      "exported_aten"
+    ],
+    [
+      "eager",
+      "ordered",
+      "exported_aten"
+    ]
+  ],
+  "backends": {
+    "eager": {
+      "samples": [
+        {
+          "seed": 794,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 933,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 1665,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 3023,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "device": {
+            "median_us": 81.88600093126297,
+            "p10_us": 81.40800148248672,
+            "p90_us": 83.65499973297119,
+            "samples_us": [
+              81.40800148248672,
+              81.47700130939484,
+              81.73800259828568,
+              83.65499973297119,
+              105.79399764537811,
+              82.21200108528137,
+              81.88600093126297
+            ]
+          },
+          "host": {
+            "median_us": 155.538,
+            "p10_us": 154.418,
+            "p90_us": 166.898,
+            "samples_us": [
+              317.876,
+              167.602,
+              166.898,
+              157.426,
+              155.378,
+              159.57,
+              159.618,
+              155.554,
+              154.818,
+              155.09,
+              155.538,
+              152.61,
+              155.361,
+              154.578,
+              154.418
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.75799995660782,
+            "p10_us": 81.54299855232239,
+            "p90_us": 91.68799966573715,
+            "samples_us": [
+              81.727996468544,
+              81.54299855232239,
+              95.62399983406067,
+              91.68799966573715,
+              81.86600357294083,
+              81.67099952697754,
+              81.75799995660782
+            ]
+          },
+          "host": {
+            "median_us": 156.658,
+            "p10_us": 155.282,
+            "p90_us": 162.434,
+            "samples_us": [
+              316.003,
+              162.434,
+              166.627,
+              155.729,
+              155.282,
+              158.466,
+              156.498,
+              156.658,
+              161.618,
+              157.522,
+              156.546,
+              155.682,
+              157.266,
+              153.65,
+              155.426
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.70200139284134,
+            "p10_us": 81.6039964556694,
+            "p90_us": 83.90499651432037,
+            "samples_us": [
+              81.8910002708435,
+              81.6039964556694,
+              81.67199790477753,
+              81.67099952697754,
+              81.70200139284134,
+              98.30500185489655,
+              83.90499651432037
+            ]
+          },
+          "host": {
+            "median_us": 161.538,
+            "p10_us": 156.466,
+            "p90_us": 258.547,
+            "samples_us": [
+              407.285,
+              258.547,
+              176.61,
+              156.722,
+              154.466,
+              161.538,
+              159.41,
+              156.466,
+              171.01,
+              310.452,
+              157.41,
+              156.562,
+              157.362,
+              171.922,
+              182.082
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.7359983921051,
+            "p10_us": 81.59799873828888,
+            "p90_us": 85.52200347185135,
+            "samples_us": [
+              81.59799873828888,
+              81.60900324583054,
+              81.7359983921051,
+              81.73500001430511,
+              81.76799863576889,
+              103.30700129270554,
+              85.52200347185135
+            ]
+          },
+          "host": {
+            "median_us": 155.57,
+            "p10_us": 154.434,
+            "p90_us": 162.802,
+            "samples_us": [
+              338.724,
+              165.842,
+              159.41,
+              162.802,
+              155.378,
+              156.61,
+              156.37,
+              155.473,
+              155.57,
+              160.642,
+              154.53,
+              154.402,
+              155.522,
+              154.434,
+              154.594
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.54299855232239,
+            "p10_us": 81.35099709033966,
+            "p90_us": 81.66699856519699,
+            "samples_us": [
+              81.66699856519699,
+              81.35099709033966,
+              81.54299855232239,
+              81.54299855232239,
+              81.50199800729752,
+              81.4799964427948,
+              81.85700327157974
+            ]
+          },
+          "host": {
+            "median_us": 155.538,
+            "p10_us": 153.522,
+            "p90_us": 163.17,
+            "samples_us": [
+              331.556,
+              163.17,
+              155.17,
+              155.506,
+              158.882,
+              159.25,
+              158.498,
+              154.61,
+              154.45,
+              156.402,
+              154.482,
+              165.746,
+              155.538,
+              153.425,
+              153.522
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.64399862289429,
+            "p10_us": 81.22099936008453,
+            "p90_us": 81.6970020532608,
+            "samples_us": [
+              81.6970020532608,
+              81.22099936008453,
+              81.54399693012238,
+              81.28199726343155,
+              81.64399862289429,
+              81.66799694299698,
+              83.99699628353119
+            ]
+          },
+          "host": {
+            "median_us": 157.442,
+            "p10_us": 154.673,
+            "p90_us": 276.179,
+            "samples_us": [
+              334.772,
+              285.555,
+              156.37,
+              155.522,
+              162.498,
+              158.658,
+              155.522,
+              154.402,
+              276.179,
+              174.163,
+              155.378,
+              154.673,
+              157.442,
+              198.627,
+              156.226
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.80300146341324,
+            "p10_us": 81.66100084781647,
+            "p90_us": 81.89000189304352,
+            "samples_us": [
+              81.89000189304352,
+              81.67000114917755,
+              82.055002450943,
+              81.80300146341324,
+              81.76799863576889,
+              81.86300098896027,
+              81.66100084781647
+            ]
+          },
+          "host": {
+            "median_us": 156.498,
+            "p10_us": 154.402,
+            "p90_us": 161.346,
+            "samples_us": [
+              325.749,
+              166.578,
+              159.474,
+              157.601,
+              154.514,
+              157.362,
+              155.65,
+              156.434,
+              158.594,
+              154.402,
+              155.634,
+              156.498,
+              155.506,
+              152.722,
+              161.346
+            ]
+          }
+        }
+      ],
+      "device_us": 81.7359983921051,
+      "host_us": 156.498
+    },
+    "unsplit": {
+      "samples": [
+        {
+          "seed": 794,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 933,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 1665,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 17 / 25344 (0.1%)\nGreatest absolute difference: 0.0029296875 at index (0, 3, 140) (up to 0.0002 allowed)\nGreatest relative difference: 0.244140625 at index (0, 3, 715) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 3023,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": false
+    },
+    "split": {
+      "samples": [
+        {
+          "seed": 794,
+          "errors": [
+            {
+              "max_abs": 0.00048828125,
+              "mean_abs": 2.1675151227173782e-08,
+              "unequal": 3,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 933,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1 / 25344 (0.0%)\nGreatest absolute difference: 0.001953125 at index (0, 4, 573) (up to 0.0002 allowed)\nGreatest relative difference: 0.01904296875 at index (0, 4, 573) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 1665,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 17 / 25344 (0.1%)\nGreatest absolute difference: 0.0029296875 at index (0, 3, 140) (up to 0.0002 allowed)\nGreatest relative difference: 0.244140625 at index (0, 3, 715) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 3023,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 4 / 25344 (0.0%)\nGreatest absolute difference: 0.001953125 at index (0, 31, 292) (up to 0.0002 allowed)\nGreatest relative difference: 0.047119140625 at index (0, 31, 379) (up to 0.012 allowed)"
+        }
+      ],
+      "passed": false
+    },
+    "ordered": {
+      "samples": [
+        {
+          "seed": 794,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 933,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 1665,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 3023,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "device": {
+            "median_us": 75.73399692773819,
+            "p10_us": 75.655996799469,
+            "p90_us": 75.84600150585175,
+            "samples_us": [
+              75.73399692773819,
+              75.655996799469,
+              75.84600150585175,
+              75.71899890899658,
+              75.79299807548523,
+              75.70700347423553,
+              75.84799826145172
+            ]
+          },
+          "host": {
+            "median_us": 166.866,
+            "p10_us": 163.714,
+            "p90_us": 171.842,
+            "samples_us": [
+              359.524,
+              184.227,
+              166.866,
+              167.586,
+              165.73,
+              165.602,
+              171.842,
+              163.714,
+              169.826,
+              164.21,
+              164.658,
+              166.866,
+              171.81,
+              166.706,
+              163.714
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 75.96900314092636,
+            "p10_us": 75.80099999904633,
+            "p90_us": 87.54599839448929,
+            "samples_us": [
+              75.80099999904633,
+              75.84699988365173,
+              75.97800344228745,
+              75.91699808835983,
+              75.96900314092636,
+              90.80100059509277,
+              87.54599839448929
+            ]
+          },
+          "host": {
+            "median_us": 163.874,
+            "p10_us": 162.642,
+            "p90_us": 169.634,
+            "samples_us": [
+              326.452,
+              176.866,
+              166.53,
+              164.578,
+              164.802,
+              169.634,
+              165.874,
+              163.65,
+              163.65,
+              163.458,
+              162.642,
+              163.874,
+              163.49,
+              163.874,
+              162.546
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 75.84100216627121,
+            "p10_us": 75.71999728679657,
+            "p90_us": 76.06899738311768,
+            "samples_us": [
+              75.80400258302689,
+              75.84100216627121,
+              75.71999728679657,
+              75.78899711370468,
+              75.97199827432632,
+              76.2220025062561,
+              76.06899738311768
+            ]
+          },
+          "host": {
+            "median_us": 165.554,
+            "p10_us": 163.538,
+            "p90_us": 205.715,
+            "samples_us": [
+              326.948,
+              176.787,
+              172.882,
+              164.594,
+              163.602,
+              163.538,
+              163.762,
+              177.058,
+              167.89,
+              310.932,
+              165.554,
+              163.634,
+              162.706,
+              205.715,
+              163.57
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 75.96699893474579,
+            "p10_us": 75.79100131988525,
+            "p90_us": 76.05600357055664,
+            "samples_us": [
+              76.31699740886688,
+              75.91500133275986,
+              75.9119987487793,
+              75.79100131988525,
+              76.03500038385391,
+              75.96699893474579,
+              76.05600357055664
+            ]
+          },
+          "host": {
+            "median_us": 164.674,
+            "p10_us": 162.626,
+            "p90_us": 176.515,
+            "samples_us": [
+              346.1,
+              176.515,
+              169.618,
+              168.754,
+              165.73,
+              164.674,
+              169.81,
+              163.698,
+              163.698,
+              164.386,
+              161.65,
+              162.626,
+              314.372,
+              164.61,
+              162.658
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.22399926185608,
+            "p10_us": 75.78299939632416,
+            "p90_us": 78.55600118637085,
+            "samples_us": [
+              75.9970024228096,
+              75.78299939632416,
+              76.05300098657608,
+              78.55600118637085,
+              98.69199991226196,
+              76.22399926185608,
+              76.34200155735016
+            ]
+          },
+          "host": {
+            "median_us": 164.706,
+            "p10_us": 163.346,
+            "p90_us": 170.77,
+            "samples_us": [
+              376.037,
+              178.546,
+              167.698,
+              165.778,
+              170.77,
+              164.642,
+              163.602,
+              163.778,
+              163.586,
+              163.346,
+              168.771,
+              164.77,
+              163.634,
+              162.594,
+              164.706
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.07699930667877,
+            "p10_us": 75.84299892187119,
+            "p90_us": 80.18700033426285,
+            "samples_us": [
+              75.90699940919876,
+              75.84299892187119,
+              96.78100049495697,
+              80.18700033426285,
+              75.88200271129608,
+              76.17300003767014,
+              76.07699930667877
+            ]
+          },
+          "host": {
+            "median_us": 164.642,
+            "p10_us": 162.53,
+            "p90_us": 172.962,
+            "samples_us": [
+              318.116,
+              177.619,
+              166.69,
+              164.642,
+              172.034,
+              163.49,
+              163.698,
+              162.722,
+              163.57,
+              162.53,
+              172.962,
+              162.658,
+              164.786,
+              164.674,
+              160.61
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.03800296783447,
+            "p10_us": 75.87599754333496,
+            "p90_us": 87.66300231218338,
+            "samples_us": [
+              75.87599754333496,
+              76.03999972343445,
+              75.97599923610687,
+              75.91400295495987,
+              76.03800296783447,
+              91.23799949884415,
+              87.66300231218338
+            ]
+          },
+          "host": {
+            "median_us": 164.69,
+            "p10_us": 163.554,
+            "p90_us": 167.634,
+            "samples_us": [
+              359.412,
+              178.771,
+              167.634,
+              164.642,
+              165.634,
+              164.69,
+              163.65,
+              163.602,
+              162.658,
+              163.554,
+              167.618,
+              164.706,
+              164.738,
+              163.65,
+              163.634
+            ]
+          }
+        }
+      ],
+      "device_us": 75.96900314092636,
+      "host_us": 164.69
+    },
+    "exported_aten": {
+      "samples": [
+        {
+          "seed": 794,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 933,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 1665,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 3023,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "device": {
+            "median_us": 81.50400221347809,
+            "p10_us": 80.96799999475479,
+            "p90_us": 85.53799986839294,
+            "samples_us": [
+              102.56300121545792,
+              85.53799986839294,
+              81.44199848175049,
+              80.96799999475479,
+              81.41600340604782,
+              81.666000187397,
+              81.50400221347809
+            ]
+          },
+          "host": {
+            "median_us": 195.762,
+            "p10_us": 182.706,
+            "p90_us": 353.765,
+            "samples_us": [
+              378.773,
+              195.762,
+              183.139,
+              236.706,
+              182.067,
+              221.474,
+              281.236,
+              321.844,
+              186.13,
+              380.309,
+              184.658,
+              183.01,
+              353.765,
+              185.81,
+              182.706
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.8609967827797,
+            "p10_us": 81.60199970006943,
+            "p90_us": 81.91700279712677,
+            "samples_us": [
+              81.7909985780716,
+              81.8609967827797,
+              81.79999887943268,
+              81.60199970006943,
+              81.89799636602402,
+              81.92799985408783,
+              81.91700279712677
+            ]
+          },
+          "host": {
+            "median_us": 180.098,
+            "p10_us": 177.986,
+            "p90_us": 187.282,
+            "samples_us": [
+              348.484,
+              199.523,
+              187.282,
+              183.122,
+              180.915,
+              180.05,
+              180.098,
+              187.187,
+              177.986,
+              177.922,
+              179.026,
+              179.026,
+              179.058,
+              180.883,
+              178.898
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.73300325870514,
+            "p10_us": 81.41600340604782,
+            "p90_us": 83.67999643087387,
+            "samples_us": [
+              83.67999643087387,
+              104.1020005941391,
+              81.41600340604782,
+              81.73300325870514,
+              81.48100227117538,
+              81.85599744319916,
+              81.62900060415268
+            ]
+          },
+          "host": {
+            "median_us": 180.034,
+            "p10_us": 178.05,
+            "p90_us": 185.49,
+            "samples_us": [
+              366.58,
+              198.147,
+              181.81,
+              177.954,
+              180.034,
+              181.107,
+              178.946,
+              185.49,
+              179.81,
+              179.091,
+              181.138,
+              179.986,
+              180.066,
+              178.05,
+              179.059
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.93100243806839,
+            "p10_us": 81.8210020661354,
+            "p90_us": 84.44499969482422,
+            "samples_us": [
+              81.85599744319916,
+              84.44499969482422,
+              104.40199822187424,
+              82.11100101470947,
+              81.92700147628784,
+              81.93100243806839,
+              81.8210020661354
+            ]
+          },
+          "host": {
+            "median_us": 180.114,
+            "p10_us": 178.018,
+            "p90_us": 191.171,
+            "samples_us": [
+              390.101,
+              194.322,
+              180.674,
+              187.075,
+              179.954,
+              181.042,
+              180.098,
+              191.171,
+              180.114,
+              180.034,
+              178.034,
+              178.003,
+              179.042,
+              178.018,
+              185.298
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.89500123262405,
+            "p10_us": 81.73199743032455,
+            "p90_us": 92.00900048017502,
+            "samples_us": [
+              95.74399888515472,
+              92.00900048017502,
+              81.89500123262405,
+              81.73199743032455,
+              81.99600130319595,
+              81.73500001430511,
+              81.81499689817429
+            ]
+          },
+          "host": {
+            "median_us": 180.083,
+            "p10_us": 177.938,
+            "p90_us": 190.29,
+            "samples_us": [
+              360.005,
+              197.554,
+              182.898,
+              180.083,
+              190.29,
+              177.938,
+              178.082,
+              177.971,
+              176.082,
+              181.074,
+              186.178,
+              180.019,
+              180.098,
+              180.034,
+              178.946
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.72299712896347,
+            "p10_us": 81.54299855232239,
+            "p90_us": 81.80099725723267,
+            "samples_us": [
+              81.72299712896347,
+              81.80099725723267,
+              81.54299855232239,
+              81.6740021109581,
+              81.70600235462189,
+              81.99000358581543,
+              81.78900182247162
+            ]
+          },
+          "host": {
+            "median_us": 180.098,
+            "p10_us": 178.386,
+            "p90_us": 185.314,
+            "samples_us": [
+              355.156,
+              193.218,
+              184.499,
+              180.13,
+              181.026,
+              180.098,
+              178.995,
+              185.314,
+              179.01,
+              180.066,
+              180.051,
+              178.93,
+              180.178,
+              176.962,
+              178.386
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.84699714183807,
+            "p10_us": 81.69200271368027,
+            "p90_us": 81.92700147628784,
+            "samples_us": [
+              81.69200271368027,
+              81.92700147628784,
+              81.79900050163269,
+              81.85800164937973,
+              81.77100121974945,
+              81.92700147628784,
+              81.84699714183807
+            ]
+          },
+          "host": {
+            "median_us": 180.002,
+            "p10_us": 177.842,
+            "p90_us": 192.05,
+            "samples_us": [
+              382.133,
+              192.05,
+              194.307,
+              182.194,
+              179.97,
+              180.002,
+              179.027,
+              179.074,
+              184.178,
+              176.082,
+              177.842,
+              180.083,
+              178.05,
+              183.218,
+              179.074
+            ]
+          }
+        }
+      ],
+      "device_us": 81.84699714183807,
+      "host_us": 180.098
+    },
+    "selected": {
+      "samples": [
+        {
+          "seed": 794,
+          "errors": [
+            {
+              "max_abs": 0.00048828125,
+              "mean_abs": 2.1675151227173782e-08,
+              "unequal": 3,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 933,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1 / 25344 (0.0%)\nGreatest absolute difference: 0.001953125 at index (0, 4, 573) (up to 0.0002 allowed)\nGreatest relative difference: 0.01904296875 at index (0, 4, 573) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 1665,
+          "errors": [
+            {
+              "max_abs": 6.103515625e-05,
+              "mean_abs": 2.4082684757733588e-09,
+              "unequal": 1,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 3023,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 4 / 25344 (0.0%)\nGreatest absolute difference: 0.001953125 at index (0, 31, 292) (up to 0.0002 allowed)\nGreatest relative difference: 0.047119140625 at index (0, 31, 379) (up to 0.012 allowed)"
+        }
+      ],
+      "passed": false
+    },
+    "inductor": {
+      "samples": [
+        {
+          "seed": 794,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1714 / 25344 (6.8%)\nGreatest absolute difference: 0.03125 at index (0, 0, 672) (up to 0.0002 allowed)\nGreatest relative difference: 3168.0 at index (0, 10, 573) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 933,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1749 / 25344 (6.9%)\nGreatest absolute difference: 0.03125 at index (0, 0, 149) (up to 0.0002 allowed)\nGreatest relative difference: 14.375 at index (0, 14, 162) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 1665,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1760 / 25344 (6.9%)\nGreatest absolute difference: 0.03125 at index (0, 1, 690) (up to 0.0002 allowed)\nGreatest relative difference: 9.5 at index (0, 27, 493) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 3023,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1765 / 25344 (7.0%)\nGreatest absolute difference: 0.03125 at index (0, 0, 202) (up to 0.0002 allowed)\nGreatest relative difference: 20.625 at index (0, 30, 578) (up to 0.012 allowed)"
+        }
+      ],
+      "passed": false
+    }
+  },
+  "provenance": {
+    "git_head_at_capture": "9c3067aa8dc0791461e8f55ac43fea85f56dd737",
+    "source_tree_sha256": "0f87519a1ab1618e3ffcced84ef3f979c06f65490d1037e6b0ef031176fe863f",
+    "archive": "sources/0f87519a1ab1618e3ffcced84ef3f979c06f65490d1037e6b0ef031176fe863f.tar.gz"
+  }
+}
