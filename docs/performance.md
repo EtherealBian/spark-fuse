@@ -690,3 +690,44 @@ source tools/env.sh  # use the interpreter with the optional Transformers integr
 python tools/qwen_packed_mean.py --output /tmp/qwen-primary.json
 python tools/qwen_packed_mean.py --selection /tmp/qwen-primary.json --seed-offset 98627 --output /tmp/qwen-repeat.json
 ```
+
+<a id="context-site"></a>
+
+### 要不要部署一个局部优化？用整图做决定 / Selecting a schedule in context
+
+`select_site` 只改导出图中指定的一处 CUDA 调度；即便另一处生成了相同的 IR，它也保留原配置。在 DGX Spark 上用相同的规则测试了两类图：
+
+| 图与输入 | 确认阶段采纳 | 独立请求上的设备时间（现有 → 入选，µs） |
+|---|---:|---|
+| 残差 RMSNorm → 64 维线性投影，BF16，128 × 2560 | 2/2 | 对齐 10.50 → 7.61；偏移一个元素 10.85 → 8.32 |
+| 同一结构，FP16，63 × 8160 | 2/2 | 对齐 13.90 → 10.85；偏移一个元素 14.25 → 12.38 |
+| Qwen2 解码层的 SwiGLU 门控，BF16，序列 33/65/129，每个长度两组随机权重 | 0/6 | 保留现有配置；确认阶段整层加速比中位数仅 1.003–1.014× |
+
+投影组返回残差和投影结果。新旧调度都是 3 次 CUDA 发射，4 组独立复测的整图设备加速为 **1.15–1.38×**；同步主机延迟有一组完全相同。BF16 对齐时，保留精度转换的 Inductor 和入选调度同为 **7.61 µs**。Qwen2 的候选门控单测全都更快，但在序列长 33 的第二组权重上，强制采用候选反而把整层设备时间从 553.72 增至 557.22 µs。这里的基准是随机权重的一层前向，不能换算生成吞吐量。
+
+**Decision protocol.** Start with the incumbent and up to 16 caller-specified schedules. Run each legal candidate on the first request, comparing the actual mixed-graph site inputs, outputs and composed result with the unmodified exported ATen graph. Strict checks include dtype, device, shape, stride and bits, plus shared-storage relationships and relative offsets within each checked boundary. On correctly rounded candidates, use five shuffled whole-graph windows to nominate one schedule. On different data require at least six of seven paired wins **and** a median incumbent/candidate device-time ratio of at least 1.02 (configurable before the run). The third request audits the decision without reselection. The published panels add two independent replays and separately measure CUDA Graph time and synchronized host dispatch. Setup, validation, hashing, compilation and profiling are outside both timers. One timing window uses seven groups of four graph replays, each containing three whole forwards at fixed addresses.
+
+**When to use it.** Use a static, deterministic, functional export, positional tensor inputs on one GPU, and an ordinary generated region with traceable ATen boundaries. The graph returned after calibration is for the validated immutable model and layout; it does not revalidate weights on every forward. A receipt is specific to its site, state contents, code, input layout/alignment and recorded environment. Changing weights means calibrating again. Numerical rejection during discovery/confirmation keeps or falls back to the incumbent; failed audit, replay or CUDA execution raises. A new receipt file is installed without overwriting another; it is a checksummed experiment record, not a signed artifact. No timing entry is written to the shared IR dispatch database.
+
+```python
+from sparkfuse import Schedule
+from sparkfuse.contextual import select_site, replay_site
+
+# ep is a static ExportedProgram; site is the module name from partition_export's records.
+# train, confirm, audit and unseen are four different, same-layout positional input tuples.
+opts = {"host_backend": "native"}
+graph, receipt = select_site(ep, site, [Schedule(128, "flat", False, 4)],
+                             train, confirm, audit, partition_options=opts,
+                             path="site-receipt.json")
+replayed, checked = replay_site(ep, receipt, unseen, partition_options=opts)
+```
+
+[Qwen2 decisions, raw windows and Inductor comparisons](../reports/qwen-context-gb10.json) · [Residual/projection decisions and timings](../reports/context-projection-gb10.json) · [Release checks](../reports/context-stage-acceptance.json) · [Sanitizer checks](../reports/context-sanitizer-gb10.txt). Both reports retain numerical failures for Inductor even when those paths are excluded from strict timings. The regular and cast-aware Inductor paths are different baselines; cast-aware Inductor passed and beat the retained Qwen2 dispatch in all four 33/65-token panels.
+
+```bash
+source tools/env.sh
+python tools/context_projection.py --output /tmp/context-projection.json
+# Requires the optional Transformers dependency:
+python tools/qwen_context.py --output /tmp/qwen-context.json
+python -m pytest -q tests/test_contextual.py tests/test_contextual_evidence.py
+```

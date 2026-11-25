@@ -30,6 +30,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "qwen_context_site_replay",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_context.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-qwen-context.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "qwen_rank3_packed_boundary",
                 [
                     opt,
