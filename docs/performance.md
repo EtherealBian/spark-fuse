@@ -441,3 +441,16 @@ For the [same Qwen2 weights, four visible outputs and FX graphs as the cache-fan
 复制在这四组都更快，整层却两胜两负。2047 的第二步，PV 也由 20.43 上升到 25.32 µs；第一步的整层方向与之前独立捕获的计时相反。**不能仅按上下文长度开启融合**，也不能把差异断言为 L2 命中率变化。三次 MLP 投影占去最多的 kernel 时间，是比继续微调复制更值得检验的方向。
 
 [Raw report: all 384 replays](../reports/qwen-decode-phase-attribution-gb10.json) · [collector](../tools/qwen_decode_phases.py) · [offline checks](../tests/test_decode_phase_attribution.py). Eight order-balanced windows per case/variant, six profiled replays per window, with adjacent event samples from the **same captured graph**. Per-kernel signature includes symbol, grid, block, registers and shared memory. Replay boundaries must match graph-launch correlations and graph-node IDs must stay stable. Raw intervals start at each replay's first kernel. Small overlaps reported by Kineto on one stream are kept explicitly, not counted as negative idle time. Profiled duration sums, interval union and first-to-last span are distinct; independently computed medians need not add up. No hardware cache counters, allocator control across separate processes, or serving throughput claim.
+
+### Qwen2 MLP：合并 gate 和 up 投影，值得吗？ / Packing admission study
+
+We captured the actual normalized activation shared by `gate_proj` and `up_proj`, plus both projection outputs, the gated product and `down_proj` output. We compared two BF16 linears with one wider linear using row-concatenated weights, both as private split views and with contiguous output copies. **All four tensors matched bit-for-bit on 36 inputs** (two independent model initializations, prefixes 31 and 127, three input seeds, prefill and two decode steps). The split views share storage and have different strides; they cannot replace two independently visible projection outputs. This is an admission experiment, **not** a pass enabled in SparkFuse.
+
+For the first decode step after prefix 127, unprofiled device medians in µs (seven shuffled windows, **MLP only**, including down projection):
+
+| Weight seed | HF eager | Two linears | Prepacked, private views | Prepacked, contiguous copies | Repack every call |
+|---:|---:|---:|---:|---:|---:|
+| 141144 | 375.75 | 376.66 | 373.52 | 375.71 | 878.35 |
+| 147096 | 375.98 | 376.67 | 374.94 | 376.23 | 878.43 |
+
+Keeping the original weights plus the packed snapshot costs **52.5 MiB** per layer and about **514 µs** to pack here. Replacing one gate-weight row made the old snapshot produce two wrong BF16 gate elements; fresh packing recovered those bits. A hidden permanent weight cache would be wrong. The private-view path issued four kernels versus five for the two-linears path. A smaller kernel count did not make it universally faster than HF eager on prefill. Inductor failed this study’s **exact visible-down-output** gate on every case and was not timed; this is not a claim that its differences exceed ordinary model tolerances. [Raw windows, tensor strides, mismatch witnesses, kernel names and packing cost](../reports/qwen-mlp-projection-admission-gb10.json) · [reproduction](../tools/mlp_projection_audit.py). No complete-layer or generation speedup implied.
