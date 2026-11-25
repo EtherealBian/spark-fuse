@@ -324,3 +324,34 @@ The [isolated Q/K panel](../reports/paired-rotary-panel-gb10.json) also varies l
 [逐次原始数据、FX 图与 profiler](../reports/qwen-decode-cache-gb10.json)。六次普通调用均从 19 次 GPU 发射变为 18 次；少一次发射不能保证每次设备延迟都下降。长度 1023 的第二步中位数略有回退，七个配对窗口仅四个有利。每个长度用五条轨迹核对隐藏态、注意力概率、缓存及其前缀；SparkFuse 所有输出与框架逐位相同，步幅也一致。完整图 Inductor 的隐藏态和 K/V 在这组输入上未通过既有容差，没有为它计时。
 
 **Why choose copy width at launch?** In the [initial isolated panel](../reports/cache-append-initial-gb10.json), one thread owned a fixed-width packet. An unaligned address forced individual lane-strided scalar copies; copying the offset 1023-token prefill cache took 22.304 µs vs 16.017 µs eager. The new launcher checks all six addresses and chooses the widest legal element group before issuing a single kernel. Adjacent lanes copy adjacent elements when the safe width is one. In the [new same-run four-way comparison](../reports/cache-append-panel-gb10.json), that case measured **22.243 / 6.190 / 16.013 / 15.193 µs** (fixed fallback / adaptive / eager / Inductor). With aligned addresses the same order was **3.214 / 3.153 / 16.012 / 3.572 µs**. All isolated backends passed bitwise checks, including across input offsets. Profiler names confirm 8-, 1-, 2- and 4-element specializations for BF16 buffers offset by 0, 1, 2 and 4 elements. These are hot-address data-movement timings, not DRAM bandwidth or token throughput.
+
+### GQA 解码：何时该拒绝一次融合 / GQA decode admission
+
+Qwen2 的 12 个查询头共用 2 个 KV 头。一个看似能省去两次复制的办法，是把每组的 6 个查询头折叠进矩阵乘法的行维度。我们从真实 `torch.export` 图抓取 QK、PV 的操作数，并首先逐位复算原来的两次矩阵乘法。[两组权重、九种前缀长度和每组三条轨迹](../reports/grouped-kv-admission-gb10.json)共比较 108 个 BF16 张量：全部在原容差内，**20 个张量中共有 25 个元素与原图的位表示不同**。每处反例都记录了位置和 BF16 十六进制值（每张量至多四处）。这个改写没有进入编译器，也没有为它发布加速比。
+
+选择保留原矩阵乘形状，只把两个 `unsqueeze → expand → reshape` 实际发生的头复制合为一个 CUDA kernel（`paired_head_repeats=True`）。每次加载的包写到各个组，K/V 仍是两个独立、连续的新张量。它**没有消除重复输出的显存占用**。在[独立复制对照](../reports/head-repeat-panel-gb10.json)中，32 个 KV 位置、地址对齐时，eager / Inductor / SparkFuse 分别为 **3.379 / 1.913 / 1.331 µs**；1025 个位置时则是 **65.301 / 65.807 / 66.227 µs**。后者需要写出 12,595,200 字节，少一次发射并没有让它更快。上述时间是热地址设备重放，不代表显存带宽。
+
+[首轮整层对照](../reports/qwen-decode-head-repeat-initial-gb10.json)还暴露了另一个问题：预填 1024 时，即使关闭新的复制融合，旧的分数融合也在部分轨迹上改变了概率末位，并有一次影响隐藏态。不为未通过的数据计时。提供显式选项 `framework_softmax=True`：保留框架原 Softmax，仅融合其前后独立合法的区域。它适用于所有宽度，并非按反例或输入种子设白名单；不意味着其他归约自动逐位精确。
+
+[在同一组权重、种子、掩码和前缀上复验](../reports/qwen-decode-head-repeat-boundary-gb10.json)：两步之间传递各后端自己的 K/V；3 个长度 × 5 条轨迹 × 2 步，四个可见输出和步幅在 SparkFuse 两条对照路径中均与 eager 一致。表中两条路径都保留框架 Softmax、都已融合缓存拼接，仅头复制不同。六组均由 **21 个 GPU kernel 降为 20 个**。完整图 Inductor 未通过原容差，不计时；这不是对整模型或 token 吞吐的测试。
+
+| 预填长度 | 步 | 设备 µs，独立 → 融合 | 同步主机 µs，独立 → 融合 |
+|---:|---:|---:|---:|
+| 31 | 1 | 474.856 → 473.061 | 604.766 → 588.477 |
+| 31 | 2 | 484.037 → 481.123 | 636.559 → 619.214 |
+| 254 | 1 | 503.304 → 498.629 | 647.952 → 629.311 |
+| 254 | 2 | 511.840 → 507.109 | 653.008 → 635.711 |
+| 1024 | 1 | 582.747 → 575.664 | 676.592 → 665.311 |
+| 1024 | 2 | 586.349 → 580.352 | 674.768 → 666.416 |
+
+**Reproduce.** Use the same CUDA/PyTorch environment and optional Transformers 4.51.3. The first command audits a numerical counterexample; its successful exit means the audit ran, not that the candidate qualified. The second benchmarks two fresh physical copies vs. horizontal fusion. The last command exercises two ordinary cached layer forwards, not text generation.
+
+```bash
+source tools/env.sh
+python tools/grouped_kv_audit.py --output /tmp/gqa-admission.json
+python tools/head_repeat_panel.py --output /tmp/head-copy.json
+python tools/qwen_cached_decode.py --head-repeats --framework-softmax --past 31 254 1024 \
+  --seed-offset 44234 --profile --output /tmp/decode.json
+```
+
+[阶段验收](../reports/head-repeat-stage-acceptance.json)另外用不同的权重和五条新轨迹检查预填长度 255、1025，两步的四个可见输出均通过。此处报告样本范围内的逐位结果，而非对所有输入的等价性证明。生成的复制 kernel 也通过 [memcheck、racecheck、synccheck](../reports/head-repeat-sanitizer-gb10.txt)。

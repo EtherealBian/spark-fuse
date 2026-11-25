@@ -151,7 +151,17 @@ def check(out, ref, args, before, strict):
 
 
 @torch.inference_mode()
-def run(model, rope, length, offset, verify_only, profile, emit_dir):
+def run(
+    model,
+    rope,
+    length,
+    offset,
+    verify_only,
+    profile,
+    emit_dir,
+    head_repeats=False,
+    framework_softmax=False,
+):
     export = trajectory(model, rope, length, 60401 + offset)
     graphs = []
     paths = []
@@ -159,22 +169,34 @@ def run(model, rope, length, offset, verify_only, profile, emit_dir):
         ep = torch.export.export(model, args)
         stage = {"eager": model, "exported_aten": ep.module()}
         details = {}
-        for name, enable in [("rotary", False), ("append", True)]:
+        variants = [("rotary", False), ("append", True)]
+        if head_repeats:
+            variants.append(("repeat", True))
+        for name, enable in variants:
             gm, records = partition_export(
                 ep,
                 host_backend="native",
                 rotary_pairs=True,
                 paired_appends=enable,
+                paired_head_repeats=name == "repeat",
+                framework_softmax=framework_softmax,
                 schedule_policy=ordered_collectives,
             )
             gm.graph.lint()
+            assert sum(r.get("reason") == "framework_softmax" for r in records) == int(
+                framework_softmax
+            )
             stage[name] = gm
             hits = [r for r in records if r.get("kind") == "paired_append"]
             assert len(hits) == int(enable) and any(r.get("kind") == "rotary_pair" for r in records)
+            reps = [r for r in records if r.get("kind") == "paired_head_repeat"]
+            assert len(reps) == int(name == "repeat")
             if enable:
+                if reps:
+                    hits = reps
                 src = gm.get_submodule(hits[0]["module"]).program.source
                 assert sha256(src.encode()).hexdigest() == hits[0]["cuda_sha256"]
-                if emit_dir:
+                if emit_dir and (not head_repeats or reps):
                     emit_dir.mkdir(parents=True, exist_ok=True)
                     (emit_dir / f"p{length}-step{i + 1}.cu").write_text(src)
             details[name] = dict(fx=str(gm.graph), records=records)
@@ -277,7 +299,7 @@ def run(model, rope, length, offset, verify_only, profile, emit_dir):
             and r["erased_prob_exact"]
             for r in control
         )
-        and all(results[k]["passed"] for k in ("eager", "exported_aten", "rotary", "append")),
+        and all(results[k]["passed"] for k in results if k != "inductor"),
     )
 
 
@@ -287,6 +309,16 @@ def main():
     p.add_argument("--past", type=int, nargs="+", default=[31, 255, 1023])
     p.add_argument("--seed-offset", type=int, default=0)
     p.add_argument("--verify-only", action="store_true")
+    p.add_argument(
+        "--head-repeats",
+        action="store_true",
+        help="also evaluate the two-output materializing head-repeat pass, leaving both GEMMs unchanged",
+    )
+    p.add_argument(
+        "--framework-softmax",
+        action="store_true",
+        help="keep the original softmax as a PyTorch boundary for every variant",
+    )
     p.add_argument("--profile", action="store_true")
     p.add_argument("--emit-dir", type=Path)
     p.add_argument("--output", type=Path, required=True)
@@ -307,12 +339,24 @@ def main():
         torch=str(torch.__version__),
         transformers=transformers.__version__,
         verify_only=a.verify_only,
+        head_repeats=a.head_repeats,
+        framework_softmax=a.framework_softmax,
         profile=a.profile,
         provenance=capture(ROOT / ".runtime/decode-audit/sources"),
         cases=[],
     )
     for length in a.past:
-        c = run(model, rope, length, a.seed_offset, a.verify_only, a.profile, a.emit_dir)
+        c = run(
+            model,
+            rope,
+            length,
+            a.seed_offset,
+            a.verify_only,
+            a.profile,
+            a.emit_dir,
+            a.head_repeats,
+            a.framework_softmax,
+        )
         doc["cases"].append(c)
         print(
             length,

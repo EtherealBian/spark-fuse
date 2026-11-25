@@ -141,6 +141,25 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "qwen_decode_head_repeat",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_cached_decode.py"),
+                    "--past",
+                    "255",
+                    "1025",
+                    "--verify-only",
+                    "--head-repeats",
+                    "--framework-softmax",
+                    "--seed-offset",
+                    "49481",
+                    "--output",
+                    str(report.with_name(report.stem + "-head-repeat.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (

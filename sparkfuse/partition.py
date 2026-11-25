@@ -214,6 +214,8 @@ def partition_export(
     split_barriers=True,
     rotary_pairs=False,
     paired_appends=False,
+    paired_head_repeats=False,
+    framework_softmax=False,
 ):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
     if host_backend not in ("python", "native"):
@@ -234,9 +236,27 @@ def partition_export(
         from .cache_append import fuse_appends
 
         records.extend(fuse_appends(gm, device, host_backend))
+    if paired_head_repeats:
+        from .head_repeat import fuse_head_repeats
+
+        records.extend(fuse_head_repeats(gm, device, host_backend))
     nodes = list(gm.graph.nodes)
     pos = {n: i for i, n in enumerate(nodes)}
     pot = {n for n in nodes if eligible(n)}
+    if framework_softmax:
+        # An explicit floating-point reference boundary, not a tuned width whitelist.
+        for n in nodes:
+            if n in pot and str(n.target) in ("aten.softmax.int", "aten._softmax.default"):
+                pot.remove(n)
+                records.append(
+                    dict(
+                        kind="reference_boundary",
+                        ops=[n.name],
+                        target=str(n.target),
+                        reason="framework_softmax",
+                        fallback="preserve framework softmax",
+                    )
+                )
     components = []
     while pot:
         first = min(pot, key=pos.get)

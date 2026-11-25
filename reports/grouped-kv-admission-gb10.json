@@ -1,0 +1,2346 @@
+{
+  "scope": "Numerical admission only for folding query groups into matmul rows at single-token BF16 Qwen2 decode. No timing, compiler dispatch or model-level quality claim.",
+  "protocol": "One real random-weight layer per cohort, first cached token after HF prefill. Capture actual QK/PV operands/results from torch.export. Verify reconstructed expanded operands and original matmuls exactly before comparing group-as-row. The second cohort uses independent weights and seeds.",
+  "device": "NVIDIA GB10",
+  "torch": "2.13.0+cu130",
+  "transformers": "4.51.3",
+  "cuda": "13.0",
+  "provenance": {
+    "git_head_at_capture": "6ab2b5df9962b1b5932fc287eac4106bf6be2491",
+    "source_tree_sha256": "a65daadedd935d35cba30c49c2277a23bc1cb020a6b8d7c999af7aab0c580f8d",
+    "archive": "sources/a65daadedd935d35cba30c49c2277a23bc1cb020a6b8d7c999af7aab0c580f8d.tar.gz"
+  },
+  "cases": [
+    {
+      "weight_seed": 84470,
+      "export_seed": 84541,
+      "prefix": 31,
+      "keys": 32,
+      "export_graph_sha256": "f3a298a9902c769633e11fd8796ab7b17c4be04fb3242f8827fa48eb6ab98a19",
+      "samples": [
+        {
+          "seed": 91001,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              32
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91121,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              32
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91301,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              32
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 84470,
+      "export_seed": 84541,
+      "prefix": 32,
+      "keys": 33,
+      "export_graph_sha256": "a6688dddf5b415627922e45a2cd915df7cf42a8a97d0a63a89a777c30bb87a64",
+      "samples": [
+        {
+          "seed": 91001,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              33
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91121,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              33
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91301,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              33
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 84470,
+      "export_seed": 84541,
+      "prefix": 62,
+      "keys": 63,
+      "export_graph_sha256": "10dbdcbea479349203cf4fd73f932054c35fc65e994138e4132b7fddd70018f2",
+      "samples": [
+        {
+          "seed": 91001,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              63
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91121,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              63
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91301,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              63
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 84470,
+      "export_seed": 84541,
+      "prefix": 63,
+      "keys": 64,
+      "export_graph_sha256": "0bcf320a52e32e0eb222b7ac08860a2ab97b4ad52175aefbd650645592363280",
+      "samples": [
+        {
+          "seed": 91001,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              64
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91121,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              64
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 0.0001220703125,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  1,
+                  7,
+                  0,
+                  43
+                ],
+                "eager_hex": "3ce9",
+                "grouped_hex": "3ce8"
+              }
+            ]
+          }
+        },
+        {
+          "seed": 91301,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              64
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 84470,
+      "export_seed": 84541,
+      "prefix": 254,
+      "keys": 255,
+      "export_graph_sha256": "99da17725eb712eb63f049a18ef8f452f4fcced4541c99c91b2887542ced6f61",
+      "samples": [
+        {
+          "seed": 91001,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              255
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 3.0517578125e-05,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  1,
+                  10,
+                  0,
+                  109
+                ],
+                "eager_hex": "bbca",
+                "grouped_hex": "bbc9"
+              }
+            ]
+          }
+        },
+        {
+          "seed": 91121,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              255
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91301,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              255
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 2,
+            "finite": true,
+            "max_abs": 1.4901161193847656e-08,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  5,
+                  0,
+                  72
+                ],
+                "eager_hex": "b609",
+                "grouped_hex": "b60a"
+              },
+              {
+                "index": [
+                  0,
+                  9,
+                  0,
+                  105
+                ],
+                "eager_hex": "35f0",
+                "grouped_hex": "35f1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 84470,
+      "export_seed": 84541,
+      "prefix": 255,
+      "keys": 256,
+      "export_graph_sha256": "d8e24c00c63ffd87b63b428bfb330b8ee0e502b1e87a342c8cc94cc8e4a2bf58",
+      "samples": [
+        {
+          "seed": 91001,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              256
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91121,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              256
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 0.015625,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  2,
+                  0,
+                  59
+                ],
+                "eager_hex": "4060",
+                "grouped_hex": "4061"
+              }
+            ]
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91301,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              256
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 84470,
+      "export_seed": 84541,
+      "prefix": 256,
+      "keys": 257,
+      "export_graph_sha256": "d479954efa75fe8f06bf6846469dea130b7787159d1bc7114622169ea4fa6043",
+      "samples": [
+        {
+          "seed": 91001,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              257
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 0.015625,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  0,
+                  0,
+                  21
+                ],
+                "eager_hex": "c05c",
+                "grouped_hex": "c05b"
+              }
+            ]
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91121,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              257
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91301,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              257
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 84470,
+      "export_seed": 84541,
+      "prefix": 1023,
+      "keys": 1024,
+      "export_graph_sha256": "0f210eab02e744f588ca8b63966492753acade108e822bb755b9aa75802c4394",
+      "samples": [
+        {
+          "seed": 91001,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1024
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91121,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1024
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 91301,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1024
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 84470,
+      "export_seed": 84541,
+      "prefix": 1024,
+      "keys": 1025,
+      "export_graph_sha256": "3b1b7c0e6cebdd44a4d71d486627128633f1652d1791368c85b0e56f8574d245",
+      "samples": [
+        {
+          "seed": 91001,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1025
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 0.0078125,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  1,
+                  3,
+                  0,
+                  315
+                ],
+                "eager_hex": "3fa0",
+                "grouped_hex": "3fa1"
+              }
+            ]
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 5.960464477539063e-08,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  1,
+                  4,
+                  0,
+                  11
+                ],
+                "eager_hex": "b76a",
+                "grouped_hex": "b769"
+              }
+            ]
+          }
+        },
+        {
+          "seed": 91121,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1025
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 0.03125,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  7,
+                  0,
+                  364
+                ],
+                "eager_hex": "40a5",
+                "grouped_hex": "40a4"
+              }
+            ]
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 3.814697265625e-06,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  1,
+                  0,
+                  0,
+                  37
+                ],
+                "eager_hex": "ba45",
+                "grouped_hex": "ba44"
+              }
+            ]
+          }
+        },
+        {
+          "seed": 91301,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1025
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 0.000244140625,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  9,
+                  0,
+                  577
+                ],
+                "eager_hex": "bd21",
+                "grouped_hex": "bd20"
+              }
+            ]
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 3.0517578125e-05,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  1,
+                  11,
+                  0,
+                  43
+                ],
+                "eager_hex": "bbe6",
+                "grouped_hex": "bbe5"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 94877,
+      "export_seed": 94948,
+      "prefix": 31,
+      "keys": 32,
+      "export_graph_sha256": "f3a298a9902c769633e11fd8796ab7b17c4be04fb3242f8827fa48eb6ab98a19",
+      "samples": [
+        {
+          "seed": 97117,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              32
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97367,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              32
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97549,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              32
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 94877,
+      "export_seed": 94948,
+      "prefix": 32,
+      "keys": 33,
+      "export_graph_sha256": "a6688dddf5b415627922e45a2cd915df7cf42a8a97d0a63a89a777c30bb87a64",
+      "samples": [
+        {
+          "seed": 97117,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              33
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97367,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              33
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97549,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              33
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 94877,
+      "export_seed": 94948,
+      "prefix": 62,
+      "keys": 63,
+      "export_graph_sha256": "10dbdcbea479349203cf4fd73f932054c35fc65e994138e4132b7fddd70018f2",
+      "samples": [
+        {
+          "seed": 97117,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              63
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97367,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              63
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97549,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              63
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 1.9073486328125e-06,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  4,
+                  0,
+                  8
+                ],
+                "eager_hex": "b9c5",
+                "grouped_hex": "b9c4"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 94877,
+      "export_seed": 94948,
+      "prefix": 63,
+      "keys": 64,
+      "export_graph_sha256": "0bcf320a52e32e0eb222b7ac08860a2ab97b4ad52175aefbd650645592363280",
+      "samples": [
+        {
+          "seed": 97117,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              64
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97367,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              64
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97549,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              64
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 94877,
+      "export_seed": 94948,
+      "prefix": 254,
+      "keys": 255,
+      "export_graph_sha256": "99da17725eb712eb63f049a18ef8f452f4fcced4541c99c91b2887542ced6f61",
+      "samples": [
+        {
+          "seed": 97117,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              255
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97367,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              255
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97549,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              255
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 0.00390625,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  1,
+                  2,
+                  0,
+                  38
+                ],
+                "eager_hex": "3f68",
+                "grouped_hex": "3f67"
+              }
+            ]
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 94877,
+      "export_seed": 94948,
+      "prefix": 255,
+      "keys": 256,
+      "export_graph_sha256": "d8e24c00c63ffd87b63b428bfb330b8ee0e502b1e87a342c8cc94cc8e4a2bf58",
+      "samples": [
+        {
+          "seed": 97117,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              256
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97367,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              256
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97549,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              256
+            ],
+            "unequal_bits": 2,
+            "finite": true,
+            "max_abs": 0.015625,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  8,
+                  0,
+                  250
+                ],
+                "eager_hex": "c049",
+                "grouped_hex": "c048"
+              },
+              {
+                "index": [
+                  1,
+                  3,
+                  0,
+                  159
+                ],
+                "eager_hex": "3f00",
+                "grouped_hex": "3f01"
+              }
+            ]
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 94877,
+      "export_seed": 94948,
+      "prefix": 256,
+      "keys": 257,
+      "export_graph_sha256": "d479954efa75fe8f06bf6846469dea130b7787159d1bc7114622169ea4fa6043",
+      "samples": [
+        {
+          "seed": 97117,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              257
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97367,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              257
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97549,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              257
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 3.0517578125e-05,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  2,
+                  0,
+                  144
+                ],
+                "eager_hex": "3be4",
+                "grouped_hex": "3be5"
+              }
+            ]
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 0.0001220703125,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  9,
+                  0,
+                  62
+                ],
+                "eager_hex": "3c98",
+                "grouped_hex": "3c97"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 94877,
+      "export_seed": 94948,
+      "prefix": 1023,
+      "keys": 1024,
+      "export_graph_sha256": "0f210eab02e744f588ca8b63966492753acade108e822bb755b9aa75802c4394",
+      "samples": [
+        {
+          "seed": 97117,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1024
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97367,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1024
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        },
+        {
+          "seed": 97549,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1024
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          }
+        }
+      ]
+    },
+    {
+      "weight_seed": 94877,
+      "export_seed": 94948,
+      "prefix": 1024,
+      "keys": 1025,
+      "export_graph_sha256": "3b1b7c0e6cebdd44a4d71d486627128633f1652d1791368c85b0e56f8574d245",
+      "samples": [
+        {
+          "seed": 97117,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1025
+            ],
+            "unequal_bits": 3,
+            "finite": true,
+            "max_abs": 0.0625,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  8,
+                  0,
+                  743
+                ],
+                "eager_hex": "c117",
+                "grouped_hex": "c116"
+              },
+              {
+                "index": [
+                  1,
+                  2,
+                  0,
+                  413
+                ],
+                "eager_hex": "409a",
+                "grouped_hex": "4099"
+              },
+              {
+                "index": [
+                  1,
+                  7,
+                  0,
+                  56
+                ],
+                "eager_hex": "39b4",
+                "grouped_hex": "39b5"
+              }
+            ]
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 2,
+            "finite": true,
+            "max_abs": 4.76837158203125e-07,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  5,
+                  0,
+                  52
+                ],
+                "eager_hex": "3894",
+                "grouped_hex": "3895"
+              },
+              {
+                "index": [
+                  1,
+                  10,
+                  0,
+                  59
+                ],
+                "eager_hex": "369d",
+                "grouped_hex": "369c"
+              }
+            ]
+          }
+        },
+        {
+          "seed": 97367,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1025
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 6.103515625e-05,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  1,
+                  4,
+                  0,
+                  8
+                ],
+                "eager_hex": "bc61",
+                "grouped_hex": "bc60"
+              }
+            ]
+          }
+        },
+        {
+          "seed": 97549,
+          "controls": {
+            "key_operand": true,
+            "value_operand": true,
+            "qk": true,
+            "pv": true
+          },
+          "QK": {
+            "shape": [
+              2,
+              12,
+              1,
+              1025
+            ],
+            "unequal_bits": 0,
+            "finite": true,
+            "max_abs": 0.0,
+            "tolerance_pass": true,
+            "examples": []
+          },
+          "PV": {
+            "shape": [
+              2,
+              12,
+              1,
+              128
+            ],
+            "unequal_bits": 1,
+            "finite": true,
+            "max_abs": 7.62939453125e-06,
+            "tolerance_pass": true,
+            "examples": [
+              {
+                "index": [
+                  0,
+                  7,
+                  0,
+                  20
+                ],
+                "eager_hex": "bada",
+                "grouped_hex": "bad9"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "tensors": 108,
+    "tensors_with_bit_mismatch": 20,
+    "unequal_elements": 25,
+    "tolerance_failures": 0,
+    "max_abs": 0.0625,
+    "sampled_bit_exact": false
+  },
+  "decision": "rejected_bit_exact"
+}
