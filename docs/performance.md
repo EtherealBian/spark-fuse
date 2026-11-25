@@ -177,3 +177,5 @@ changes = specialize_host_calls(mixed)  # optional; use a separate module for be
 ```
 
 **English.** Direct FX host calls cut the 33-token BERT layer's synchronized median from 166.57 to 150.32 µs without changing the device kernel schedule. The two 33-token T5 cases showed no consistent improvement. Repeat with `python tools/host_call_panel.py --case bert --seq 33 --output /tmp/host.json`. [Full regression and real-module checks](../reports/host-calls-stage-acceptance.json).
+
+带有顶层 `provenance.archive` 的公开基准现在可从同一仓库直接校验[测量时的源码快照](../reports/sources/README.md)，无需账户或 DGX Spark。校验只需要 Python 标准库；执行 GPU 基准仍需报告对应的软件和硬件环境。
