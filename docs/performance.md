@@ -936,3 +936,18 @@ The table measures whole requests, not device replay. The short projection also 
 Each allocator measurement used a separate, symmetrically warmed process; after closing the graphs, allocated bytes returned to baseline. Sharing saved **3,153,920 bytes** of retained allocations; it did not consistently improve queued throughput. Checking the shared state also took extra setup time (111 vs 102 ms; 109 vs 97 ms). Both serving paths use identical per-shape CUDA code and the same request router. Eight interleaved held-out requests per seed passed byte-level checks on all nine outputs, including independent CPU INT32 accumulator checks. Eager synchronized medians were 102.56 and 102.10 µs. Default and cast-aware Inductor failed the byte gate and were not timed as equivalent implementations.
 
 [Physical inventories, isolated allocator readings and raw timings](../reports/packed-family-gb10.json) · [Compute Sanitizer](../reports/packed-family-sanitizer-gb10.txt). Reproduce with `python tools/packed_family_panel.py --output /tmp/packed-family.json` and `bash tools/sanitize_packed_family.sh` after `source tools/env.sh`.
+
+<a id="affine-projection"></a>
+### 带偏置的窄精度投影 / Ordered bias and narrow outputs
+
+常见的 Q/K/V 投影不返回 FP32 反量化结果，而是加上每通道偏置，再转为 BF16 或 FP16。`partition_options={"token_quant": True, "affine_epilogues": True, "group_epilogues": True, "host_backend": "native"}` 识别这个顺序。生成的 CUDA 先将 INT32 累加器转为 FP32，依次乘 token 尺度、乘通道尺度、加偏置，最后做一次窄精度转换。乘法与加法分别舍入，不合为 FMA；导出图额外返回哪个中间结果，就为它单独写回。只识别精确匹配的加法和显式转换，不改写带不同 `alpha`、不同广播轴或未知断言的路径。
+
+| 三路带偏置投影（种子 1661987） | 同一导出图设备时间：原有融合 → 合并尾部 → 打包 GEMM（µs） | 轮换请求同步延迟：原有融合 → 打包（µs） |
+|---|---:|---:|
+| 17 行，3 个 BF16 输出 | 28.77 → 24.68 → 10.86 | 54.36 → 34.91 |
+| 33 行，21 个输出，保留中间值 | 32.87 → 28.09 → 13.45 | 115.88 → 116.09 |
+| 129 行，3 个 BF16 输出 | 53.42 → 48.63 → 22.29 | 80.46 → 52.07 |
+
+On GB10 the ordinary graph launches **28 / 10 / 5 / 3** kernels (eager / previous fusion / grouped affine / packed affine). All three resident paths start with column-major weights, return fresh outputs, and use the same native request interface. The packed path additionally requires `int8_rhs_layout="packed_fanout"`. The 21-output diagnostic case still paid to return 21 separate tensors: faster device replay did **not** reduce its request latency. Across six cases, two independent seeds and eight held-out requests per case, returned results matched eager byte for byte and the tested narrow outputs matched an oracle built from CPU INT32 accumulators. Default and cast-aware Inductor did not pass the same byte gate. These are random-weight projections, not a complete attention layer.
+
+[Generated three-branch CUDA](../examples/generated/token-quant/affine_17x128_64_64.cu) · [Per-output errors, profiler counts and timing windows](../reports/projection-affine-gb10.json) · [Compute Sanitizer](../reports/projection-affine-sanitizer-gb10.txt). Run `python tools/projection_affine_panel.py --output /tmp/affine.json` and `bash tools/sanitize_projection_affine.sh` after `source tools/env.sh`.

@@ -123,7 +123,9 @@ def prepare(gm, records, dev, example, audit, cap, *, reuse=None):
     graph = private.graph
     nodes = list(graph.nodes)
     position = {n: i for i, n in enumerate(nodes)}
-    groups = [r for r in records if r.get("kind") == "grouped_int32_epilogue"]
+    groups = [
+        r for r in records if r.get("kind") in ("grouped_int32_epilogue", "grouped_int32_affine")
+    ]
     if len(groups) != 1:
         raise Unsupported("packed fanout requires exactly one grouped ordered epilogue")
     record = groups[0]
@@ -131,7 +133,10 @@ def prepare(gm, records, dev, example, audit, cap, *, reuse=None):
     if type(private.get_submodule(grouped.target)) is not IndexRegion:
         raise Unsupported("unexpected grouped projection module")
     row, *tail = grouped.args
-    accs, channels = tail[::2], tail[1::2]
+    affine = record["kind"] == "grouped_int32_affine"
+    arity = 3 if affine else 2
+    accs = tail[::arity]
+    side_inputs = [v for i, v in enumerate(tail) if i % arity]
     all_mm = {n for n in nodes if _is(n, torch.ops.aten._int_mm.default, 2)}
     if len(accs) != len(inventory) or len(accs) != len(set(accs)) or set(accs) != all_mm:
         raise Unsupported("group must consume all, and only, distinct signed GEMMs")
@@ -195,16 +200,27 @@ def prepare(gm, records, dev, example, audit, cap, *, reuse=None):
     module_name = "_sparkfuse_packed_projection"
     if hasattr(gm, weight_name) or hasattr(gm, module_name):
         raise Unsupported("packed projection internal name is already bound")
-    src = emit(branches)
+    if affine:
+        from .projection_affine import emit as emit_affine
+
+        dts = [r["narrow_dtype"] for r in record["branches"]]
+        src = emit_affine([(*b, dt) for b, dt in zip(branches, dts, strict=True)], packed=True)
+    else:
+        dts = [None] * len(branches)
+        src = emit(branches)
     out_shapes = [(m, n) for _, n, rs in branches for _ in rs]
-    types = ["i32" if role == "acc" else "f32" for _, _, rs in branches for role in rs]
+    types = [
+        "i32" if role == "acc" else (dt if role == "narrow" else "f32")
+        for (_, _, rs), dt in zip(branches, dts, strict=True)
+        for role in rs
+    ]
     kernel = IndexProgram(
-        [(m, 1), (m, columns), *(tuple(c.meta["val"].shape) for c in channels)],
+        [(m, 1), (m, columns), *(tuple(c.meta["val"].shape) for c in side_inputs)],
         out_shapes,
         "f32",
         dev,
         src,
-        input_dtypes=["f32", "i32"] + ["f32"] * len(channels),
+        input_dtypes=["f32", "i32"] + ["f32"] * len(side_inputs),
         output_dtypes=types,
     )
     private.add_module(module_name, IndexRegion(kernel, record["host_backend"]))
@@ -240,7 +256,7 @@ def prepare(gm, records, dev, example, audit, cap, *, reuse=None):
     with graph.inserting_before(grouped):
         rhs = graph.get_attr(weight_name)
         mm = graph.call_function(torch.ops.aten._int_mm.default, (lhs, rhs))
-        call = graph.call_module(module_name, (row, mm, *channels))
+        call = graph.call_module(module_name, (row, mm, *side_inputs))
         for i, prev in enumerate(old):
             y = graph.call_function(operator.getitem, (call, i))
             y.meta = dict(prev.meta)
@@ -258,7 +274,10 @@ def prepare(gm, records, dev, example, audit, cap, *, reuse=None):
         gemm=str(mm.target),
         shape=[m, k, columns],
         snapshot_stride=[1, k],
-        branches=[dict(shape=[m, n], output_roles=roles) for _, n, roles in branches],
+        branches=[
+            {**dict(shape=[m, n], output_roles=roles), **({"narrow_dtype": dt} if affine else {})}
+            for (_, n, roles), dt in zip(branches, dts, strict=True)
+        ],
         source_weights=packed_inv,
         ops=[a.name for a in accs] + record["ops"],
         host_backend=record["host_backend"],

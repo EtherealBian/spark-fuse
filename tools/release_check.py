@@ -109,6 +109,18 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "biased_narrow_signed_projections",
+            [
+                sys.executable,
+                str(ROOT / "tools/projection_affine_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-projection-affine.json")),
+            ],
+        )
+    )
     opt = os.environ.get("SPARKFUSE_QWEN_PY")
     qreport = report.with_name(report.stem + "-qwen.json")
     if opt:
