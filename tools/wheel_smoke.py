@@ -43,7 +43,17 @@ with torch.inference_mode():
     assert [r.get('kind') for r in rr].count('split_copy3') == 1
     y=g(x); assert len({a.untyped_storage().data_ptr() for a in (x,*y)})==4
     assert all(a.stride()==b.stride() and torch.equal(a.view(torch.int16),b.view(torch.int16)) for a,b in zip(y,m(x),strict=True))
-print(json.dumps({'split_copy_widths':[16,8,8],'bounded_packed_rows':[1,3,31],'import_origin_verified':True,'torch':str(torch.__version__),'device':torch.cuda.get_device_name(),'shape':[17,129],'dtype':'bfloat16','host':'native','seed':721,'passed':True}))
+from sparkfuse.length_attention import compile_length_decode
+class Length(torch.nn.Module):
+    def forward(self,q,k,v):
+        return torch.nn.functional.scaled_dot_product_attention(q,k,v,enable_gqa=True).clone(memory_format=torch.contiguous_format)
+with torch.inference_mode():
+    def req(s): return tuple(torch.randn(sh,device='cuda',dtype=torch.bfloat16) for sh in ((1,4,1,64),(1,2,s,64),(1,2,s,64)))
+    x=req(7); model=Length(); axis=torch.export.Dim('kv',min=2,max=129)
+    ep=torch.export.export(model,x,dynamic_shapes=({}, {2:axis}, {2:axis})); fn=compile_length_decode(ep,x,req(15),host_backend='native')
+    for s in (2,32,33,129):
+        x=req(s);torch.testing.assert_close(fn(*x),model(*x),atol=.012,rtol=.02,check_stride=True)
+print(json.dumps({'native_length_rows':[2,32,33,129],'split_copy_widths':[16,8,8],'bounded_packed_rows':[1,3,31],'import_origin_verified':True,'torch':str(torch.__version__),'device':torch.cuda.get_device_name(),'shape':[17,129],'dtype':'bfloat16','host':'native','seed':721,'passed':True}))
 """
 
 

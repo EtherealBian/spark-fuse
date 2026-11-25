@@ -117,10 +117,13 @@ class LengthPlan:
 
 
 class LengthDecode:
-    def _guard(self, xs):
-        p = self.plan
+    def _check_policy(self):
         if not torch.is_inference_mode_enabled() or _policy() != self._policy:
             raise ValueError("qualified inference policy required")
+
+    def _guard(self, xs):
+        self._check_policy()
+        p = self.plan
         if len(xs) != 3 + bool(p.mask_batch) or any(
             type(x) is not torch.Tensor
             or x.device != p.device
@@ -176,20 +179,26 @@ class LengthDecode:
     def __call__(self, *xs):
         s = self._guard(xs)
         _bounded(xs)
-        return self._run(xs, s)
+        return self._native(*xs) if self._native is not None else self._run(xs, s)
 
     def run_bounded(self, *xs):
         """Caller asserts finite |Q/K/V|<=64 and bounded additive bias, or -infinity."""
+        if self._native is not None:
+            self._check_policy()
+            return self._native(*xs)
         return self._run(xs, self._guard(xs))
 
 
-def compile_length_decode(ep, example, audit, *, tile=32, max_workspace_bytes=32 << 20):
+def compile_length_decode(
+    ep, example, audit, *, tile=32, max_workspace_bytes=32 << 20, host_backend="ctypes"
+):
     """Lower a symbolic, single-token SDPA+contiguous clone. No per-length JIT."""
     p = LengthPlan(*_pattern(ep), tile)
     policy = _policy()
     _require(
         torch.is_inference_mode_enabled()
         and not policy[0]
+        and host_backend in ("ctypes", "native")
         and type(tile) is int
         and tile in (32, 64, 128, 256)
         and type(max_workspace_bytes) is int
@@ -225,6 +234,32 @@ def compile_length_decode(ep, example, audit, *, tile=32, max_workspace_bytes=32
     )
     builds = [build(src, p.device) for src in (a, m) if src is not None]
     result._libs, result.paths = zip(*builds)
+    result._native = None
+    if host_backend == "native":
+        from .native import _extension
+
+        entries = [C.cast(lib.launch, C.c_void_p).value for lib in result._libs]
+        first = entries[0]
+        second = entries[1] if len(entries) > 1 else 0
+        result._native = (
+            _extension()
+            ._LengthIO(
+                result._libs,
+                first,
+                second,
+                p.device.index,
+                p.lower,
+                p.upper,
+                p.batch,
+                p.heads,
+                p.kv_heads,
+                p.width,
+                p.mask_batch,
+                p.tile,
+                p.dtype == torch.bfloat16,
+            )
+            .run
+        )
     ref = ep.module()
     at, rt = (0.012, 0.02) if p.dtype == torch.bfloat16 else (0.002, 0.004)
     for batch in (xs, ys):

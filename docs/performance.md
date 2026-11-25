@@ -1157,3 +1157,18 @@ Eight held-out trajectories per cell, two independently initialized layers. The 
 The two Inductor settings invoked their compiler backend 3 and 8 times on the masked workload (not counts of CUDA binaries). The result does **not** transfer unchanged to unmasked FP16: at S=2049 eager beat SparkFuse on device, **14.61 vs 15.10 µs**; with rotating lengths it also won synchronized latency, **27.42 vs 30.18 µs**. Both Inductor modes produced a different singleton stride in that family, so we excluded them from contract-equivalent timing rather than assigning a speedup. First-seen request times may include persistent-cache hits; they are not clean-build latency. This is an isolated SDPA region, not a dynamic full Qwen layer.
 
 [Example and export signature](../examples/length_decode.py) · [raw shape traces, CPU comparisons, binary hashes and clocks](../reports/symbolic-kv-gb10.json) · [sanitizers](../reports/symbolic-kv-sanitizer-gb10.txt). Reproduce: `python tools/length_decode_panel.py --output /tmp/symbolic-kv.json`.
+
+<a id="length-host"></a>
+### 相同的动态 CUDA，更短的主机调用路径 / Same kernels, different host dispatch
+
+`compile_length_decode(..., host_backend="native")` 将形状、步幅、地址校验，新输出及临时分配，以及一到两次发射放入一次 ATen C++ 调用。它仍检查当前推理模式与 SDPA 策略，沿调用方的 CUDA stream 执行，并为跨流输入登记存储生命周期。默认 `ctypes` 仍可使用；两个入口加载**逐字节相同的 CUDA 二进制**。四组独立实验中，每组八种长度 × 三个留出请求，输出的结构、逐字节摘要和 FP64 误差均一致。
+
+| 八种长度轮换，首套种子，µs | eager | ctypes | native | dynamic Inductor |
+|---|---:|---:|---:|---:|
+| BF16 带偏置，同步单请求 | 82.85 | 29.26 | **15.42** | 84.64 |
+| BF16 带偏置，八请求排队后每请求 | 99.52 | 20.62 | **9.69** | 138.62 |
+| FP16 无偏置，同步单请求 | 27.25 | 30.28 | **17.06** | 步幅不符，未计时 |
+
+The reduced request time is a host dispatch result, not a faster attention kernel. At S=2049 without a mask, eager was still faster on the device: **14.44 vs 15.10 µs** for native. The fast entry assumes a bounded numerical domain. With actual per-request value scans enabled, the masked S=2049 native call took **142.26 µs**, versus **23.47 µs** without scans; neither cost is hidden inside the other timer. The installed-wheel smoke exercises this host entry at four lengths, including the one-to-two launch transition.
+
+[Raw results, held-out hashes, checked calls and timing windows](../reports/length-host-gb10.json) · [stream lifetime and malformed-descriptor tests](../tests/test_length_host.py) · [sanitizers](../reports/length-host-sanitizer-gb10.txt). Reproduce: `python tools/length_host_panel.py --output /tmp/length-host.json`.

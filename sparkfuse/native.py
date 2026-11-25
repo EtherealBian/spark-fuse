@@ -20,6 +20,7 @@ def _extension():
 
     src = Path(__file__).with_name("csrc") / "host.cpp"
     resident_src = src.with_name("resident_io.cpp")
+    length_src = src.with_name("length_io.cpp")
     cxx = shutil.which(os.environ.get("CXX", "c++"))
     if cxx is None:
         raise RuntimeError("native dispatch requires a C++ compiler")
@@ -43,6 +44,8 @@ def _extension():
         src.read_bytes()
         + b"\0"
         + resident_src.read_bytes()
+        + b"\0"
+        + length_src.read_bytes()
         + repr(
             (
                 str(torch.__version__),
@@ -64,7 +67,7 @@ def _extension():
         if not so.is_file():
             tmp = folder / "building.so"
             p = subprocess.run(
-                [cxx, *flags, str(src), str(resident_src), *links, "-o", str(tmp)],
+                [cxx, *flags, str(src), str(resident_src), str(length_src), *links, "-o", str(tmp)],
                 capture_output=True,
                 text=True,
                 timeout=180,

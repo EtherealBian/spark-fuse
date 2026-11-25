@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "native_length_host",
+            [
+                sys.executable,
+                str(ROOT / "tools/length_host_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-length-host.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "symbolic_kv_length",
             [
                 sys.executable,
