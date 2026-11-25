@@ -1,0 +1,3294 @@
+{
+  "scope": "Single random-weight module, BF16, batch=1, width=768; fresh output allocation and per-call device synchronization. No CUDA Graph wrapping of the host measurements. Device numbers use separate hot replay. Not full-model or service latency.",
+  "torch": "2.13.0+cu130",
+  "device": "NVIDIA GB10",
+  "transformers": "4.51.3",
+  "case": "bert",
+  "seq": 33,
+  "weight_seed": 29771,
+  "input_seeds": [
+    701,
+    5497,
+    25843,
+    38629,
+    47221
+  ],
+  "compiler": "9b98496740e225740c1ca91a3670c858261786dc5344422ba6aad8eb1f7d3cce",
+  "provenance": {
+    "git_head_at_capture": "4210d737afedfd4b4622fddb3385167b1b9652ea",
+    "source_tree_sha256": "c46b6d2a0fc297cb56020bad1e9c1f157f9885d1f6d36d1db3872648697cc45d",
+    "archive": "sources/c46b6d2a0fc297cb56020bad1e9c1f157f9885d1f6d36d1db3872648697cc45d.tar.gz"
+  },
+  "regions": [
+    {
+      "ops": [
+        "div",
+        "softmax"
+      ],
+      "module": "_sparkfuse_region_0",
+      "live_ins": [
+        "matmul"
+      ],
+      "live_outs": [
+        "softmax"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "warp_xor",
+        "cache": true,
+        "vec": 1
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add",
+        "layer_norm"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 101376
+      },
+      "module": "_sparkfuse_region_1_0",
+      "live_ins": [
+        "attention_output_layer_norm_weight",
+        "attention_output_layer_norm_bias",
+        "hidden_states",
+        "dropout_1"
+      ],
+      "live_outs": [
+        "layer_norm"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block_welford",
+        "cache": true,
+        "vec": 4
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add_1",
+        "layer_norm_1"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 101376
+      },
+      "module": "_sparkfuse_region_1_1",
+      "live_ins": [
+        "output_layer_norm_weight",
+        "output_layer_norm_bias",
+        "getitem_1",
+        "dropout_2"
+      ],
+      "live_outs": [
+        "layer_norm_1"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block_welford",
+        "cache": true,
+        "vec": 4
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "gelu"
+      ],
+      "fallback": "below minimum region size"
+    }
+  ],
+  "rewrites": {
+    "mixed_fast": [
+      {
+        "node": "linear",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "linear_1",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "view",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "linear_2",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "view_1",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute_1",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "view_2",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute_2",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "transpose",
+        "from": "aten.transpose.int",
+        "to": "transpose"
+      },
+      {
+        "node": "matmul",
+        "from": "aten.matmul.default",
+        "to": "matmul"
+      },
+      {
+        "node": "dropout",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      },
+      {
+        "node": "matmul_1",
+        "from": "aten.matmul.default",
+        "to": "matmul"
+      },
+      {
+        "node": "permute_3",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "contiguous",
+        "from": "aten.contiguous.default",
+        "to": "contiguous"
+      },
+      {
+        "node": "view_3",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "linear_3",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "dropout_1",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      },
+      {
+        "node": "linear_4",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "gelu",
+        "from": "aten.gelu.default",
+        "to": "gelu"
+      },
+      {
+        "node": "linear_5",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "dropout_2",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      }
+    ],
+    "export_fast": [
+      {
+        "node": "linear",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "linear_1",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "view",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "linear_2",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "view_1",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute_1",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "view_2",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute_2",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "transpose",
+        "from": "aten.transpose.int",
+        "to": "transpose"
+      },
+      {
+        "node": "matmul",
+        "from": "aten.matmul.default",
+        "to": "matmul"
+      },
+      {
+        "node": "dropout",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      },
+      {
+        "node": "matmul_1",
+        "from": "aten.matmul.default",
+        "to": "matmul"
+      },
+      {
+        "node": "permute_3",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "contiguous",
+        "from": "aten.contiguous.default",
+        "to": "contiguous"
+      },
+      {
+        "node": "view_3",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "linear_3",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "dropout_1",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      },
+      {
+        "node": "linear_4",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "gelu",
+        "from": "aten.gelu.default",
+        "to": "gelu"
+      },
+      {
+        "node": "linear_5",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "dropout_2",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      }
+    ]
+  },
+  "mixed_fx_before": "graph():\n    %attention_self_query_weight : [num_users=1] = get_attr[target=attention.self.query.weight]\n    %attention_self_query_bias : [num_users=1] = get_attr[target=attention.self.query.bias]\n    %attention_self_key_weight : [num_users=1] = get_attr[target=attention.self.key.weight]\n    %attention_self_key_bias : [num_users=1] = get_attr[target=attention.self.key.bias]\n    %attention_self_value_weight : [num_users=1] = get_attr[target=attention.self.value.weight]\n    %attention_self_value_bias : [num_users=1] = get_attr[target=attention.self.value.bias]\n    %attention_output_dense_weight : [num_users=1] = get_attr[target=attention.output.dense.weight]\n    %attention_output_dense_bias : [num_users=1] = get_attr[target=attention.output.dense.bias]\n    %attention_output_layer_norm_weight : [num_users=1] = get_attr[target=attention.output.LayerNorm.weight]\n    %attention_output_layer_norm_bias : [num_users=1] = get_attr[target=attention.output.LayerNorm.bias]\n    %intermediate_dense_weight : [num_users=1] = get_attr[target=intermediate.dense.weight]\n    %intermediate_dense_bias : [num_users=1] = get_attr[target=intermediate.dense.bias]\n    %output_dense_weight : [num_users=1] = get_attr[target=output.dense.weight]\n    %output_dense_bias : [num_users=1] = get_attr[target=output.dense.bias]\n    %output_layer_norm_weight : [num_users=1] = get_attr[target=output.LayerNorm.weight]\n    %output_layer_norm_bias : [num_users=1] = get_attr[target=output.LayerNorm.bias]\n    %hidden_states : [num_users=5] = placeholder[target=hidden_states]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states,), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_query_weight, %attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_key_weight, %attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [1, 33, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_value_weight, %attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [1, 33, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [1, 33, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %_sparkfuse_region_0 : [num_users=1] = call_module[target=_sparkfuse_region_0](args = (%matmul,), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_0, 0), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%getitem, 0.1, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 33, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %attention_output_dense_weight, %attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.1, False), kwargs = {})\n    %_sparkfuse_region_1_0 : [num_users=1] = call_module[target=_sparkfuse_region_1_0](args = (%attention_output_layer_norm_weight, %attention_output_layer_norm_bias, %hidden_states, %dropout_1), kwargs = {})\n    %getitem_1 : [num_users=2] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_0, 0), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem_1, %intermediate_dense_weight, %intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %output_dense_weight, %output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.1, False), kwargs = {})\n    %_sparkfuse_region_1_1 : [num_users=1] = call_module[target=_sparkfuse_region_1_1](args = (%output_layer_norm_weight, %output_layer_norm_bias, %getitem_1, %dropout_2), kwargs = {})\n    %getitem_2 : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_1, 0), kwargs = {})\n    return (getitem_2,)",
+  "mixed_fx_after": "graph():\n    %attention_self_query_weight : [num_users=1] = get_attr[target=attention.self.query.weight]\n    %attention_self_query_bias : [num_users=1] = get_attr[target=attention.self.query.bias]\n    %attention_self_key_weight : [num_users=1] = get_attr[target=attention.self.key.weight]\n    %attention_self_key_bias : [num_users=1] = get_attr[target=attention.self.key.bias]\n    %attention_self_value_weight : [num_users=1] = get_attr[target=attention.self.value.weight]\n    %attention_self_value_bias : [num_users=1] = get_attr[target=attention.self.value.bias]\n    %attention_output_dense_weight : [num_users=1] = get_attr[target=attention.output.dense.weight]\n    %attention_output_dense_bias : [num_users=1] = get_attr[target=attention.output.dense.bias]\n    %attention_output_layer_norm_weight : [num_users=1] = get_attr[target=attention.output.LayerNorm.weight]\n    %attention_output_layer_norm_bias : [num_users=1] = get_attr[target=attention.output.LayerNorm.bias]\n    %intermediate_dense_weight : [num_users=1] = get_attr[target=intermediate.dense.weight]\n    %intermediate_dense_bias : [num_users=1] = get_attr[target=intermediate.dense.bias]\n    %output_dense_weight : [num_users=1] = get_attr[target=output.dense.weight]\n    %output_dense_bias : [num_users=1] = get_attr[target=output.dense.bias]\n    %output_layer_norm_weight : [num_users=1] = get_attr[target=output.LayerNorm.weight]\n    %output_layer_norm_bias : [num_users=1] = get_attr[target=output.LayerNorm.bias]\n    %hidden_states : [num_users=5] = placeholder[target=hidden_states]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states,), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%hidden_states, %attention_self_query_weight, %attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%hidden_states, %attention_self_key_weight, %attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_method[target=view](args = (%linear_1, [1, 33, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_method[target=permute](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%hidden_states, %attention_self_value_weight, %attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_method[target=view](args = (%linear_2, [1, 33, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_method[target=permute](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_method[target=view](args = (%linear, [1, 33, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_method[target=permute](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_method[target=transpose](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.matmul](args = (%permute_2, %transpose), kwargs = {})\n    %_sparkfuse_region_0 : [num_users=1] = call_module[target=_sparkfuse_region_0](args = (%matmul,), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_0, 0), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.matmul](args = (%getitem, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_method[target=permute](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_method[target=contiguous](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_method[target=view](args = (%contiguous, [1, 33, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%view_3, %attention_output_dense_weight, %attention_output_dense_bias), kwargs = {})\n    %_sparkfuse_region_1_0 : [num_users=1] = call_module[target=_sparkfuse_region_1_0](args = (%attention_output_layer_norm_weight, %attention_output_layer_norm_bias, %hidden_states, %linear_3), kwargs = {})\n    %getitem_1 : [num_users=2] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_0, 0), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%getitem_1, %intermediate_dense_weight, %intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch._C._nn.gelu](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%gelu, %output_dense_weight, %output_dense_bias), kwargs = {})\n    %_sparkfuse_region_1_1 : [num_users=1] = call_module[target=_sparkfuse_region_1_1](args = (%output_layer_norm_weight, %output_layer_norm_bias, %getitem_1, %linear_5), kwargs = {})\n    %getitem_2 : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_1, 0), kwargs = {})\n    return (getitem_2,)",
+  "backends": {
+    "eager": {
+      "samples": [
+        {
+          "seed": 701,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 5497,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 25843,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 38629,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 156.573,
+            "p10_us": 154.478,
+            "p90_us": 164.606,
+            "samples_us": [
+              169.469,
+              162.365,
+              165.357,
+              208.604,
+              161.549,
+              157.294,
+              157.517,
+              155.405,
+              155.613,
+              164.606,
+              157.597,
+              154.429,
+              157.549,
+              154.478,
+              155.469,
+              156.797,
+              158.237,
+              155.454,
+              153.485,
+              154.461,
+              156.621,
+              155.486,
+              160.669,
+              155.389,
+              155.581,
+              154.51,
+              155.357,
+              156.573,
+              158.381,
+              155.438,
+              154.509
+            ]
+          },
+          "device": {
+            "median_us": 81.60799741744995,
+            "p10_us": 81.35200291872025,
+            "p90_us": 81.62900060415268,
+            "samples_us": [
+              81.62900060415268,
+              81.35200291872025,
+              81.48299902677536,
+              81.60799741744995,
+              81.69399946928024
+            ]
+          }
+        },
+        {
+          "seed": 25843,
+          "host": {
+            "median_us": 156.541,
+            "p10_us": 154.397,
+            "p90_us": 160.461,
+            "samples_us": [
+              167.613,
+              158.781,
+              156.51,
+              156.413,
+              156.541,
+              162.909,
+              161.341,
+              158.766,
+              159.357,
+              158.493,
+              156.541,
+              155.502,
+              157.613,
+              154.461,
+              156.557,
+              156.542,
+              154.381,
+              154.509,
+              160.461,
+              156.462,
+              155.645,
+              155.629,
+              155.437,
+              158.462,
+              157.661,
+              158.205,
+              154.397,
+              153.486,
+              154.509,
+              154.333,
+              157.517
+            ]
+          },
+          "device": {
+            "median_us": 81.86700195074081,
+            "p10_us": 81.73199743032455,
+            "p90_us": 81.88199996948242,
+            "samples_us": [
+              81.79300278425217,
+              81.73199743032455,
+              81.86700195074081,
+              82.05299824476242,
+              81.88199996948242
+            ]
+          }
+        },
+        {
+          "seed": 38629,
+          "host": {
+            "median_us": 156.461,
+            "p10_us": 153.453,
+            "p90_us": 161.773,
+            "samples_us": [
+              165.037,
+              161.773,
+              158.222,
+              157.341,
+              155.533,
+              156.461,
+              160.718,
+              155.565,
+              157.357,
+              158.557,
+              156.445,
+              154.558,
+              163.805,
+              157.357,
+              158.525,
+              156.542,
+              157.389,
+              155.517,
+              156.077,
+              171.629,
+              155.342,
+              161.485,
+              155.581,
+              154.365,
+              154.35,
+              159.389,
+              152.317,
+              152.526,
+              152.397,
+              153.453,
+              154.477
+            ]
+          },
+          "device": {
+            "median_us": 82.40099996328354,
+            "p10_us": 81.82299882173538,
+            "p90_us": 84.38199758529663,
+            "samples_us": [
+              84.38199758529663,
+              82.40099996328354,
+              81.86499774456024,
+              81.82299882173538,
+              94.49800103902817
+            ]
+          }
+        },
+        {
+          "seed": 47221,
+          "host": {
+            "median_us": 156.525,
+            "p10_us": 154.429,
+            "p90_us": 160.653,
+            "samples_us": [
+              161.358,
+              187.388,
+              158.589,
+              157.262,
+              155.485,
+              159.597,
+              154.365,
+              155.63,
+              156.429,
+              163.693,
+              159.469,
+              155.646,
+              157.357,
+              157.549,
+              157.501,
+              158.654,
+              154.429,
+              154.317,
+              156.525,
+              156.51,
+              156.589,
+              157.629,
+              158.445,
+              155.55,
+              155.389,
+              156.285,
+              155.485,
+              153.582,
+              160.653,
+              155.341,
+              155.533
+            ]
+          },
+          "device": {
+            "median_us": 82.05600082874298,
+            "p10_us": 81.73300325870514,
+            "p90_us": 86.50100231170654,
+            "samples_us": [
+              86.50100231170654,
+              98.88599812984467,
+              82.05600082874298,
+              81.73300325870514,
+              81.85499906539917
+            ]
+          }
+        },
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 156.461,
+            "p10_us": 153.469,
+            "p90_us": 160.477,
+            "samples_us": [
+              161.87,
+              158.045,
+              158.429,
+              158.493,
+              158.573,
+              161.774,
+              155.341,
+              157.485,
+              154.541,
+              156.51,
+              160.637,
+              160.477,
+              156.461,
+              155.47,
+              157.533,
+              158.541,
+              155.405,
+              157.886,
+              156.221,
+              155.373,
+              153.437,
+              155.39,
+              154.429,
+              155.549,
+              156.541,
+              154.158,
+              153.549,
+              153.469,
+              153.39,
+              152.493,
+              157.517
+            ]
+          },
+          "device": {
+            "median_us": 81.8530023097992,
+            "p10_us": 81.60900324583054,
+            "p90_us": 90.71599692106247,
+            "samples_us": [
+              81.7599967122078,
+              94.29100155830383,
+              90.71599692106247,
+              81.60900324583054,
+              81.8530023097992
+            ]
+          }
+        },
+        {
+          "seed": 25843,
+          "host": {
+            "median_us": 156.413,
+            "p10_us": 154.174,
+            "p90_us": 159.597,
+            "samples_us": [
+              162.317,
+              156.622,
+              157.229,
+              158.525,
+              157.581,
+              161.501,
+              158.622,
+              155.405,
+              157.677,
+              155.341,
+              156.702,
+              156.365,
+              159.773,
+              156.413,
+              155.582,
+              155.501,
+              154.301,
+              153.374,
+              159.597,
+              155.501,
+              155.549,
+              156.494,
+              156.573,
+              156.493,
+              155.549,
+              157.358,
+              153.325,
+              152.509,
+              154.174,
+              155.517,
+              154.445
+            ]
+          },
+          "device": {
+            "median_us": 81.76299929618835,
+            "p10_us": 81.7359983921051,
+            "p90_us": 85.8749970793724,
+            "samples_us": [
+              81.76299929618835,
+              81.7359983921051,
+              81.73699676990509,
+              100.90599954128265,
+              85.8749970793724
+            ]
+          }
+        },
+        {
+          "seed": 38629,
+          "host": {
+            "median_us": 156.43,
+            "p10_us": 154.221,
+            "p90_us": 160.541,
+            "samples_us": [
+              161.182,
+              163.661,
+              159.245,
+              157.565,
+              156.557,
+              158.414,
+              158.541,
+              156.429,
+              158.653,
+              156.43,
+              156.493,
+              156.477,
+              156.589,
+              156.638,
+              160.541,
+              154.493,
+              155.421,
+              153.31,
+              155.565,
+              155.485,
+              154.701,
+              154.35,
+              154.445,
+              154.605,
+              156.446,
+              154.221,
+              156.317,
+              162.733,
+              154.35,
+              153.565,
+              153.437
+            ]
+          },
+          "device": {
+            "median_us": 81.8210020661354,
+            "p10_us": 81.7589983344078,
+            "p90_us": 81.9230005145073,
+            "samples_us": [
+              81.7589983344078,
+              81.80200308561325,
+              81.92600309848785,
+              81.9230005145073,
+              81.8210020661354
+            ]
+          }
+        },
+        {
+          "seed": 47221,
+          "host": {
+            "median_us": 157.342,
+            "p10_us": 154.269,
+            "p90_us": 191.101,
+            "samples_us": [
+              160.013,
+              162.605,
+              158.462,
+              201.052,
+              191.101,
+              165.485,
+              162.141,
+              433.4,
+              162.925,
+              157.342,
+              156.333,
+              196.492,
+              158.59,
+              155.469,
+              157.485,
+              154.542,
+              156.43,
+              154.445,
+              159.581,
+              163.725,
+              154.542,
+              155.437,
+              156.797,
+              154.205,
+              157.566,
+              154.125,
+              154.525,
+              156.526,
+              152.445,
+              154.269,
+              155.597
+            ]
+          },
+          "device": {
+            "median_us": 81.86300098896027,
+            "p10_us": 81.46499842405319,
+            "p90_us": 91.17700159549713,
+            "samples_us": [
+              81.7900002002716,
+              94.15200352668762,
+              91.17700159549713,
+              81.86300098896027,
+              81.46499842405319
+            ]
+          }
+        },
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 156.414,
+            "p10_us": 154.397,
+            "p90_us": 162.221,
+            "samples_us": [
+              167.869,
+              157.181,
+              156.19,
+              154.397,
+              156.477,
+              157.773,
+              163.486,
+              154.525,
+              155.373,
+              157.517,
+              154.574,
+              157.517,
+              158.621,
+              157.437,
+              155.438,
+              156.541,
+              156.525,
+              156.509,
+              156.446,
+              166.781,
+              155.517,
+              152.493,
+              155.406,
+              155.421,
+              154.781,
+              162.221,
+              156.414,
+              153.437,
+              153.501,
+              155.709,
+              155.278
+            ]
+          },
+          "device": {
+            "median_us": 81.7909985780716,
+            "p10_us": 81.51199668645859,
+            "p90_us": 81.79999887943268,
+            "samples_us": [
+              85.36700159311295,
+              81.79999887943268,
+              81.51199668645859,
+              81.7909985780716,
+              81.66400343179703
+            ]
+          }
+        }
+      ],
+      "device_us": 81.8530023097992,
+      "host_us": 156.461
+    },
+    "export": {
+      "samples": [
+        {
+          "seed": 701,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 5497,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 25843,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 38629,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 182.301,
+            "p10_us": 179.053,
+            "p90_us": 220.012,
+            "samples_us": [
+              187.677,
+              184.077,
+              181.02,
+              191.293,
+              182.029,
+              183.117,
+              182.156,
+              180.173,
+              185.245,
+              181.981,
+              177.117,
+              181.98,
+              181.197,
+              181.229,
+              186.205,
+              207.788,
+              188.173,
+              233.148,
+              220.012,
+              271.387,
+              179.053,
+              178.989,
+              182.301,
+              180.892,
+              185.581,
+              325.994,
+              180.397,
+              180.061,
+              197.037,
+              219.036,
+              177.997
+            ]
+          },
+          "device": {
+            "median_us": 81.88699930906296,
+            "p10_us": 81.54399693012238,
+            "p90_us": 87.93800324201584,
+            "samples_us": [
+              81.88699930906296,
+              81.54399693012238,
+              81.79999887943268,
+              87.93800324201584,
+              97.04499691724777
+            ]
+          }
+        },
+        {
+          "seed": 25843,
+          "host": {
+            "median_us": 180.973,
+            "p10_us": 177.997,
+            "p90_us": 204.381,
+            "samples_us": [
+              180.973,
+              180.973,
+              187.149,
+              185.421,
+              184.172,
+              191.261,
+              252.012,
+              196.588,
+              275.803,
+              179.181,
+              179.005,
+              179.917,
+              186.428,
+              434.377,
+              185.645,
+              182.332,
+              204.381,
+              191.9,
+              178.349,
+              178.333,
+              178.781,
+              179.069,
+              183.149,
+              177.036,
+              179.085,
+              179.725,
+              178.077,
+              182.125,
+              177.997,
+              176.061,
+              176.908
+            ]
+          },
+          "device": {
+            "median_us": 81.53899759054184,
+            "p10_us": 81.48399740457535,
+            "p90_us": 81.5420001745224,
+            "samples_us": [
+              81.53700083494186,
+              81.5420001745224,
+              81.48399740457535,
+              81.53899759054184,
+              82.01400190591812
+            ]
+          }
+        },
+        {
+          "seed": 38629,
+          "host": {
+            "median_us": 179.9,
+            "p10_us": 178.028,
+            "p90_us": 184.381,
+            "samples_us": [
+              192.045,
+              182.876,
+              178.893,
+              179.053,
+              180.109,
+              179.037,
+              186.253,
+              178.028,
+              179.069,
+              181.005,
+              178.973,
+              184.381,
+              180.125,
+              179.9,
+              180.093,
+              179.005,
+              179.997,
+              184.221,
+              179.036,
+              179.117,
+              180.029,
+              176.045,
+              188.189,
+              180.125,
+              180.124,
+              179.773,
+              179.021,
+              179.085,
+              183.165,
+              177.085,
+              177.965
+            ]
+          },
+          "device": {
+            "median_us": 81.92700147628784,
+            "p10_us": 81.84699714183807,
+            "p90_us": 84.63999629020691,
+            "samples_us": [
+              81.88799768686295,
+              100.42200237512589,
+              84.63999629020691,
+              81.92700147628784,
+              81.84699714183807
+            ]
+          }
+        },
+        {
+          "seed": 47221,
+          "host": {
+            "median_us": 180.973,
+            "p10_us": 177.932,
+            "p90_us": 185.181,
+            "samples_us": [
+              183.645,
+              182.029,
+              181.004,
+              181.053,
+              182.109,
+              181.085,
+              179.053,
+              181.052,
+              179.149,
+              177.869,
+              182.285,
+              176.893,
+              179.069,
+              180.109,
+              181.052,
+              185.213,
+              179.933,
+              180.029,
+              182.157,
+              181.069,
+              180.172,
+              185.197,
+              179.085,
+              179.053,
+              310.154,
+              180.973,
+              185.181,
+              179.085,
+              177.021,
+              177.997,
+              177.932
+            ]
+          },
+          "device": {
+            "median_us": 81.93100243806839,
+            "p10_us": 81.7359983921051,
+            "p90_us": 88.18300068378448,
+            "samples_us": [
+              81.82299882173538,
+              81.7359983921051,
+              81.93100243806839,
+              99.7140035033226,
+              88.18300068378448
+            ]
+          }
+        },
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 180.988,
+            "p10_us": 179.965,
+            "p90_us": 183.453,
+            "samples_us": [
+              191.804,
+              179.965,
+              181.085,
+              180.893,
+              181.148,
+              183.453,
+              180.829,
+              181.021,
+              180.157,
+              182.125,
+              180.988,
+              188.253,
+              180.109,
+              180.157,
+              179.037,
+              180.06,
+              180.029,
+              183.101,
+              178.045,
+              180.173,
+              180.893,
+              181.26,
+              187.213,
+              181.085,
+              181.101,
+              180.957,
+              179.052,
+              180.045,
+              183.341,
+              180.989,
+              181.053
+            ]
+          },
+          "device": {
+            "median_us": 81.80399984121323,
+            "p10_us": 81.5960019826889,
+            "p90_us": 81.82299882173538,
+            "samples_us": [
+              81.5960019826889,
+              81.67099952697754,
+              81.80399984121323,
+              81.98799937963486,
+              81.82299882173538
+            ]
+          }
+        },
+        {
+          "seed": 25843,
+          "host": {
+            "median_us": 180.125,
+            "p10_us": 178.141,
+            "p90_us": 184.637,
+            "samples_us": [
+              184.637,
+              182.909,
+              182.093,
+              186.301,
+              181.02,
+              178.973,
+              180.045,
+              181.245,
+              179.901,
+              183.052,
+              178.077,
+              178.157,
+              181.037,
+              180.077,
+              202.764,
+              183.053,
+              178.893,
+              180.077,
+              179.053,
+              180.156,
+              184.173,
+              178.989,
+              178.157,
+              187.245,
+              180.125,
+              183.1,
+              180.813,
+              178.141,
+              178.013,
+              177.949,
+              179.133
+            ]
+          },
+          "device": {
+            "median_us": 81.75799995660782,
+            "p10_us": 81.72400295734406,
+            "p90_us": 81.79699629545212,
+            "samples_us": [
+              81.72400295734406,
+              81.7359983921051,
+              81.79699629545212,
+              81.85800164937973,
+              81.75799995660782
+            ]
+          }
+        },
+        {
+          "seed": 38629,
+          "host": {
+            "median_us": 180.125,
+            "p10_us": 179.021,
+            "p90_us": 185.244,
+            "samples_us": [
+              182.365,
+              188.973,
+              183.084,
+              179.869,
+              182.141,
+              179.997,
+              182.157,
+              186.252,
+              180.125,
+              179.901,
+              180.029,
+              180.109,
+              186.237,
+              181.116,
+              180.125,
+              180.125,
+              179.853,
+              181.069,
+              185.244,
+              179.037,
+              180.157,
+              179.021,
+              179.181,
+              184.077,
+              181.052,
+              178.845,
+              179.053,
+              180.125,
+              177.965,
+              182.141,
+              178.268
+            ]
+          },
+          "device": {
+            "median_us": 82.17599987983704,
+            "p10_us": 81.85599744319916,
+            "p90_us": 83.8489979505539,
+            "samples_us": [
+              81.85599744319916,
+              83.8489979505539,
+              103.59399765729904,
+              82.17599987983704,
+              81.91099762916565
+            ]
+          }
+        },
+        {
+          "seed": 47221,
+          "host": {
+            "median_us": 180.093,
+            "p10_us": 178.061,
+            "p90_us": 184.284,
+            "samples_us": [
+              183.645,
+              184.284,
+              183.053,
+              187.213,
+              180.317,
+              181.852,
+              180.109,
+              179.965,
+              181.613,
+              180.637,
+              179.965,
+              180.204,
+              180.877,
+              180.173,
+              317.547,
+              176.764,
+              179.981,
+              178.061,
+              179.949,
+              182.093,
+              178.109,
+              178.061,
+              178.044,
+              178.109,
+              180.093,
+              179.965,
+              177.005,
+              179.165,
+              178.957,
+              179.084,
+              185.229
+            ]
+          },
+          "device": {
+            "median_us": 81.88900351524353,
+            "p10_us": 81.8530023097992,
+            "p90_us": 91.14400297403336,
+            "samples_us": [
+              93.87700259685516,
+              91.14400297403336,
+              81.88900351524353,
+              81.86499774456024,
+              81.8530023097992
+            ]
+          }
+        },
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 182.844,
+            "p10_us": 181.052,
+            "p90_us": 187.453,
+            "samples_us": [
+              188.076,
+              187.453,
+              190.749,
+              182.045,
+              181.052,
+              182.941,
+              183.069,
+              186.285,
+              182.844,
+              182.045,
+              183.149,
+              182.157,
+              183.101,
+              190.188,
+              183.037,
+              181.981,
+              179.965,
+              181.997,
+              183.644,
+              181.517,
+              180.925,
+              183.373,
+              182.892,
+              182.221,
+              186.189,
+              181.933,
+              182.109,
+              182.14,
+              179.117,
+              183.709,
+              181.293
+            ]
+          },
+          "device": {
+            "median_us": 82.30599761009216,
+            "p10_us": 81.66400343179703,
+            "p90_us": 83.52400362491608,
+            "samples_us": [
+              81.66400343179703,
+              83.52400362491608,
+              100.90599954128265,
+              82.30599761009216,
+              81.72599971294403
+            ]
+          }
+        }
+      ],
+      "device_us": 81.88900351524353,
+      "host_us": 180.973
+    },
+    "export_fast": {
+      "samples": [
+        {
+          "seed": 701,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 5497,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 25843,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 38629,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 164.589,
+            "p10_us": 162.526,
+            "p90_us": 169.709,
+            "samples_us": [
+              168.173,
+              165.741,
+              165.277,
+              167.805,
+              165.645,
+              169.805,
+              163.646,
+              163.677,
+              164.589,
+              164.573,
+              163.565,
+              169.821,
+              164.557,
+              162.749,
+              162.429,
+              162.526,
+              163.725,
+              175.869,
+              165.709,
+              162.781,
+              162.589,
+              164.717,
+              165.837,
+              169.709,
+              165.661,
+              162.573,
+              163.741,
+              164.606,
+              161.613,
+              165.789,
+              161.629
+            ]
+          },
+          "device": {
+            "median_us": 81.79400116205215,
+            "p10_us": 81.68800175189972,
+            "p90_us": 81.86399936676025,
+            "samples_us": [
+              81.79400116205215,
+              81.73300325870514,
+              81.99500292539597,
+              81.86399936676025,
+              81.68800175189972
+            ]
+          }
+        },
+        {
+          "seed": 25843,
+          "host": {
+            "median_us": 164.589,
+            "p10_us": 162.685,
+            "p90_us": 167.645,
+            "samples_us": [
+              168.685,
+              165.565,
+              164.733,
+              164.701,
+              172.941,
+              165.597,
+              164.733,
+              163.662,
+              164.829,
+              163.485,
+              207.884,
+              164.621,
+              163.597,
+              163.71,
+              162.669,
+              164.669,
+              167.645,
+              162.685,
+              164.669,
+              163.709,
+              163.677,
+              162.733,
+              166.765,
+              162.686,
+              162.653,
+              163.341,
+              162.781,
+              164.589,
+              166.733,
+              162.749,
+              160.574
+            ]
+          },
+          "device": {
+            "median_us": 81.9920003414154,
+            "p10_us": 81.73000067472458,
+            "p90_us": 84.51399952173233,
+            "samples_us": [
+              84.51399952173233,
+              100.06199777126312,
+              81.9920003414154,
+              81.85400068759918,
+              81.73000067472458
+            ]
+          }
+        },
+        {
+          "seed": 38629,
+          "host": {
+            "median_us": 162.749,
+            "p10_us": 162.478,
+            "p90_us": 168.509,
+            "samples_us": [
+              165.853,
+              164.685,
+              172.925,
+              163.645,
+              162.733,
+              162.541,
+              318.619,
+              168.509,
+              162.685,
+              162.317,
+              162.573,
+              162.669,
+              162.749,
+              167.725,
+              162.829,
+              162.478,
+              161.629,
+              162.621,
+              163.757,
+              168.765,
+              165.693,
+              162.733,
+              166.749,
+              161.646,
+              162.541,
+              165.581,
+              163.597,
+              162.605,
+              162.749,
+              162.733,
+              163.661
+            ]
+          },
+          "device": {
+            "median_us": 81.82299882173538,
+            "p10_us": 81.41300082206726,
+            "p90_us": 81.83199912309647,
+            "samples_us": [
+              81.82299882173538,
+              81.41300082206726,
+              81.73900097608566,
+              81.83199912309647,
+              81.84699714183807
+            ]
+          }
+        },
+        {
+          "seed": 47221,
+          "host": {
+            "median_us": 164.701,
+            "p10_us": 162.637,
+            "p90_us": 167.374,
+            "samples_us": [
+              171.117,
+              167.374,
+              170.749,
+              164.765,
+              165.629,
+              165.565,
+              165.885,
+              166.541,
+              169.757,
+              165.677,
+              162.685,
+              163.629,
+              164.909,
+              163.598,
+              164.701,
+              166.669,
+              165.597,
+              164.861,
+              164.541,
+              164.701,
+              162.781,
+              164.685,
+              163.71,
+              162.637,
+              165.725,
+              164.493,
+              163.725,
+              163.693,
+              161.629,
+              161.693,
+              161.582
+            ]
+          },
+          "device": {
+            "median_us": 81.8680003285408,
+            "p10_us": 81.78900182247162,
+            "p90_us": 90.74100106954575,
+            "samples_us": [
+              94.02500092983246,
+              90.74100106954575,
+              81.83199912309647,
+              81.8680003285408,
+              81.78900182247162
+            ]
+          }
+        },
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 164.717,
+            "p10_us": 163.613,
+            "p90_us": 169.517,
+            "samples_us": [
+              171.549,
+              169.517,
+              167.757,
+              171.917,
+              167.661,
+              165.677,
+              164.605,
+              165.741,
+              163.661,
+              169.741,
+              166.653,
+              164.781,
+              164.67,
+              163.629,
+              163.741,
+              167.869,
+              164.621,
+              163.581,
+              164.717,
+              165.789,
+              163.613,
+              168.909,
+              164.67,
+              163.709,
+              165.677,
+              164.413,
+              163.645,
+              168.893,
+              164.605,
+              162.653,
+              162.621
+            ]
+          },
+          "device": {
+            "median_us": 81.82600140571594,
+            "p10_us": 81.60699903964996,
+            "p90_us": 81.85599744319916,
+            "samples_us": [
+              82.20399916172028,
+              81.60699903964996,
+              81.79999887943268,
+              81.82600140571594,
+              81.85599744319916
+            ]
+          }
+        },
+        {
+          "seed": 25843,
+          "host": {
+            "median_us": 163.821,
+            "p10_us": 162.541,
+            "p90_us": 172.845,
+            "samples_us": [
+              169.261,
+              167.757,
+              190.621,
+              205.372,
+              166.477,
+              166.718,
+              165.805,
+              164.637,
+              180.013,
+              164.701,
+              162.541,
+              163.725,
+              164.781,
+              163.725,
+              172.845,
+              163.645,
+              163.517,
+              164.718,
+              162.654,
+              162.557,
+              167.917,
+              163.709,
+              163.613,
+              163.821,
+              163.581,
+              163.533,
+              166.734,
+              162.685,
+              160.541,
+              161.677,
+              161.613
+            ]
+          },
+          "device": {
+            "median_us": 81.86499774456024,
+            "p10_us": 81.67099952697754,
+            "p90_us": 81.86700195074081,
+            "samples_us": [
+              81.75700157880783,
+              81.67099952697754,
+              81.86700195074081,
+              81.86499774456024,
+              81.88500255346298
+            ]
+          }
+        },
+        {
+          "seed": 38629,
+          "host": {
+            "median_us": 167.645,
+            "p10_us": 163.438,
+            "p90_us": 212.861,
+            "samples_us": [
+              212.861,
+              168.621,
+              191.564,
+              253.82,
+              256.427,
+              173.533,
+              163.821,
+              170.781,
+              163.438,
+              170.813,
+              164.589,
+              278.475,
+              171.757,
+              168.173,
+              166.349,
+              193.244,
+              186.221,
+              174.973,
+              164.669,
+              163.725,
+              167.741,
+              163.678,
+              163.709,
+              161.677,
+              162.653,
+              162.621,
+              167.645,
+              163.741,
+              163.693,
+              163.678,
+              164.797
+            ]
+          },
+          "device": {
+            "median_us": 81.91999793052673,
+            "p10_us": 81.85800164937973,
+            "p90_us": 81.9220021367073,
+            "samples_us": [
+              81.91999793052673,
+              81.86300098896027,
+              81.9220021367073,
+              81.85800164937973,
+              82.07199722528458
+            ]
+          }
+        },
+        {
+          "seed": 47221,
+          "host": {
+            "median_us": 163.821,
+            "p10_us": 162.621,
+            "p90_us": 166.813,
+            "samples_us": [
+              169.197,
+              164.526,
+              170.781,
+              165.613,
+              163.805,
+              163.661,
+              162.541,
+              163.725,
+              167.741,
+              162.621,
+              163.821,
+              162.59,
+              162.685,
+              163.709,
+              166.813,
+              165.741,
+              162.557,
+              163.597,
+              164.877,
+              164.541,
+              165.838,
+              164.653,
+              162.653,
+              162.669,
+              163.597,
+              163.437,
+              164.749,
+              164.605,
+              164.766,
+              163.693,
+              164.669
+            ]
+          },
+          "device": {
+            "median_us": 81.85599744319916,
+            "p10_us": 81.79999887943268,
+            "p90_us": 81.91999793052673,
+            "samples_us": [
+              81.91999793052673,
+              81.85599744319916,
+              81.79999887943268,
+              81.92799985408783,
+              81.8220004439354
+            ]
+          }
+        },
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 163.709,
+            "p10_us": 162.525,
+            "p90_us": 169.245,
+            "samples_us": [
+              169.245,
+              165.661,
+              165.613,
+              165.677,
+              173.885,
+              164.509,
+              162.541,
+              164.605,
+              163.63,
+              163.325,
+              169.789,
+              161.549,
+              163.565,
+              163.597,
+              162.525,
+              163.613,
+              168.75,
+              163.533,
+              162.493,
+              163.565,
+              164.557,
+              165.597,
+              169.677,
+              163.501,
+              163.629,
+              163.662,
+              164.525,
+              164.669,
+              166.541,
+              161.517,
+              163.709
+            ]
+          },
+          "device": {
+            "median_us": 81.67199790477753,
+            "p10_us": 81.50400221347809,
+            "p90_us": 81.69600367546082,
+            "samples_us": [
+              81.50400221347809,
+              81.53700083494186,
+              81.67199790477753,
+              81.85800164937973,
+              81.69600367546082
+            ]
+          }
+        }
+      ],
+      "device_us": 81.85599744319916,
+      "host_us": 164.589
+    },
+    "mixed": {
+      "samples": [
+        {
+          "seed": 701,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 5497,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 25843,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 38629,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 165.837,
+            "p10_us": 164.589,
+            "p90_us": 177.629,
+            "samples_us": [
+              256.987,
+              172.653,
+              170.685,
+              176.765,
+              171.885,
+              176.877,
+              283.835,
+              177.629,
+              167.645,
+              169.853,
+              223.58,
+              165.997,
+              163.645,
+              165.917,
+              164.589,
+              164.797,
+              171.693,
+              165.837,
+              166.477,
+              165.741,
+              163.582,
+              163.773,
+              164.605,
+              164.685,
+              164.717,
+              165.597,
+              165.741,
+              165.597,
+              164.669,
+              164.686,
+              164.765
+            ]
+          },
+          "device": {
+            "median_us": 75.93300193548203,
+            "p10_us": 75.6239965558052,
+            "p90_us": 78.65499705076218,
+            "samples_us": [
+              75.6239965558052,
+              75.91299712657928,
+              78.65499705076218,
+              97.47999906539917,
+              75.93300193548203
+            ]
+          }
+        },
+        {
+          "seed": 25843,
+          "host": {
+            "median_us": 166.573,
+            "p10_us": 164.461,
+            "p90_us": 170.925,
+            "samples_us": [
+              171.981,
+              168.813,
+              170.749,
+              167.598,
+              170.973,
+              167.805,
+              165.613,
+              166.717,
+              170.925,
+              165.437,
+              163.693,
+              165.693,
+              166.749,
+              166.717,
+              170.989,
+              164.733,
+              166.573,
+              165.725,
+              165.709,
+              165.79,
+              166.621,
+              164.765,
+              162.973,
+              164.461,
+              163.741,
+              166.317,
+              166.717,
+              165.661,
+              166.637,
+              166.813,
+              165.678
+            ]
+          },
+          "device": {
+            "median_us": 75.88499784469604,
+            "p10_us": 75.64699649810791,
+            "p90_us": 75.9740024805069,
+            "samples_us": [
+              75.88499784469604,
+              75.64699649810791,
+              75.78200101852417,
+              75.9740024805069,
+              75.97699761390686
+            ]
+          }
+        },
+        {
+          "seed": 38629,
+          "host": {
+            "median_us": 167.805,
+            "p10_us": 165.757,
+            "p90_us": 205.388,
+            "samples_us": [
+              167.805,
+              174.876,
+              169.693,
+              165.838,
+              166.733,
+              165.901,
+              168.621,
+              173.949,
+              166.525,
+              177.069,
+              166.893,
+              205.388,
+              223.644,
+              264.716,
+              167.597,
+              167.053,
+              171.693,
+              166.733,
+              173.933,
+              166.109,
+              301.226,
+              169.021,
+              170.381,
+              200.109,
+              185.021,
+              165.501,
+              166.829,
+              165.757,
+              166.781,
+              165.709,
+              165.725
+            ]
+          },
+          "device": {
+            "median_us": 76.0359987616539,
+            "p10_us": 75.80800354480743,
+            "p90_us": 80.61099797487259,
+            "samples_us": [
+              75.80800354480743,
+              75.8500024676323,
+              76.0359987616539,
+              80.61099797487259,
+              94.09800171852112
+            ]
+          }
+        },
+        {
+          "seed": 47221,
+          "host": {
+            "median_us": 166.765,
+            "p10_us": 164.733,
+            "p90_us": 171.757,
+            "samples_us": [
+              172.653,
+              167.453,
+              167.677,
+              168.957,
+              168.845,
+              173.645,
+              168.797,
+              167.773,
+              165.837,
+              167.677,
+              166.749,
+              171.757,
+              166.846,
+              166.765,
+              165.805,
+              164.685,
+              165.677,
+              169.821,
+              163.949,
+              166.589,
+              167.773,
+              164.733,
+              165.693,
+              170.893,
+              165.742,
+              165.485,
+              164.797,
+              165.677,
+              165.757,
+              171.965,
+              163.741
+            ]
+          },
+          "device": {
+            "median_us": 75.82999765872955,
+            "p10_us": 75.67500323057175,
+            "p90_us": 75.84799826145172,
+            "samples_us": [
+              75.67500323057175,
+              75.70900022983551,
+              75.91799646615982,
+              75.84799826145172,
+              75.82999765872955
+            ]
+          }
+        },
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 165.901,
+            "p10_us": 164.845,
+            "p90_us": 172.573,
+            "samples_us": [
+              172.925,
+              169.885,
+              165.901,
+              172.573,
+              165.774,
+              166.701,
+              165.901,
+              167.789,
+              167.805,
+              176.877,
+              165.901,
+              165.533,
+              167.901,
+              165.773,
+              164.925,
+              170.637,
+              305.115,
+              167.597,
+              164.621,
+              164.845,
+              169.693,
+              162.717,
+              165.773,
+              166.781,
+              165.661,
+              165.742,
+              167.741,
+              162.925,
+              165.501,
+              165.725,
+              165.741
+            ]
+          },
+          "device": {
+            "median_us": 75.99200308322906,
+            "p10_us": 75.97099989652634,
+            "p90_us": 76.03300362825394,
+            "samples_us": [
+              75.99200308322906,
+              76.05300098657608,
+              75.97199827432632,
+              76.03300362825394,
+              75.97099989652634
+            ]
+          }
+        },
+        {
+          "seed": 25843,
+          "host": {
+            "median_us": 166.733,
+            "p10_us": 164.733,
+            "p90_us": 171.677,
+            "samples_us": [
+              174.157,
+              171.677,
+              168.669,
+              167.821,
+              171.885,
+              166.733,
+              167.757,
+              166.813,
+              166.717,
+              167.629,
+              172.893,
+              166.797,
+              166.653,
+              166.733,
+              167.006,
+              165.693,
+              169.677,
+              164.781,
+              165.645,
+              165.869,
+              165.709,
+              164.765,
+              168.829,
+              162.797,
+              165.597,
+              166.605,
+              166.67,
+              164.653,
+              169.885,
+              164.733,
+              164.605
+            ]
+          },
+          "device": {
+            "median_us": 107.8990027308464,
+            "p10_us": 75.67600160837173,
+            "p90_us": 109.96200144290924,
+            "samples_us": [
+              75.67600160837173,
+              100.49200057983398,
+              123.0200007557869,
+              107.8990027308464,
+              109.96200144290924
+            ]
+          }
+        },
+        {
+          "seed": 38629,
+          "host": {
+            "median_us": 166.573,
+            "p10_us": 163.965,
+            "p90_us": 169.965,
+            "samples_us": [
+              173.965,
+              171.373,
+              166.781,
+              169.661,
+              167.725,
+              166.797,
+              169.821,
+              166.702,
+              165.757,
+              167.773,
+              168.861,
+              166.637,
+              169.965,
+              163.773,
+              165.597,
+              164.989,
+              166.397,
+              165.869,
+              168.685,
+              165.901,
+              165.645,
+              165.79,
+              293.61,
+              166.701,
+              165.79,
+              163.629,
+              163.645,
+              163.965,
+              166.429,
+              165.869,
+              166.573
+            ]
+          },
+          "device": {
+            "median_us": 76.05600357055664,
+            "p10_us": 76.02600008249283,
+            "p90_us": 76.09300315380096,
+            "samples_us": [
+              76.05600357055664,
+              76.04300230741501,
+              76.11499726772308,
+              76.09300315380096,
+              76.02600008249283
+            ]
+          }
+        },
+        {
+          "seed": 47221,
+          "host": {
+            "median_us": 164.766,
+            "p10_us": 163.789,
+            "p90_us": 168.877,
+            "samples_us": [
+              168.877,
+              165.902,
+              166.685,
+              166.781,
+              169.773,
+              165.901,
+              306.202,
+              166.525,
+              165.742,
+              170.573,
+              164.685,
+              163.725,
+              165.821,
+              165.693,
+              164.765,
+              166.813,
+              166.637,
+              164.717,
+              164.637,
+              164.766,
+              164.765,
+              162.701,
+              164.717,
+              164.765,
+              164.733,
+              164.669,
+              164.701,
+              166.861,
+              164.542,
+              163.789,
+              163.597
+            ]
+          },
+          "device": {
+            "median_us": 76.11200213432312,
+            "p10_us": 75.87900012731552,
+            "p90_us": 81.8839967250824,
+            "samples_us": [
+              75.87900012731552,
+              75.90500265359879,
+              76.11200213432312,
+              81.8839967250824,
+              93.42700242996216
+            ]
+          }
+        },
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 168.717,
+            "p10_us": 165.709,
+            "p90_us": 218.924,
+            "samples_us": [
+              180.156,
+              171.325,
+              170.669,
+              169.965,
+              171.805,
+              168.717,
+              172.941,
+              168.717,
+              168.909,
+              168.733,
+              166.766,
+              166.765,
+              168.797,
+              165.837,
+              163.661,
+              164.765,
+              164.701,
+              165.709,
+              206.813,
+              218.924,
+              168.045,
+              173.789,
+              263.419,
+              250.156,
+              165.901,
+              166.493,
+              165.821,
+              166.781,
+              166.749,
+              166.733,
+              326.042
+            ]
+          },
+          "device": {
+            "median_us": 75.97299665212631,
+            "p10_us": 75.9430006146431,
+            "p90_us": 76.044000685215,
+            "samples_us": [
+              75.9430006146431,
+              75.97299665212631,
+              75.97099989652634,
+              76.044000685215,
+              88.66800367832184
+            ]
+          }
+        }
+      ],
+      "device_us": 75.99200308322906,
+      "host_us": 166.573
+    },
+    "mixed_fast": {
+      "samples": [
+        {
+          "seed": 701,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 5497,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 25843,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 38629,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 150.318,
+            "p10_us": 148.221,
+            "p90_us": 154.381,
+            "samples_us": [
+              154.381,
+              151.438,
+              148.221,
+              152.445,
+              150.27,
+              150.397,
+              150.381,
+              163.709,
+              148.126,
+              149.213,
+              150.382,
+              152.509,
+              150.173,
+              149.502,
+              151.389,
+              148.205,
+              152.462,
+              149.149,
+              151.501,
+              150.318,
+              155.613,
+              148.221,
+              147.374,
+              148.301,
+              148.27,
+              152.381,
+              148.333,
+              152.574,
+              266.939,
+              149.309,
+              148.254
+            ]
+          },
+          "device": {
+            "median_us": 75.91599971055984,
+            "p10_us": 75.46299695968628,
+            "p90_us": 76.12600177526474,
+            "samples_us": [
+              76.12600177526474,
+              75.46299695968628,
+              75.91599971055984,
+              76.23399794101715,
+              75.77499747276306
+            ]
+          }
+        },
+        {
+          "seed": 25843,
+          "host": {
+            "median_us": 148.381,
+            "p10_us": 147.325,
+            "p90_us": 153.454,
+            "samples_us": [
+              154.941,
+              153.341,
+              152.174,
+              157.565,
+              152.397,
+              148.286,
+              148.397,
+              148.333,
+              148.27,
+              151.821,
+              151.805,
+              149.374,
+              148.253,
+              148.381,
+              149.326,
+              148.365,
+              153.454,
+              148.221,
+              147.389,
+              147.278,
+              291.867,
+              149.245,
+              152.605,
+              148.174,
+              148.189,
+              146.254,
+              147.261,
+              147.325,
+              148.254,
+              152.317,
+              148.317
+            ]
+          },
+          "device": {
+            "median_us": 76.10800117254257,
+            "p10_us": 75.95700025558472,
+            "p90_us": 76.19199901819229,
+            "samples_us": [
+              76.19199901819229,
+              76.43699645996094,
+              76.10800117254257,
+              75.95700025558472,
+              75.96799731254578
+            ]
+          }
+        },
+        {
+          "seed": 38629,
+          "host": {
+            "median_us": 149.214,
+            "p10_us": 147.325,
+            "p90_us": 151.517,
+            "samples_us": [
+              154.349,
+              151.133,
+              149.358,
+              149.245,
+              148.301,
+              149.342,
+              148.365,
+              152.317,
+              148.35,
+              148.109,
+              150.286,
+              149.357,
+              147.325,
+              149.71,
+              157.165,
+              151.517,
+              149.214,
+              147.357,
+              147.23,
+              148.317,
+              148.317,
+              149.342,
+              150.493,
+              148.318,
+              148.253,
+              148.173,
+              147.294,
+              151.421,
+              149.389,
+              147.31,
+              148.317
+            ]
+          },
+          "device": {
+            "median_us": 75.91400295495987,
+            "p10_us": 75.85600018501282,
+            "p90_us": 75.96299797296524,
+            "samples_us": [
+              75.8889988064766,
+              75.91400295495987,
+              75.85600018501282,
+              75.96299797296524,
+              76.09199732542038
+            ]
+          }
+        },
+        {
+          "seed": 47221,
+          "host": {
+            "median_us": 149.389,
+            "p10_us": 148.253,
+            "p90_us": 158.51,
+            "samples_us": [
+              157.87,
+              158.813,
+              182.861,
+              185.004,
+              150.366,
+              150.253,
+              149.374,
+              149.181,
+              149.453,
+              150.126,
+              149.405,
+              150.381,
+              158.51,
+              149.341,
+              151.357,
+              147.358,
+              149.325,
+              149.198,
+              149.389,
+              148.253,
+              147.406,
+              155.629,
+              149.197,
+              149.358,
+              148.301,
+              148.125,
+              148.302,
+              148.413,
+              150.254,
+              149.277,
+              149.485
+            ]
+          },
+          "device": {
+            "median_us": 76.03699713945389,
+            "p10_us": 75.79799741506577,
+            "p90_us": 85.99899709224701,
+            "samples_us": [
+              75.79799741506577,
+              75.84699988365173,
+              88.90599757432938,
+              85.99899709224701,
+              76.03699713945389
+            ]
+          }
+        },
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 151.278,
+            "p10_us": 147.518,
+            "p90_us": 219.18,
+            "samples_us": [
+              154.077,
+              152.573,
+              152.478,
+              154.493,
+              151.325,
+              150.43,
+              151.278,
+              150.461,
+              287.707,
+              154.157,
+              149.358,
+              149.309,
+              147.406,
+              148.269,
+              147.261,
+              148.366,
+              149.389,
+              212.54,
+              149.838,
+              161.901,
+              219.18,
+              188.141,
+              268.635,
+              148.606,
+              147.053,
+              150.269,
+              147.518,
+              151.405,
+              150.461,
+              272.796,
+              152.077
+            ]
+          },
+          "device": {
+            "median_us": 75.99899917840958,
+            "p10_us": 75.83700120449066,
+            "p90_us": 76.2920007109642,
+            "samples_us": [
+              75.99899917840958,
+              75.97099989652634,
+              76.2920007109642,
+              75.83700120449066,
+              88.99199962615967
+            ]
+          }
+        },
+        {
+          "seed": 25843,
+          "host": {
+            "median_us": 148.03,
+            "p10_us": 146.253,
+            "p90_us": 153.326,
+            "samples_us": [
+              375.849,
+              152.157,
+              148.03,
+              146.525,
+              148.238,
+              148.301,
+              147.341,
+              147.31,
+              147.325,
+              148.014,
+              153.501,
+              147.277,
+              148.382,
+              148.285,
+              149.358,
+              148.237,
+              147.261,
+              150.318,
+              145.197,
+              145.278,
+              145.341,
+              147.341,
+              147.358,
+              147.389,
+              153.326,
+              146.253,
+              146.365,
+              148.27,
+              149.309,
+              148.334,
+              179.997
+            ]
+          },
+          "device": {
+            "median_us": 76.13000273704529,
+            "p10_us": 76.06799900531769,
+            "p90_us": 87.20699697732925,
+            "samples_us": [
+              90.53400158882141,
+              87.20699697732925,
+              76.13000273704529,
+              76.10400021076202,
+              76.06799900531769
+            ]
+          }
+        },
+        {
+          "seed": 38629,
+          "host": {
+            "median_us": 172.653,
+            "p10_us": 148.318,
+            "p90_us": 237.068,
+            "samples_us": [
+              231.084,
+              154.125,
+              226.716,
+              159.597,
+              187.821,
+              203.356,
+              172.653,
+              211.501,
+              158.269,
+              237.068,
+              152.061,
+              178.109,
+              150.429,
+              150.366,
+              150.333,
+              148.301,
+              173.213,
+              173.565,
+              151.662,
+              181.213,
+              238.475,
+              218.397,
+              178.012,
+              148.318,
+              147.485,
+              151.982,
+              148.397,
+              147.421,
+              149.278,
+              303.674,
+              268.572
+            ]
+          },
+          "device": {
+            "median_us": 76.10700279474258,
+            "p10_us": 75.6319984793663,
+            "p90_us": 76.23299956321716,
+            "samples_us": [
+              75.67699998617172,
+              76.29700005054474,
+              76.10700279474258,
+              76.23299956321716,
+              75.6319984793663
+            ]
+          }
+        },
+        {
+          "seed": 47221,
+          "host": {
+            "median_us": 150.413,
+            "p10_us": 148.525,
+            "p90_us": 156.253,
+            "samples_us": [
+              155.421,
+              151.357,
+              152.318,
+              152.029,
+              159.517,
+              150.478,
+              150.269,
+              149.373,
+              151.326,
+              148.173,
+              159.485,
+              151.134,
+              151.549,
+              150.269,
+              151.374,
+              150.413,
+              149.966,
+              156.461,
+              150.429,
+              148.286,
+              150.381,
+              150.365,
+              150.558,
+              148.525,
+              149.949,
+              150.126,
+              150.381,
+              150.301,
+              150.318,
+              148.269,
+              156.253
+            ]
+          },
+          "device": {
+            "median_us": 75.90200006961823,
+            "p10_us": 75.71499794721603,
+            "p90_us": 75.90900361537933,
+            "samples_us": [
+              80.29399812221527,
+              75.90200006961823,
+              75.90900361537933,
+              75.71499794721603,
+              75.87199658155441
+            ]
+          }
+        },
+        {
+          "seed": 5497,
+          "host": {
+            "median_us": 150.413,
+            "p10_us": 148.35,
+            "p90_us": 158.301,
+            "samples_us": [
+              158.301,
+              151.118,
+              151.565,
+              167.629,
+              159.853,
+              149.79,
+              154.445,
+              150.413,
+              150.35,
+              154.269,
+              152.317,
+              150.366,
+              151.389,
+              151.373,
+              151.454,
+              150.413,
+              153.373,
+              150.334,
+              148.413,
+              148.35,
+              148.381,
+              148.333,
+              152.206,
+              150.653,
+              150.381,
+              273.26,
+              149.373,
+              148.205,
+              150.334,
+              149.341,
+              147.341
+            ]
+          },
+          "device": {
+            "median_us": 75.8579969406128,
+            "p10_us": 75.83700120449066,
+            "p90_us": 75.97800344228745,
+            "samples_us": [
+              75.83700120449066,
+              75.84799826145172,
+              75.8579969406128,
+              75.97800344228745,
+              76.35799795389175
+            ]
+          }
+        }
+      ],
+      "device_us": 75.99899917840958,
+      "host_us": 150.318
+    },
+    "inductor": {
+      "samples": [
+        {
+          "seed": 701,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1784 / 25344 (7.0%)\nGreatest absolute difference: 0.03125 at index (0, 3, 687) (up to 0.0002 allowed)\nGreatest relative difference: 5.1875 at index (0, 17, 712) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 5497,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1841 / 25344 (7.3%)\nGreatest absolute difference: 0.03125 at index (0, 0, 65) (up to 0.0002 allowed)\nGreatest relative difference: 23.25 at index (0, 6, 150) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 25843,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1813 / 25344 (7.2%)\nGreatest absolute difference: 0.03125 at index (0, 0, 129) (up to 0.0002 allowed)\nGreatest relative difference: 44.5 at index (0, 22, 263) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 38629,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1836 / 25344 (7.2%)\nGreatest absolute difference: 0.03125 at index (0, 2, 591) (up to 0.0002 allowed)\nGreatest relative difference: 95.0 at index (0, 5, 135) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 47221,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1829 / 25344 (7.2%)\nGreatest absolute difference: 0.03125 at index (0, 0, 222) (up to 0.0002 allowed)\nGreatest relative difference: 40.5 at index (0, 30, 294) (up to 0.012 allowed)"
+        }
+      ],
+      "passed": false
+    }
+  },
+  "orders": [
+    [
+      "eager",
+      "mixed",
+      "export_fast",
+      "mixed_fast",
+      "export"
+    ],
+    [
+      "eager",
+      "mixed_fast",
+      "mixed",
+      "export",
+      "export_fast"
+    ],
+    [
+      "export_fast",
+      "mixed",
+      "export",
+      "mixed_fast",
+      "eager"
+    ],
+    [
+      "mixed_fast",
+      "export_fast",
+      "mixed",
+      "export",
+      "eager"
+    ],
+    [
+      "export",
+      "mixed",
+      "eager",
+      "export_fast",
+      "mixed_fast"
+    ],
+    [
+      "export_fast",
+      "mixed_fast",
+      "export",
+      "eager",
+      "mixed"
+    ],
+    [
+      "mixed_fast",
+      "export",
+      "mixed",
+      "eager",
+      "export_fast"
+    ],
+    [
+      "export",
+      "export_fast",
+      "mixed",
+      "eager",
+      "mixed_fast"
+    ],
+    [
+      "export_fast",
+      "export",
+      "eager",
+      "mixed",
+      "mixed_fast"
+    ]
+  ],
+  "host_ablation": {
+    "mixed_fast": {
+      "paired_ratios": [
+        1.103241128806929,
+        1.1226032982659506,
+        1.1245928666210947,
+        1.1163137848168203,
+        1.096663097079549,
+        1.1263460109437275,
+        0.9647848574887202,
+        1.0954239327717683,
+        1.1216916091029365
+      ],
+      "median_ratio": 1.1163137848168203,
+      "wins": 8,
+      "rounds": 9
+    },
+    "export_fast": {
+      "paired_ratios": [
+        1.1076135100158577,
+        1.0995449270607394,
+        1.1053831359946913,
+        1.0987972143459968,
+        1.0987815465313233,
+        1.0995232601436935,
+        1.0744430194756778,
+        1.0993279249913015,
+        1.116884227501237
+      ],
+      "median_ratio": 1.0995232601436935,
+      "wins": 9,
+      "rounds": 9
+    }
+  }
+}

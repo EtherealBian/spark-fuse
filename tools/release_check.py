@@ -82,6 +82,22 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "bert_host_call_equivalence",
+                [
+                    opt,
+                    str(ROOT / "tools/host_call_panel.py"),
+                    "--case",
+                    "bert",
+                    "--seq",
+                    "33",
+                    "--verify-only",
+                    "--output",
+                    str(report.with_name(report.stem + "-host-calls.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (
@@ -134,11 +150,13 @@ def check(until, report):
             )
         except subprocess.TimeoutExpired:
             results.append({"check": name, "status": "timeout"})
-    report.write_text(
+    passed = len(results) == len(commands) and all(x["status"] == "pass" for x in results)
+    tmp = report.with_suffix(report.suffix + ".tmp")
+    tmp.write_text(
         json.dumps(
             {
                 "checks": results,
-                "passed": all(x["status"] == "pass" for x in results),
+                "passed": passed,
                 "completed_epoch": time.time(),
             },
             indent=2,
@@ -146,10 +164,13 @@ def check(until, report):
         + "\n"
     )
 
+    tmp.replace(report)
+    return passed
+
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("until", type=float)
     p.add_argument("report", type=Path)
     a = p.parse_args()
-    check(a.until, a.report)
+    raise SystemExit(0 if check(a.until, a.report) else 1)

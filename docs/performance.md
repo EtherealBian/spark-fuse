@@ -152,3 +152,28 @@ batch 1、33 tokens、768 → 3072 → 768、BF16 随机权重。在独立权重
 | [原生 / 97](../reports/t5-gated-gelu_pytorch_tanh-fresh-97-gb10.json) | 46.12 → 44.61 | 61.31 → 77.23 |
 
 原生版在三个长度都没有同步主机优势。[Compute Sanitizer](../reports/t5-gelu-sanitizer-gb10.txt) 覆盖非对齐输入和向量尾部；用 `python tools/cube_rounding_probe.py` 可单独复核低精度乘法舍入。
+
+### FX 主机调用：BERT 有收益，不给 T5 普遍提速的结论
+
+融合内核不变时，哪些开销还留在 Python？`specialize_host_calls(gm)` 就地重写已知 ATen 重载的调用入口：线性投影和矩阵乘走 PyTorch 的直接绑定，静态 view/permute/transpose 走张量方法，只有合法常量概率且明确处于推理模式的 dropout 才直接返回输入。仍以 `gm(x)` 调用，**保留**导出 guard、模块 hooks、视图共享存储和参数更新。其他重载原样保留。这是显式可选的推理优化，仅针对普通张量；不保证两条路径显示相同的算子级 profiler 或张量子类回调。
+
+每个模型形状用 5 个输入对比 eager，改写前后结果均逐元素相等。九轮随机交错，每轮各后端用同一个输入，包含未融合导出图的对照，并对混合图改写前后使用**相同的 CUDA 调度**。下面每格是同步主机调用中位数（µs），包含新输出与等待；胜场按同一轮比较，而不是比较两个中位数。
+
+| 模块 / tokens | eager | 混合图原始 | 混合图改写后 | 改写后更快的轮数 |
+|---|---:|---:|---:|---:|
+| [BERT 编码层 / 33](../reports/host-call-bert-33-gb10.json) | 156.46 | 166.57 | 150.32 | 8/9 |
+| [BERT 编码层 / 97](../reports/host-call-bert-97-gb10.json) | 182.13 | 197.55 | 191.60 | 9/9 |
+| [T5 分解 GELU / 33](../reports/host-call-gated-gelu-33-gb10.json) | 77.69 | 74.61 | 73.85 | 4/9 |
+| [T5 原生 GELU / 33](../reports/host-call-gated-gelu_pytorch_tanh-33-gb10.json) | 56.38 | 73.79 | 74.56 | 1/9 |
+| [T5 原生 GELU / 1](../reports/host-call-gated-gelu_pytorch_tanh-1-gb10.json) | 41.76 | 54.30 | 52.03 | 9/9 |
+
+BERT 33 的混合图改写了 22 个主机调用节点，设备热重放仍为 75.99 / 76.00 µs；同轮未融合导出图主机 180.97 → 164.59 µs，说明收益不能全算作 CUDA 融合。T5 只改写 4 个节点；33 tokens 的两组都没有可靠主机收益。五组中的 Inductor 均未通过原有误差门槛，报告对应误差而不计时。
+
+```python
+from sparkfuse.partition import partition_export, ordered_collectives
+from sparkfuse.host_calls import specialize_host_calls
+mixed, regions = partition_export(ep, host_backend="native", schedule_policy=ordered_collectives)
+changes = specialize_host_calls(mixed)  # optional; use a separate module for before/after timing
+```
+
+**English.** Direct FX host calls cut the 33-token BERT layer's synchronized median from 166.57 to 150.32 µs without changing the device kernel schedule. The two 33-token T5 cases showed no consistent improvement. Repeat with `python tools/host_call_panel.py --case bert --seq 33 --output /tmp/host.json`. [Full regression and real-module checks](../reports/host-calls-stage-acceptance.json).
