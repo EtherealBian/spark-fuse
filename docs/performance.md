@@ -1237,3 +1237,21 @@ The full-stack ablation holds fixed the attention, GEMMs, five static islands, r
 | Mistral | 3929.27 / 1109.84 / 1067.15 / 3741.56 | 1280.86 / 698.57 / 675.33 / 721.96 | 1595.29 / 696.69 / 675.54 / 1203.84 |
 
 Order: HF eager / two ATen appends / paired CUDA append / dynamic Inductor. The isolated masked Qwen2 prefill append (past 8189) fell from 66.59 to 50.79 µs; the next already-contiguous append went from 48.78 to **49.09** µs. The long-request peak allocator increase was identical for the two implementations (35,649,536 bytes on that Qwen2 workload); this is a launch/layout optimization, not a memory-saving cache. [Full report and per-layout clocks](../reports/dynamic-append-gb10.json) · [sanitizer](../reports/dynamic-append-sanitizer-gb10.txt) · [regression gates](../reports/dynamic-append-stage-acceptance.json).
+
+<a id="warp-decode"></a>
+### Keeping split-KV scores in warp registers
+
+`compile_length_decode(..., warp_heads=4, tile=32)` gives one warp a (query head, KV chunk). Eight groups of four lanes load 128-bit Q/K packets, accumulate token dots, then exchange scores and weights with shuffle instructions before reading V. One or four independent warps share a block; neither schedule uses a block barrier inside the partial. The default remains the existing CTA kernel. The final merge, output ownership, numerical domain and native launcher stay the same. This is single-token attention, not an end-to-end decoder result.
+
+Device replay medians on GB10, µs, seed 3921719, **8,193** KV entries. All algorithms include the merge; dynamic Inductor is timed only when its result passes both the numerical and storage contract.
+
+| B / H:G / D | bias, dtype | eager | CTA / tile 32 | four warps / tile 32 | four warps / tile 64 | dynamic Inductor |
+|---|---|---:|---:|---:|---:|---:|
+| 2 / 8:2 / 64 | per batch, BF16 | 1114.03 | 38.33 | 19.37 | 18.18 | 1959.29 |
+| 2 / 6:2 / 128 | per batch, BF16 | 1815.39 | 41.71 | 25.36 | 27.83 | 3034.18 |
+| 1 / 16:4 / 128 | none, FP16 | **25.34** | 49.24 | 28.77 | 30.62 | not admitted |
+| 2 / 8:4 / 64 | none, BF16 | 24.67 | 35.51 | 19.22 | 18.85 | not admitted |
+
+For masked H8:D64 at tile 32, the partial goes from 40 to 44 registers per thread, 1,160 to zero static shared bytes and four to zero static barrier sites. The new kernel contains `LDG.E.128`; neither uses local memory. Both need 1,085,568 bytes of global partials at 8,193 entries; tile 64 halves the chunk count (544,896 bytes). Vectorization isn't a universal win: masked H6:D128 at length 2 takes 2.67 µs on CTA32 versus 3.34 µs on warp4/32. On an eight-length rotation the same pair takes 18.70 vs 19.80 µs synchronous wall time. The unmasked FP16 long case still loses to eager. Both seeds' unmasked Inductor runs stayed within FP64 error tolerances but failed the output structure gate; those times are omitted rather than ranked.
+
+[Raw windows, kernel resources, SHA-256s and all 192 held-out requests](../reports/warp-decode-gb10.json) · [Acceptance](../reports/warp-decode-stage-acceptance.json) · [Sanitizers](../reports/warp-decode-sanitizer-gb10.txt). Reproduce with `python tools/warp_decode_panel.py --output /tmp/warp-decode.json`; use `--smoke` for an untimed check. Qualification uses two separate lengths and storages; CPU FP64 is independent of SDPA. All six generated schedules pass the held-out gate in all eight cases.

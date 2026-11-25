@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "warp_register_decode",
+            [
+                sys.executable,
+                str(ROOT / "tools/warp_decode_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-warp-decode.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "native_length_host",
             [
                 sys.executable,

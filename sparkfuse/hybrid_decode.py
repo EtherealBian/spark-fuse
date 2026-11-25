@@ -112,6 +112,7 @@ def partition_hybrid_decode(
     paired_rotary=False,
     paired_append=False,
     tile=32,
+    warp_heads=0,
     max_workspace_bytes=32 << 20,
 ):
     """Retain a single dynamic attention program; test each static CUDA island independently.
@@ -135,6 +136,7 @@ def partition_hybrid_decode(
         domain=domain,
         host_backend=host_backend,
         tile=tile,
+        warp_heads=warp_heads,
         max_workspace_bytes=max_workspace_bytes,
     )
     gm = p.module

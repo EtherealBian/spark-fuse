@@ -107,7 +107,7 @@ def _linear_consumer(n, b, h, d):
     return l.name
 
 
-def _plan(ep, ins, opts, tile):
+def _plan(ep, ins, opts, tile, warp_heads=0):
     q, k, v = ins[:3]
     b, h, n, d = _shape(q)
     bk, g, s, dk = _shape(k)
@@ -170,7 +170,7 @@ def _plan(ep, ins, opts, tile):
         )
     sc = 1 / math.sqrt(d) if opts["scale"] is None else opts["scale"]
     _require(type(sc) in (float, int) and math.isfinite(sc) and 0 < sc <= 32, "unsupported scale")
-    return LengthPlan(lo, hi, b, h, g, d, m, dtype, device, sc, tile), delta
+    return LengthPlan(lo, hi, b, h, g, d, m, dtype, device, sc, tile, warp_heads), delta
 
 
 def partition_symbolic_decode(
@@ -179,6 +179,7 @@ def partition_symbolic_decode(
     audit,
     *,
     tile=32,
+    warp_heads=0,
     domain="checked",
     host_backend="native",
     max_workspace_bytes=32 << 20,
@@ -261,7 +262,7 @@ def partition_symbolic_decode(
             _require(k is not v and kchain[0] is not vchain[0], "distinct KV branches required")
             ins = [ins[0], k, v, *ins[3:]]
             opts["enable_gqa"] = True
-            p, delta = _plan(ep, ins, opts, tile)
+            p, delta = _plan(ep, ins, opts, tile, warp_heads)
             sink = _linear_consumer(n, p.batch, p.heads, p.width)
             xs, ys = [tuple(e[x] for x in ins) for e in envs]
             fn = _build_length(

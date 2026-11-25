@@ -18,6 +18,7 @@ def emit(
     head_group=1,
     narrow_bias=False,
     runtime_length=False,
+    warp_heads=0,
 ):
     if not (
         all(type(i) is int for i in (b, h, g, s, d, tile, mask_batch, head_group))
@@ -31,6 +32,17 @@ def emit(
         and tile in (32, 64, 128, 256)
         and dtype in ("bf16", "f16")
         and mask_batch in (0, 1, b)
+        and type(warp_heads) is int
+        and warp_heads in (0, 1, 4)
+        and (
+            not warp_heads
+            or (
+                runtime_length
+                and head_group == 1
+                and (not mask_batch or narrow_bias)
+                and tile in (32, 64)
+            )
+        )
         and type(runtime_length) is bool
         and (not runtime_length or head_group == 1)
         and type(narrow_bias) is bool
@@ -79,7 +91,11 @@ __device__ __forceinline__ float sumwarp(float x){{
     if narrow_bias:
         mask = "+ld(" + mask[1:] + ")"
     # Each warp computes one query-key dot, then value lanes read adjacent features.
-    if head_group != 1:
+    if warp_heads:
+        from .warp_decode_codegen import warp_partial
+
+        a = warp_partial(defines, b, h, g, d, s, tile, scale, mask_batch, warp_heads, dtype)
+    elif head_group != 1:
         a = grouped_partial(defines, b, head_group, scale, mask_batch, mask, bias_type)
     else:
         a = (

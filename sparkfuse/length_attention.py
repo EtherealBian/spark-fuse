@@ -108,6 +108,7 @@ class LengthPlan:
     device: torch.device
     scale: float
     tile: int
+    warp_heads: int = 0
 
     def workspace_bytes(self, s):
         if type(s) is not int or not self.lower <= s <= self.upper:
@@ -190,10 +191,17 @@ class LengthDecode:
 
 
 def compile_length_decode(
-    ep, example, audit, *, tile=32, max_workspace_bytes=32 << 20, host_backend="ctypes"
+    ep,
+    example,
+    audit,
+    *,
+    tile=32,
+    max_workspace_bytes=32 << 20,
+    host_backend="ctypes",
+    warp_heads=0,
 ):
     """Lower a symbolic, single-token SDPA+contiguous clone. No per-length JIT."""
-    p = LengthPlan(*_pattern(ep), tile)
+    p = LengthPlan(*_pattern(ep), tile, warp_heads)
     ref = ep.module()
     return _build_length(
         p,
@@ -212,6 +220,9 @@ def _build_length(p, example, audit, *, reference, host_backend, max_workspace_b
         torch.is_inference_mode_enabled()
         and not policy[0]
         and host_backend in ("ctypes", "native")
+        and type(p.warp_heads) is int
+        and p.warp_heads in (0, 1, 4)
+        and (not p.warp_heads or tile in (32, 64))
         and type(tile) is int
         and tile in (32, 64, 128, 256)
         and type(max_workspace_bytes) is int
@@ -244,6 +255,7 @@ def _build_length(p, example, audit, *, reference, host_backend, max_workspace_b
         p.mask_batch,
         narrow_bias=bool(p.mask_batch),
         runtime_length=True,
+        warp_heads=p.warp_heads,
     )
     builds = [build(src, p.device) for src in (a, m) if src is not None]
     result._libs, result.paths = zip(*builds)
