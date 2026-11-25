@@ -179,3 +179,19 @@ changes = specialize_host_calls(mixed)  # optional; use a separate module for be
 **English.** Direct FX host calls cut the 33-token BERT layer's synchronized median from 166.57 to 150.32 µs without changing the device kernel schedule. The two 33-token T5 cases showed no consistent improvement. Repeat with `python tools/host_call_panel.py --case bert --seq 33 --output /tmp/host.json`. [Full regression and real-module checks](../reports/host-calls-stage-acceptance.json).
 
 带有顶层 `provenance.archive` 的公开基准现在可从同一仓库直接校验[测量时的源码快照](../reports/sources/README.md)，无需账户或 DGX Spark。校验只需要 Python 标准库；执行 GPU 基准仍需报告对应的软件和硬件环境。
+
+### 长行 Softmax：从夜间失败到可复测结果
+
+在原注意力搜索中，两个已缓存的分块 Softmax 配置遇到了设备地址错误（FP16 24×8192、BF16 384×4096）；另一个 512 线程的多 warp 配置（FP16 24×2048，同时输出 logits）发射返回 CUDA 错误 701。三个原始失败都保留，没有从运行分母删除。新生成器在每线程缓存至少 32 个值时保留外层循环，不让编译器自动展开整条长行，包内的短循环仍展开。首次调整的 memcheck 已干净，但 racecheck 对单 warp 的分块归约仍报[八条警告](../reports/wide-score-intermediate-racecheck-gb10.txt)。在一个 32 线程块本身就是整行 warp 的 Softmax 中，现直接广播 lane 0 的结果，不再通过共享内存二次归约。我们验证了这两项代码改动，没有把硬件错误归因给某个未经证实的上游缺陷。
+
+[三种原调度直接测试](../reports/wide-score-kernel-audit-gb10.json)：每种四个种子，含两次偏移 1 个元素的连续输入，暴露的 logits 必须精确匹配。[最终 Compute Sanitizer 日志](../reports/wide-score-sanitizer-gb10.txt) 显示 memcheck / synccheck 均零错误，racecheck 零警告。另以独立数据库重放原来的三项 16 候选搜索，三项均走完选型、留出检验和第三个种子的三后端对照。下表仅是最终选型布局的热设备时间，不等于发生过错误的候选均获选或更快。
+
+| 子图、形状与类型 | eager µs | Inductor µs | SparkFuse µs |
+|---|---:|---:|---:|
+| [scores-24x8192-float16](../reports/wide-score-retune-scores-24x8192-float16-gb10.json) | 6.291 | 3.475 | 4.442 |
+| [scores2-24x2048-float16](../reports/wide-score-retune-scores2-24x2048-float16-gb10.json) | 8.689 | 2.961 | 2.164 |
+| [scores-384x4096-bfloat16](../reports/wide-score-retune-scores-384x4096-bfloat16-gb10.json) | 35.088 | 9.232 | 7.523 |
+
+原始失败记录（gzip JSON）：[24×8192](../reports/wide-score-history-scores-24x8192-float16.json.gz)、[双输出 24×2048](../reports/wide-score-history-scores2-24x2048-float16.json.gz)、[384×4096](../reports/wide-score-history-scores-384x4096-bfloat16.json.gz)。运行 `python tools/wide_score_audit.py --output /tmp/wide.json` 可检验三个布局；[完整阶段验收](../reports/wide-score-stage-acceptance.json)另覆盖相邻奇数宽度和原有框架集成。
+
+**English.** Two illegal accesses and one rejected kernel launch from the long-key search triggered this change. Keeping the outer cache loop and avoiding redundant shared storage for a single-warp score reduction passed the targeted memory, race, and synchronization checks. All three original workloads completed a fresh 16-candidate tuning run. This establishes correctness for the tested cases, not a blanket speedup.

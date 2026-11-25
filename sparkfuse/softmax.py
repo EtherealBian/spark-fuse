@@ -38,14 +38,18 @@ def generate_rowwise(p, s, emit, index):
             next(i for i, line in enumerate(src) if line.startswith("__global__")), WELFORD_SRC
         )
     off = f"j/{stride}" if v == 1 else f"(first/{stride * v})*{v}+q"
+    held_count = ((h + stride * v - 1) // (stride * v)) * v
     if s.cache:
-        src.append(f"float held[{((h + stride * v - 1) // (stride * v)) * v}];")
+        src.append(f"float held[{held_count}];")
+    # Keep a wide cached score row in a real strip-mined loop, too. The GB10
+    # overnight search recorded two address faults and one failed launch in these layouts.
+    bounded_loop = p.vals[p.red].op == "layer_norm" or (s.cache and held_count >= 32)
 
     def phase(targets, pre, body, full=()):
         # Gather only input packs used by this phase. Broadcast-only dimensions
         # retain scalar loads, while an unexpanded key dimension permits vectors.
         if v == 1:
-            return (["#pragma unroll 1"] if norm else []) + [
+            return (["#pragma unroll 1"] if bounded_loop else []) + [
                 f"for(int j=lane;j<{h};j+={stride}){{const int pos=row*{h}+j;",
                 *body(dict(pre)),
                 "}",
@@ -64,7 +68,7 @@ def generate_rowwise(p, s, emit, index):
         # For centered LayerNorm keep the packet traversal as a real loop. A GB10
         # CUDA 13.0 build of the peeled 768-wide second packet step produced an
         # invalid global address under memcheck. Inner packet lanes remain unrolled.
-        lines = (["#pragma unroll 1"] if norm else []) + [
+        lines = (["#pragma unroll 1"] if bounded_loop else []) + [
             f"for(int first=lane*{v};first<{h};first+={stride * v}){{"
         ]
         known = dict(pre)
@@ -111,7 +115,9 @@ def generate_rowwise(p, s, emit, index):
                 + ";"
             )
             return [shuffle, f"const float {name}={acc};"]
-        if warp:
+        # A 32-thread block is already a complete row warp: no shared scratch
+        # or second-stage read/write is needed for a score reduction.
+        if warp or (t == 32 and not norm):
             return [shuffle, f"float {name}=__shfl_sync(0xffffffff,{acc},0);"]
         # Distinct scratch arrays for the two phases: no scratch overwrite race.
         sh = "part_" + name

@@ -21,7 +21,7 @@ def test_worker_failure_is_not_hidden_by_subsequent_pass(tmp_path, monkeypatch):
     from tools import release_check
 
     monkeypatch.delenv("SPARKFUSE_QWEN_PY", raising=False)
-    results = iter([12, 0, 0])
+    results = iter([12, 0, 0, 0])
     monkeypatch.setattr(
         release_check.subprocess,
         "run",
@@ -30,4 +30,9 @@ def test_worker_failure_is_not_hidden_by_subsequent_pass(tmp_path, monkeypatch):
     report = tmp_path / "summary.json"
     assert not release_check.check(time.time() + 60, report)
     data = json.loads(report.read_text())
-    assert not data["passed"] and [x["status"] for x in data["checks"]] == ["fail", "pass", "pass"]
+    assert not data["passed"] and [x["status"] for x in data["checks"]] == [
+        "fail",
+        "pass",
+        "pass",
+        "pass",
+    ]

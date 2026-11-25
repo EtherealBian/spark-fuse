@@ -124,6 +124,17 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "wide_cached_score_schedules",
+            [
+                sys.executable,
+                str(ROOT / "tools/wide_score_audit.py"),
+                "--output",
+                str(report.with_name(report.stem + "-wide-scores.json")),
+            ],
+        )
+    )
     for name, cmd in commands:
         left = until - time.time() - 3
         if left < 1:

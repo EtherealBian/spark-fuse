@@ -1,6 +1,7 @@
 """Verify the source snapshot referenced by each supplied benchmark JSON; no GPU or extraction."""
 
 import argparse
+import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -45,7 +46,9 @@ def verify_reports(paths):
     seen = {}
     count = 0
     for report in paths:
-        p = json.loads(report.read_text()).get("provenance", {})
+        reader = gzip.open if report.suffix == ".gz" else open
+        with reader(report, "rt", encoding="utf-8") as f:
+            p = json.load(f).get("provenance", {})
         key = p.get("source_tree_sha256", "")
         if not re.fullmatch("[0-9a-f]{64}", key) or p.get("archive") != f"sources/{key}.tar.gz":
             raise ValueError("missing or invalid provenance reference: " + report.name)

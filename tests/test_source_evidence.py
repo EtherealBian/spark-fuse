@@ -1,3 +1,4 @@
+import gzip
 import hashlib
 import io
 import json
@@ -56,3 +57,10 @@ def test_do_not_follow_arbitrary_report_path(tmp_path):
     )
     with pytest.raises(ValueError, match="reference"):
         verify_reports([p])
+
+
+def test_diagnostic_gzip_can_reference_the_same_source(tmp_path):
+    p = packed(tmp_path)
+    log = p.with_suffix(".json.gz")
+    log.write_bytes(gzip.compress(p.read_bytes(), mtime=0))
+    assert verify_reports([p, log])["distinct_archives"] == 1

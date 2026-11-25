@@ -1,0 +1,52 @@
+========= COMPUTE-SANITIZER
+scores 24 8192 float16 31885 pass
+scores 24 8192 float16 39804 pass
+scores 24 8192 float16 47723 pass
+scores 24 8192 float16 55642 pass
+scores2 24 2048 float16 32395 pass
+scores2 24 2048 float16 40314 pass
+scores2 24 2048 float16 48233 pass
+scores2 24 2048 float16 56152 pass
+scores 384 4096 bfloat16 32497 pass
+scores 384 4096 bfloat16 40416 pass
+scores 384 4096 bfloat16 48335 pass
+scores 384 4096 bfloat16 56254 pass
+========= ERROR SUMMARY: 0 errors
+========= COMPUTE-SANITIZER
+scores 24 8192 float16 31885 pass
+scores 24 8192 float16 39804 pass
+scores 24 8192 float16 47723 pass
+scores 24 8192 float16 55642 pass
+scores2 24 2048 float16 32395 pass
+scores2 24 2048 float16 40314 pass
+scores2 24 2048 float16 48233 pass
+scores2 24 2048 float16 56152 pass
+========= Warning: Race reported between Read access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0x580
+=========     and Write access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0x650 [1536 hazards]
+=========
+========= Warning: Race reported between Read access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0xa00
+=========     and Write access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0xb00 [1536 hazards]
+=========
+scores 384 4096 bfloat16 32497 pass
+========= Warning: Race reported between Read access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0x580
+=========     and Write access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0x650 [1536 hazards]
+=========
+========= Warning: Race reported between Read access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0xa00
+=========     and Write access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0xb00 [1536 hazards]
+=========
+scores 384 4096 bfloat16 40416 pass
+========= Warning: Race reported between Read access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0x580
+=========     and Write access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0x650 [1536 hazards]
+=========
+========= Warning: Race reported between Read access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0xa00
+=========     and Write access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0xb00 [1536 hazards]
+=========
+scores 384 4096 bfloat16 48335 pass
+========= Warning: Race reported between Read access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0x580
+=========     and Write access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0x650 [1536 hazards]
+=========
+========= Warning: Race reported between Read access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0xa00
+=========     and Write access at fused(const __nv_bfloat16 *, const __nv_bfloat16 *, __nv_bfloat16 *, int)+0xb00 [1536 hazards]
+=========
+scores 384 4096 bfloat16 56254 pass
+========= RACECHECK SUMMARY: 8 hazards displayed (0 errors, 8 warnings)
