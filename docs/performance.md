@@ -874,3 +874,18 @@ with capture_export(ep, example, audit, backend="mixed",
 ```
 
 Run `python tools/quant_state_panel.py --output /tmp/frozen-rhs.json` and `bash tools/sanitize_quant_state.sh` for the matched panel and an unfiltered sanitizer replay. The fresh outputs and the frozen snapshot remain valid if the original module's weights are later overwritten.
+
+<a id="grouped-epilogue"></a>
+### 共享 token 尺度的多个投影 / Sibling projection epilogues
+
+一个量化激活可以同时进入宽度不同的 Q、K、V 三路整数投影。`group_epilogues=True` 在导出图上匹配使用**同一个 FP32 行尺度**的 2–4 个独立反量化尾部。不同线程块处理不同分支，分别访问各自的 INT32 累加器和通道尺度；不转置、不拼接矩阵。每路的 FP32 转换、第一次乘法和最终乘积只有在图外可见时才写回，相互独立的输出不会改成共享视图。共享中间节点，或在所有输入就绪前就有外部消费者，不能合并。另开 `projection_epilogue=True` 可以继续处理剩下的单支。
+
+| 三路投影，种子 1191169 | 只测三路尾部：分开 → 合并 µs | 含量化和三次 GEMM：分开 → 合并 µs |
+|---|---:|---:|
+| `M=17, K=1536, N=(128,64,64)` | 2.83 → 1.48 | 26.72 → 25.36 |
+| `M=33, K=1536, N=(512,256,256)` | 3.35 → 1.75 | 28.75 → 27.40 |
+| `M=129, K=3072, N=(1536,256,256)` | 4.41 → 3.08 | 57.34 → 55.24 |
+
+两个种子的 profiler 均为：只看尾部 **3 → 1** 次发射，计入共享量化和三个原样的框架 GEMM 后是 **7 → 5**。表内是热设备回放，不是完整注意力层加速。九个可见输出与 eager 逐字节相同，三个整数累加器各用独立的 CPU 整数乘法复核。
+
+The [matched experiment](../reports/grouped-epilogue-gb10.json) compares separate versus grouped tails and includes both Inductor modes subject to the same output gate. Both paths receive identical, already column-major weights. Inspect the [generated CUDA](../examples/generated/token-quant/group_17x128_64_64.cu) or reproduce with `python tools/group_epilogue_panel.py --output /tmp/grouped.json` and `bash tools/sanitize_group_epilogue.sh` after sourcing the environment. These are three random-weight projections, not a pretrained attention layer.

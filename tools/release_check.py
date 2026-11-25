@@ -61,6 +61,18 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "grouped_projection_epilogues",
+            [
+                sys.executable,
+                str(ROOT / "tools/group_epilogue_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-grouped-epilogue.json")),
+            ],
+        )
+    )
     opt = os.environ.get("SPARKFUSE_QWEN_PY")
     qreport = report.with_name(report.stem + "-qwen.json")
     if opt:
