@@ -426,3 +426,18 @@ python tools/qwen_cached_decode.py --fanout-panel --past 31 255 1024 1535 2047 \
   --seed-offset 80831 --profile --emit-dir /tmp/fanout-cuda --output /tmp/fanout-layer.json
 bash tools/sanitize_cache_fanout.sh
 ```
+
+### KV 复制快了，时间花到哪去了？ / Attributing decode to FX nodes
+
+For the [same Qwen2 weights, four visible outputs and FX graphs as the cache-fanout benchmark](../reports/qwen-decode-cache-fanout-gb10.json), we correlated ordinary kernel launches with FX ranges, then profiled **uninstrumented** single-step CUDA Graph replays. Each number below is in µs, **separate copies → fused fanout**. The first three columns are sums of profiler kernel durations per replay, summarized over windows; only the last is a CUDA-event measurement with the profiler off.
+
+| Initial prefix · decode step | KV copy | QK matmul | MLP gate + up + down | Unprofiled layer |
+|---|---:|---:|---:|---:|
+| 1024 · 1 | 40.13 → 35.40 | 14.99 → 16.18 | 417.99 → 415.88 | 576.89 → 576.36 |
+| 1024 · 2 | 39.24 → 34.98 | 13.02 → 13.31 | 414.93 → 416.33 | 573.87 → 575.71 |
+| 2047 · 1 | 118.21 → 111.53 | 63.54 → 73.11 | 397.30 → 391.59 | 703.86 → 699.08 |
+| 2047 · 2 | 113.49 → 109.50 | 79.48 → 82.08 | 392.26 → 393.00 | 709.69 → 716.02 |
+
+复制在这四组都更快，整层却两胜两负。2047 的第二步，PV 也由 20.43 上升到 25.32 µs；第一步的整层方向与之前独立捕获的计时相反。**不能仅按上下文长度开启融合**，也不能把差异断言为 L2 命中率变化。三次 MLP 投影占去最多的 kernel 时间，是比继续微调复制更值得检验的方向。
+
+[Raw report: all 384 replays](../reports/qwen-decode-phase-attribution-gb10.json) · [collector](../tools/qwen_decode_phases.py) · [offline checks](../tests/test_decode_phase_attribution.py). Eight order-balanced windows per case/variant, six profiled replays per window, with adjacent event samples from the **same captured graph**. Per-kernel signature includes symbol, grid, block, registers and shared memory. Replay boundaries must match graph-launch correlations and graph-node IDs must stay stable. Raw intervals start at each replay's first kernel. Small overlaps reported by Kineto on one stream are kept explicitly, not counted as negative idle time. Profiled duration sums, interval union and first-to-last span are distinct; independently computed medians need not add up. No hardware cache counters, allocator control across separate processes, or serving throughput claim.
