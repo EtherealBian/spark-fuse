@@ -21,6 +21,7 @@ class HybridDecode:
     regions: list
     host_calls: list
     rotary: list = field(default_factory=list)
+    appends: list = field(default_factory=list)
 
 
 def _static(n):
@@ -109,6 +110,7 @@ def partition_hybrid_decode(
     host_calls=False,
     split_barriers=True,
     paired_rotary=False,
+    paired_append=False,
     tile=32,
     max_workspace_bytes=32 << 20,
 ):
@@ -119,7 +121,11 @@ def partition_hybrid_decode(
     A rejected island remains ATen. No weight freezing or shape specialization on a trace.
     """
     _require(
-        type(host_calls) is bool and type(split_barriers) is bool and type(paired_rotary) is bool,
+        type(host_calls) is bool
+        and type(split_barriers) is bool
+        and type(paired_rotary) is bool
+        and type(paired_append) is bool
+        and (not paired_append or host_backend == "native"),
         "explicit Boolean options required",
     )
     p = partition_symbolic_decode(
@@ -170,6 +176,13 @@ def partition_hybrid_decode(
             qualify=qualify,
         )
         if any("module" in r for r in rotary):
+            traces, _ = _trace(gm, batches)
+    appends = []
+    if paired_append:
+        from .dynamic_append import fuse_dynamic_appends
+
+        appends = fuse_dynamic_appends(gm, p.sites, traces)
+        if any("module" in r for r in appends):
             traces, _ = _trace(gm, batches)
     records = []
     proposals = []
@@ -249,4 +262,4 @@ def partition_hybrid_decode(
             ),
             "composition changed a public attention-only result",
         )
-    return HybridDecode(gm, p.sites, records, special, rotary)
+    return HybridDecode(gm, p.sites, records, special, rotary, appends)

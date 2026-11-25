@@ -1222,3 +1222,18 @@ Masked first seed (3734911), **µs per four-step request**, not per token. Short
 | Mistral | 328.46 / 196.27 / 169.13 / 181.26 | 1214.89 / 427.18 / 402.92 / 1091.07 | 1269.52 / 845.04 / 691.57 / 731.15 | 1256.08 / 839.99 / 685.65 / 727.57 |
 
 Paired rotary reduced the short four-step launch count from 80 to 60 for all three models; these masked eager/Inductor baselines used 176/72. The paired variant had lower rotating-sync medians than both its pre-pair ablation and dynamic Inductor in all 12 measured workloads. The smallest margins should not be generalized to other devices, batches, serving conditions, full checkpoints, or model quality. [Full report and individual timing windows](../reports/decoder-family-gb10.json) · [sanitizer](../reports/decoder-family-sanitizer-gb10.txt) · [regression gates](../reports/decoder-family-stage-acceptance.json).
+
+<a id="dynamic-append"></a>
+## One variable-length CUDA append for two public caches
+
+`partition_hybrid_decode(..., paired_rotary=True, paired_append=True, host_calls=True)` recognizes the two `cat` inputs of a qualified attention site. It proves each new token has length one and each old cache has length `S−1`. The generated kernel copies both public results in one launch; separate allocations preserve aliasing and liveness. One native call selects head-major or prefill token-major access independently for K and V, and chooses copy width from actual pointer alignment. Unrecognized strides take the original two concatenations. A failed two-trace byte/ownership check leaves both nodes in the graph. No spare capacity, in-place cache update or paging is assumed.
+
+The full-stack ablation holds fixed the attention, GEMMs, five static islands, rotary pair and other host calls. These are still **single-layer** models, four sequential decode steps per request, all 12 outputs outstanding. Eight independently generated prefixes reach past 8192 on the fourth step. Across three HF families × two weight seeds × two masks, the 384 compared steps had identical full outputs between separate and joined paths, and both preserved every HF cache byte. The hot launch count fell by four (60 → 56 at initial past 2; 64 → 60 at 8189).
+
+| Masked first seed (3823703) | Long CUDA, µs | Rotating sync, µs | Queued 8, µs/request |
+|---|---|---|---|
+| Qwen2 | 2941.87 / 544.44 / 517.29 / 2737.08 | 1281.90 / 711.73 / 684.97 / 729.05 | 1346.20 / 695.28 / 678.30 / 943.99 |
+| Llama | 3433.81 / 912.97 / 888.33 / 3222.95 | 1264.26 / 690.70 / 662.12 / 708.69 | 1440.43 / 689.03 / 666.55 / 1003.31 |
+| Mistral | 3929.27 / 1109.84 / 1067.15 / 3741.56 | 1280.86 / 698.57 / 675.33 / 721.96 | 1595.29 / 696.69 / 675.54 / 1203.84 |
+
+Order: HF eager / two ATen appends / paired CUDA append / dynamic Inductor. The isolated masked Qwen2 prefill append (past 8189) fell from 66.59 to 50.79 µs; the next already-contiguous append went from 48.78 to **49.09** µs. The long-request peak allocator increase was identical for the two implementations (35,649,536 bytes on that Qwen2 workload); this is a launch/layout optimization, not a memory-saving cache. [Full report and per-layout clocks](../reports/dynamic-append-gb10.json) · [sanitizer](../reports/dynamic-append-sanitizer-gb10.txt) · [regression gates](../reports/dynamic-append-stage-acceptance.json).

@@ -119,10 +119,12 @@ class HostPlan {
   size_t row_input_;
 };
 void bind_length_io(py::module_&);
+void bind_append_io(py::module_&);
 void bind_resident_io(py::module_&);
 PYBIND11_MODULE(_sparkfuse_host,m){
   bind_resident_io(m);
   bind_length_io(m);
+  bind_append_io(m);
   py::class_<HostPlan>(m,"_Plan")
     .def(py::init<py::object, uintptr_t, int, int, size_t, std::vector<Shape>,std::vector<int>,bool,int,int,std::vector<Shape>>())
     .def("run",&HostPlan::run);

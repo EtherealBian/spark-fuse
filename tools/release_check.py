@@ -210,6 +210,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "paired_dynamic_cache_append",
+                [
+                    opt,
+                    str(ROOT / "tools/dynamic_append_panel.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-dynamic-append.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "decoder_family_rotary",
                 [
                     opt,
