@@ -1,0 +1,48 @@
+{
+  "checks": [
+    {
+      "check": "tests",
+      "status": "fail",
+      "returncode": 1,
+      "tail": "9: in _call_impl\n    return forward_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_layernorm.py:19: in forward\n    return F.layer_norm(z, (self.width,), w, b, self.eps), z\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ninput = tensor([[ 1.3750, -1.4922,  0.6133,  ...,  0.5156, -0.6602,  1.9219],\n        [ 0.8477, -1.4844, -0.3379,  ..., -1.046...],\n        [-0.9688,  0.6797, -2.1094,  ..., -2.1094,  0.4082, -2.5312]],\n       device='cuda:0', dtype=torch.bfloat16)\nnormalized_shape = (768,)\nweight = tensor([-9.5599e-01,  4.1056e-02,  7.6835e-02,  9.3172e-01, -6.5041e-01,\n         1.6220e+00,  6.8407e-01, -1.9412e-01...0,  6.7180e-01, -2.8532e-01,  9.1914e-01, -1.8002e+00,\n         8.0746e-01,  7.2297e-01, -1.1323e-01], device='cuda:0')\nbias = tensor([-5.9812e-01, -1.7327e-01, -1.5459e-01,  2.0573e-01, -1.8999e+00,\n         6.9239e-01, -1.8688e-01,  2.5328e-01...0, -1.3504e+00,  7.2817e-02, -1.3363e+00, -1.0088e+00,\n         4.8693e-01, -1.4892e+00,  3.5395e-01], device='cuda:0')\neps = 1e-05\n\n    def layer_norm(\n        input: Tensor,\n        normalized_shape: list[int],\n        weight: Tensor | None = None,\n        bias: Tensor | None = None,\n        eps: float = 1e-5,\n    ) -> Tensor:\n        r\"\"\"Apply Layer Normalization for last certain number of dimensions.\n    \n        See :class:`~torch.nn.LayerNorm` for details.\n        \"\"\"\n        if has_torch_function_variadic(input, weight, bias):\n            return handle_torch_function(\n                layer_norm,\n                (input, weight, bias),\n                input,\n                normalized_shape,\n                weight=weight,\n                bias=bias,\n                eps=eps,\n            )\n>       return torch.layer_norm(\n            input, normalized_shape, weight, bias, eps, torch.backends.cudnn.enabled\n        )\nE       RuntimeError: expected scalar type BFloat16 but found Float\n\n../.venv-ising-decoding/lib/python3.12/site-packages/torch/nn/functional.py:2987: RuntimeError\n------------------------------ Captured log call -------------------------------\nDEBUG    torch.__trace:meta_utils.py:276 \nDEBUG    torch.__trace:meta_utils.py:514 \nDEBUG    torch.__trace:meta_utils.py:514 \nDEBUG    torch.__trace:meta_utils.py:2271 \nDEBUG    torch.__trace:symbolic_shapes.py:5754 \nDEBUG    torch.__trace:symbolic_shapes.py:8058 \nDEBUG    torch.__trace:meta_utils.py:276 \nDEBUG    torch.__trace:meta_utils.py:514 \nDEBUG    torch.__trace:meta_utils.py:514 \nDEBUG    torch.__trace:meta_utils.py:2271 \nDEBUG    torch.__trace:symbolic_shapes.py:5754 \nDEBUG    torch.__trace:symbolic_shapes.py:8058 \nDEBUG    torch.__trace:meta_utils.py:276 \nDEBUG    torch.__trace:meta_utils.py:514 \nDEBUG    torch.__trace:meta_utils.py:514 \nDEBUG    torch.__trace:meta_utils.py:2271 \nDEBUG    torch.__trace:symbolic_shapes.py:5754 \nDEBUG    torch.__trace:symbolic_shapes.py:8058 \nDEBUG    torch.__trace:meta_utils.py:276 \nDEBUG    torch.__trace:meta_utils.py:514 \nDEBUG    torch.__trace:meta_utils.py:514 \nDEBUG    torch.__trace:meta_utils.py:2271 \nDEBUG    torch.__trace:symbolic_shapes.py:5754 \nDEBUG    torch.__trace:symbolic_shapes.py:8058\n=========================== short test summary info ============================\nFAILED tests/test_layernorm.py::test_mixed_affine_pointer_offsets[dtype0] - R...\nFAILED tests/test_layernorm.py::test_mixed_affine_pointer_offsets[dtype1] - R...\n2 failed, 226 passed in 7.34s\n",
+      "elapsed_s": 8.461479265242815
+    },
+    {
+      "check": "installed_wheel",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 2.840110309422016
+    },
+    {
+      "check": "qwen_modules",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.6778001226484776
+    },
+    {
+      "check": "qwen_modules_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.7993205273523927
+    },
+    {
+      "check": "qwen_attention_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.757906704209745
+    },
+    {
+      "check": "bert_self_output_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "BertSelfOutput verified\n",
+      "elapsed_s": 3.1240362068638206
+    }
+  ],
+  "passed": false,
+  "completed_epoch": 1795619075.9724078
+}

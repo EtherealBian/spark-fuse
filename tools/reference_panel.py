@@ -13,6 +13,17 @@ PANELS = {
         ("scores2", 128, 4096, "float16"),
         ("scores", 12, 8192, "bfloat16"),
     ],
+    "layernorm": [
+        ("layernorm2", rows, width, dtype)
+        for rows, width, dtype in (
+            (1, 768, "bfloat16"),
+            (32, 768, "bfloat16"),
+            (128, 768, "bfloat16"),
+            (17, 769, "float32"),
+            (97, 1024, "float16"),
+            (512, 1024, "bfloat16"),
+        )
+    ],
     "qwen": [
         (case, rows, 8960 if case == "gate" else 1536, "bfloat16")
         for case in ("resnorm2", "gate")

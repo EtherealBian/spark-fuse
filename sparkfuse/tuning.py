@@ -1,5 +1,6 @@
 """Measured schedule dispatch. No dataset names or hard-coded benchmark winners."""
 
+from contextlib import contextmanager
 from dataclasses import asdict
 from functools import lru_cache
 import hashlib, json, random, sqlite3, statistics
@@ -19,6 +20,7 @@ def backend_id():
         "codegen.py",
         "vector.py",
         "softmax.py",
+        "layernorm.py",
         "runtime.py",
         "tuning.py",
         "measure.py",
@@ -87,6 +89,18 @@ def candidates(p):
     return choices
 
 
+@contextmanager
+def trial_context(phase, kernel):
+    """Annotate the original error without touching the possibly faulted device."""
+    try:
+        yield
+    except Exception as exc:
+        exc.add_note(
+            f"SparkFuse {phase}; schedule={asdict(kernel.schedule)}; kernel_cache_id={kernel.path.parent.name}"
+        )
+        raise
+
+
 @torch.inference_mode()
 def tune(
     ep,
@@ -123,21 +137,31 @@ def tune(
         k = base if sched == base.schedule else compile_export(ep, args[0].device, sched)
         fn = k.prepare(*args)
         try:
-            compare(fn(), reference, exact)
+            with trial_context("discovery parity", k):
+                compare(fn(), reference, exact)
         except AssertionError as e:
             if sched == base.schedule:
                 raise
-            invalid.append({"schedule": asdict(sched), "error": str(e)[:800]})
+            invalid.append(
+                {
+                    "schedule": asdict(sched),
+                    "kernel_cache_id": k.path.parent.name,
+                    "error": str(e)[:800],
+                }
+            )
             continue
-        timing = device_time(fn, groups=7, unroll=12, replay=4)
+        with trial_context("discovery timing", k):
+            timing = device_time(fn, groups=7, unroll=12, replay=4)
         measured.append((timing["median_us"], sched, timing))
         compiled[sched] = k
     measured.sort(key=lambda x: x[0])
     winner = measured[0][1]
     basefn = base.prepare(*held_args)
     winfn = compiled[winner].prepare(*held_args)
-    errors = compare(winfn(), held_reference, exact)
-    compare(basefn(), held_reference, exact)
+    with trial_context("holdout candidate parity", compiled[winner]):
+        errors = compare(winfn(), held_reference, exact)
+    with trial_context("holdout default parity", base):
+        compare(basefn(), held_reference, exact)
     pairs = []
     for i in range(5):
         order = ["default", "candidate"]
@@ -145,9 +169,12 @@ def tune(
             order.reverse()
         pair = {}
         for name in order:
-            pair[name] = device_time(
-                basefn if name == "default" else winfn, groups=7, unroll=16, replay=6
-            )["median_us"]
+            with trial_context(
+                f"holdout {i} {name} timing", base if name == "default" else compiled[winner]
+            ):
+                pair[name] = device_time(
+                    basefn if name == "default" else winfn, groups=7, unroll=16, replay=6
+                )["median_us"]
         pairs.append(pair)
     ratios = [a["default"] / a["candidate"] for a in pairs]
     admit = (
@@ -166,7 +193,10 @@ def tune(
         "heldout_speedup_vs_default": statistics.median(ratios),
         "paired_holdout_us": pairs,
         "heldout_errors": errors,
-        "trials": [{"schedule": asdict(s), "device": tim} for us, s, tim in measured],
+        "trials": [
+            {"schedule": asdict(s), "kernel_cache_id": compiled[s].path.parent.name, "device": tim}
+            for us, s, tim in measured
+        ],
         "invalid": invalid,
     }
     if store:

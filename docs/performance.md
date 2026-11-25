@@ -52,3 +52,15 @@ Six BF16 primitive shapes, same compiler fingerprint `354c84411574`, separately 
 | gate | 512 × 8960 | 178.72 | 119.65 | 118.43 |
 
 [All trials, source identifiers, raw device/host samples and third-input parity](../reports/qwen-current-panel-gb10.json).
+
+### 三轴广播：因果位置偏置 / Causal position prior
+
+A positional-bias subgraph generates both the unnormalized bias and its row-wise softmax from compact head slopes, query positions, key positions, and a head-broadcast causal mask. None has the whole output shape. This is an ALiBi-style *positional prior*, not attention with QK scores or a value product. The fused execution does not materialize the outer difference. FP32, mixed aligned/offset calibration inputs, exact bias including masked `-inf`, a third independent input and seven interleaved replay windows:
+
+| Heads × queries × keys | eager | Inductor | SparkFuse default | SparkFuse selected |
+|---|---:|---:|---:|---:|
+| 8 × 1 × 513 | 6.30 | 1.56 | 2.07 | 1.73 |
+| 8 × 97 × 129 | 5.61 | 3.22 | 3.87 | 2.44 |
+| 12 × 128 × 1024 | 92.58 | 56.14 | 47.73 | 42.05 |
+
+Device µs with warm addresses. Inductor is faster on the single-query case. [Exact schedules, input seeds, all raw windows, FX and parity](../reports/position-broadcast-gb10.json). The [pre-fix frontend probe](../reports/frontend-before-gb10.json) also shows why explicit mean-dtype conversion has to happen before accumulation: both narrowing cases previously yielded 0.375 rather than eager's 0.

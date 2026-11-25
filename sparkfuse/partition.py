@@ -31,6 +31,7 @@ CALLS = frozenset(
         "_to_copy.default",
         "to.dtype_layout",
         "rms_norm.default",
+        "layer_norm.default",
         "mean.dim",
         "softmax.int",
         "_softmax.default",

@@ -87,7 +87,7 @@ def generate(p, s):
                 expr = float(v.imm).hex() + "f"
             elif v.op == "input":
                 expr = LOAD[v.dt](f"in{v.imm}[{index(v)}]")
-            elif v.op in ("mean", "softmax"):
+            elif v.op in ("mean", "softmax", "layer_norm"):
                 raise AssertionError("unbound reduction")
             else:
                 expr = {
@@ -113,10 +113,10 @@ def generate(p, s):
         names = [rec(i) for i in targets]
         return "\n".join(lines), names
 
-    if p.red is not None and p.vals[p.red].op == "softmax":
-        from .softmax import generate_softmax
+    if p.red is not None and p.vals[p.red].op in ("softmax", "layer_norm"):
+        from .softmax import generate_rowwise
 
-        return generate_softmax(p, s, emit, index)
+        return generate_rowwise(p, s, emit, index)
 
     if s.vec > 1:
         from .vector import generate_vector

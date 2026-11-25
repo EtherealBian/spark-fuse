@@ -63,7 +63,9 @@ def bench(name, rows, width, dt, seed=100, do_profile=False, sched=None):
     }
     for label, fn in [("eager", eager), ("inductor", indfn), ("sparkfuse", fast)]:
         try:
-            err = compare(fn(), ref, exact=(1,) if name in ("resnorm2", "scores2") else ())
+            err = compare(
+                fn(), ref, exact=(1,) if name in ("resnorm2", "scores2", "layernorm2") else ()
+            )
             rec = dict(parity="pass", errors=err, device=device_time(fn), host_sync=host_time(fn))
         except AssertionError as exc:
             # Preserve the other backends. Never attribute speed to a result that missed parity.

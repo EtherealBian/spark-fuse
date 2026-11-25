@@ -69,3 +69,20 @@ def test_worker_publication(monkeypatch, tmp_path, outcome, previous, expected):
     assert (json.loads(row[0]) if row else None) == (
         {"same": rec, "other": old, None: None}[expected]
     )
+
+
+def test_fault_diagnostic_keeps_original_error_and_kernel(tmp_path):
+    from types import SimpleNamespace
+    from sparkfuse.tuning import trial_context
+
+    k = SimpleNamespace(
+        schedule=Schedule(64, "warp"), path=tmp_path / "compiled-hash" / "kernel.cu"
+    )
+    fault = RuntimeError("device failure")
+    with pytest.raises(RuntimeError) as err:
+        with trial_context("holdout parity", k):
+            raise fault
+    assert err.value is fault
+    assert any(
+        "holdout parity" in n and "compiled-hash" in n and "warp" in n for n in fault.__notes__
+    )

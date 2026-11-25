@@ -20,7 +20,7 @@ def run(name, rows, width, dtype, db, budget, seed, *, store=True):
         budget=budget,
         store=store,
         seed=seed,
-        exact=(1,) if name in ("resnorm2", "scores2") else (),
+        exact=(1,) if name in ("resnorm2", "scores2", "layernorm2") else (),
     )
     r.update(case=name, rows=rows, width=width, dtype=str(dtype))
     return r

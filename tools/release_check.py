@@ -58,6 +58,18 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "bert_self_output_native",
+                [
+                    opt,
+                    str(ROOT / "tools/bert_output.py"),
+                    "--verify-only",
+                    "--output",
+                    str(report.with_name(report.stem + "-bert.json")),
+                ],
+            )
+        )
     for name, cmd in commands:
         left = until - time.time() - 3
         if left < 1:

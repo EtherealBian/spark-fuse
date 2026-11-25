@@ -1,9 +1,9 @@
-"""Stable row softmax micro-schedule; arbitrary supported pointwise DAGs on both sides."""
+"""Shared row scheduling for stable Softmax and centered LayerNorm; pointwise DAGs on both sides."""
 
 from .codegen import CT, LOAD, STORE
 
 
-def generate_softmax(p, s, emit, index):
+def generate_rowwise(p, s, emit, index):
     h = p.width
     t = s.threads
     warp = s.layout == "warp"
@@ -37,7 +37,7 @@ def generate_softmax(p, s, emit, index):
         # Gather only input packs used by this phase. Broadcast-only dimensions
         # retain scalar loads, while an unexpanded key dimension permits vectors.
         if v == 1:
-            return [
+            return (["#pragma unroll 1"] if norm else []) + [
                 f"for(int j=lane;j<{h};j+={stride}){{const int pos=row*{h}+j;",
                 *body(dict(pre)),
                 "}",
@@ -53,7 +53,12 @@ def generate_softmax(p, s, emit, index):
 
         for i in targets:
             walk(i)
-        lines = [f"for(int first=lane*{v};first<{h};first+={stride * v}){{"]
+        # For centered LayerNorm keep the packet traversal as a real loop. A GB10
+        # CUDA 13.0 build of the peeled 768-wide second packet step produced an
+        # invalid global address under memcheck. Inner packet lanes remain unrolled.
+        lines = (["#pragma unroll 1"] if norm else []) + [
+            f"for(int first=lane*{v};first<{h};first+={stride * v}){{"
+        ]
         known = dict(pre)
         for i in p.inputs:
             x = p.vals[i]
@@ -113,15 +118,21 @@ def generate_softmax(p, s, emit, index):
         text, (operand,) = emit([inp], known)
         return [text, f"mass+=expf({operand}-rowmax);"]
 
-    src += [
-        "float acc=-INFINITY;",
-        *phase([inp], {}, maxbody),
-        *collective("acc", "max", "rowmax"),
-        "float mass=0.f;",
-        *phase([] if s.cache else [inp], {}, sumbody),
-        *collective("mass", "sum", "rowsum"),
-        "const float inv=1.f/rowsum;",
-    ]
+    norm = p.vals[p.red].op == "layer_norm"
+    if norm:
+        from .layernorm import statistics
+
+        src += statistics(h, inp, p.vals[p.red].imm, s.cache, off, emit, phase, collective)
+    else:
+        src += [
+            "float acc=-INFINITY;",
+            *phase([inp], {}, maxbody),
+            *collective("acc", "max", "rowmax"),
+            "float mass=0.f;",
+            *phase([] if s.cache else [inp], {}, sumbody),
+            *collective("mass", "sum", "rowsum"),
+            "const float inv=1.f/rowsum;",
+        ]
     full = [(k, i) for k, i in enumerate(p.outputs) if p.vals[i].shape == p.domain]
     small = [(k, i) for k, i in enumerate(p.outputs) if p.vals[i].shape != p.domain]
     if small:
@@ -142,7 +153,7 @@ def generate_softmax(p, s, emit, index):
                 text, (operand,) = emit([inp], known)
                 out += ["float logit; {", text, f"logit={operand}; }}"]
                 known[inp] = "logit"
-                prob = "expf(logit-rowmax)*inv"
+                prob = "((logit-origin)-center)*inv" if norm else "expf(logit-rowmax)*inv"
             dt = p.vals[p.red].dt
             out += ["const float prob=" + LOAD[dt](STORE[dt](prob)) + ";"]
             known[p.red] = "prob"
@@ -164,3 +175,7 @@ def generate_softmax(p, s, emit, index):
         "}",
     ]
     return "\n".join(src) + "\n"
+
+
+# Compatible with workers that loaded codegen just before a source update.
+generate_softmax = generate_rowwise

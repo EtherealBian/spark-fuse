@@ -187,6 +187,26 @@ def lower(ep):
                         raise Unsupported("unsupported softmax dtype")
                     src = put("cast", shape, DT[target], [src])
             red = idx = put("softmax", sh, dt, [src])
+        elif op == "aten.layer_norm.default":
+            src = arg(a[0])
+            shape = vs[src].shape
+            if red is not None or not shape or tuple(a[1]) != (shape[-1],):
+                raise Unsupported("layer_norm requires one last-axis collective region")
+            weight = a[2] if len(a) > 2 else k.get("weight")
+            bias = a[3] if len(a) > 3 else k.get("bias")
+            eps = float(a[4] if len(a) > 4 else k.get("eps", 1e-5))
+            if not math.isfinite(eps) or not 0 <= eps <= 3.4028234e38:
+                raise Unsupported("invalid layer_norm epsilon")
+            red = idx = put("layer_norm", shape, "f32", [src], imm=eps)
+            for name, v in (("mul", weight), ("add", bias)):
+                if v is not None:
+                    v = arg(v)
+                    if vs[v].dt != vs[src].dt:
+                        raise Unsupported("mixed-dtype LayerNorm affine parameters unsupported")
+                    if vs[v].shape != (shape[-1],):
+                        raise Unsupported("requires dense last-axis LayerNorm affine parameters")
+                    idx = put(name, shape, "f32", [idx, v])
+            idx = put("cast", sh, dt, [idx])
         elif op == "aten.rms_norm.default":
             src = arg(a[0])
             shape = vs[src].shape
@@ -232,7 +252,8 @@ def lower(ep):
         raise Unsupported("incompatible broadcast domains")
     if red is not None and (
         vs[vs[red].deps[0]].shape != domain
-        or vs[red].shape != (domain if vs[red].op == "softmax" else (*domain[:-1], 1))
+        or vs[red].shape
+        != (domain if vs[red].op in ("layer_norm", "softmax") else (*domain[:-1], 1))
     ):
         raise Unsupported("reduction must span the iteration domain")
     if any(vs[i].shape not in (domain, (*domain[:-1], 1)) for i in outs):
