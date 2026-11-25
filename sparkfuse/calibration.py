@@ -10,14 +10,22 @@ from .ir import Unsupported
 from .measure import compare
 from .partition import partition_export
 from .runtime import compile_export
-from .tuning import connect, tune
+from .tuning import connect, signature, tune
+from .sampled_exact import tune_shared_exact
 
 
 def _save(path, records):
+    by_key = {}
+    for rec in records:
+        other = by_key.setdefault(rec["key"], rec)
+        if rec["selected"] != other["selected"]:
+            raise AssertionError(
+                "incompatible schedules for a shared dispatch key; dispatch not published"
+            )
     with closing(connect(path)) as db, db:
         db.executemany(
             "INSERT OR REPLACE INTO schedules VALUES (?,?)",
-            [(r["key"], json.dumps(r)) for r in records],
+            [(r["key"], json.dumps(r)) for r in by_key.values()],
         )
 
 
@@ -36,12 +44,15 @@ def calibrate_export(
     capture_bytes_limit=256 * 1024**2,
     exact_region=None,
     exact_outputs=(),
+    sampled_exact=False,
 ):
     """Three positional-argument tuples from independent requests; weights may be shared.
 
     Publishes selected schedules transactionally only after comparing the entire mixed graph
     against the original on train, holdout, and audit requests. The memory limit bounds storage retained by the temporary
     input hooks, not allocator peak. No captured tensors are stored on disk.
+    sampled_exact jointly chooses one schedule per dispatch key on raw ATen activations
+    and additionally requires equality at every region and composed output on these requests.
     """
     if budget < 1 or capture_bytes_limit < 1:
         raise ValueError("positive budget and capture limit required")
@@ -70,38 +81,52 @@ def calibrate_export(
 
         return on_input
 
+    # Execute the unfused region oracles during capture: candidates at later sites must
+    # never be calibrated on the numerical drift of an earlier default kernel.
+    kernels = {n: mixed.get_submodule(n).kernel for n in names}
+    oracles = {n: torch.fx.GraphModule({}, k.ep.graph) for n, k in kernels.items()}
     handles = []
     try:
         for n in names:
-            handles.append(mixed.get_submodule(n).register_forward_pre_hook(watch(n)))
+            setattr(mixed, n, oracles[n])
+            handles.append(oracles[n].register_forward_pre_hook(watch(n)))
         for a in (train, holdout, audit):
             mixed(*a)
     finally:
         for h in handles:
             h.remove()
     records = {}
-    for ix, n in enumerate(names):
-        if len(samples[n]) != 3:
-            raise Unsupported("expected one call per region per request")
-        a, b, c = samples[n]
-        sub = mixed.get_submodule(n).kernel.ep
-        oracle = torch.fx.GraphModule({}, sub.graph)
-        exact = (exact_region or {}).get(n, ())
-        rec = tune(
-            sub,
-            a,
-            oracle(*a),
-            b,
-            oracle(*b),
-            path,
-            budget=budget,
-            seed=seed + ix,
-            exact=exact,
-            store=False,
-        )
-        k = compile_export(sub, device=device, schedule=Schedule(**rec["selected"]))
-        rec["third_input_errors"] = compare(k(*c), oracle(*c), exact=exact)
-        records[n] = rec
+    if sampled_exact:
+        groups = {}
+        for n in names:
+            groups.setdefault(signature(kernels[n].plan, device), []).append(n)
+        for ix, group in enumerate(groups.values()):
+            sites = {n: [(a, oracles[n](*a)) for a in samples[n]] for n in group}
+            rec = tune_shared_exact(kernels[group[0]].ep, sites, budget=budget, seed=seed + ix)
+            records.update((n, rec) for n in group)
+    else:
+        for ix, n in enumerate(names):
+            if len(samples[n]) != 3:
+                raise Unsupported("expected one call per region per request")
+            a, b, c = samples[n]
+            sub = kernels[n].ep
+            oracle = oracles[n]
+            exact = (exact_region or {}).get(n, ())
+            rec = tune(
+                sub,
+                a,
+                oracle(*a),
+                b,
+                oracle(*b),
+                path,
+                budget=budget,
+                seed=seed + ix,
+                exact=exact,
+                store=False,
+            )
+            k = compile_export(sub, device=device, schedule=Schedule(**rec["selected"]))
+            rec["third_input_errors"] = compare(k(*c), oracle(*c), exact=exact)
+            records[n] = rec
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(prefix=".sparkfuse-calibration-", dir=target.parent) as tmp:
@@ -117,7 +142,13 @@ def calibrate_export(
         whole_errors = {}
         for phase, request in (("train", train), ("holdout", holdout), ("audit", audit)):
             try:
-                whole_errors[phase] = compare(tuned(*request), eager(*request), exact=exact_outputs)
+                ref = eager(*request)
+                required = (
+                    tuple(range(len(torch.utils._pytree.tree_leaves(ref))))
+                    if sampled_exact
+                    else exact_outputs
+                )
+                whole_errors[phase] = compare(tuned(*request), ref, exact=required)
             except AssertionError as e:
                 raise AssertionError(
                     f"whole-graph {phase} rejected; dispatch not published: {e}"
@@ -129,4 +160,6 @@ def calibrate_export(
         mixed_request_errors=whole_errors,
         captured_distinct_storage_bytes=retained_bytes,
         actual_regions=actual,
+        captured_from="unfused_aten",
+        sampled_exact=sampled_exact,
     )

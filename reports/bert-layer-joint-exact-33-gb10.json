@@ -1,0 +1,3182 @@
+{
+  "scope": "One real randomly initialized BERT encoder layer, eval, BF16, batch 1. Eager self-attention, no mask. Not entire BERT.",
+  "torch": "2.13.0+cu130",
+  "transformers": "4.51.3",
+  "compiler": "d7ea7af237cdeee250e1fcb98d4613ffe1d4f697d0e36a490349bfcc33da2ca9",
+  "device": "NVIDIA GB10",
+  "weight_seed": 3496,
+  "affine": "perturbed",
+  "seeds": [
+    47221,
+    53959,
+    61471,
+    76253,
+    80039,
+    92779
+  ],
+  "seq": 33,
+  "decisions": {
+    "unsplit": {
+      "regions": [
+        {
+          "ops": [
+            "div",
+            "softmax"
+          ],
+          "module": "_sparkfuse_region_0",
+          "live_ins": [
+            "matmul"
+          ],
+          "live_outs": [
+            "softmax"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        },
+        {
+          "ops": [
+            "add",
+            "layer_norm",
+            "add_1",
+            "layer_norm_1"
+          ],
+          "fallback": "no legal insertion point between live-ins and live-outs"
+        }
+      ],
+      "fx": "graph():\n    %attention_self_query_weight : [num_users=1] = get_attr[target=attention.self.query.weight]\n    %attention_self_query_bias : [num_users=1] = get_attr[target=attention.self.query.bias]\n    %attention_self_key_weight : [num_users=1] = get_attr[target=attention.self.key.weight]\n    %attention_self_key_bias : [num_users=1] = get_attr[target=attention.self.key.bias]\n    %attention_self_value_weight : [num_users=1] = get_attr[target=attention.self.value.weight]\n    %attention_self_value_bias : [num_users=1] = get_attr[target=attention.self.value.bias]\n    %attention_output_dense_weight : [num_users=1] = get_attr[target=attention.output.dense.weight]\n    %attention_output_dense_bias : [num_users=1] = get_attr[target=attention.output.dense.bias]\n    %attention_output_layer_norm_weight : [num_users=1] = get_attr[target=attention.output.LayerNorm.weight]\n    %attention_output_layer_norm_bias : [num_users=1] = get_attr[target=attention.output.LayerNorm.bias]\n    %intermediate_dense_weight : [num_users=1] = get_attr[target=intermediate.dense.weight]\n    %intermediate_dense_bias : [num_users=1] = get_attr[target=intermediate.dense.bias]\n    %output_dense_weight : [num_users=1] = get_attr[target=output.dense.weight]\n    %output_dense_bias : [num_users=1] = get_attr[target=output.dense.bias]\n    %output_layer_norm_weight : [num_users=1] = get_attr[target=output.LayerNorm.weight]\n    %output_layer_norm_bias : [num_users=1] = get_attr[target=output.LayerNorm.bias]\n    %hidden_states : [num_users=5] = placeholder[target=hidden_states]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states,), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_query_weight, %attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_key_weight, %attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [1, 33, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_value_weight, %attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [1, 33, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [1, 33, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %_sparkfuse_region_0 : [num_users=1] = call_module[target=_sparkfuse_region_0](args = (%matmul,), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_0, 0), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%getitem, 0.1, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 33, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %attention_output_dense_weight, %attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.1, False), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_1, %hidden_states), kwargs = {})\n    %layer_norm : [num_users=2] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [768], %attention_output_layer_norm_weight, %attention_output_layer_norm_bias, 1e-12, False), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%layer_norm, %intermediate_dense_weight, %intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %output_dense_weight, %output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.1, False), kwargs = {})\n    %add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_2, %layer_norm), kwargs = {})\n    %layer_norm_1 : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add_1, [768], %output_layer_norm_weight, %output_layer_norm_bias, 1e-12, False), kwargs = {})\n    return (layer_norm_1,)",
+      "build_or_load_ms": 27.741899713873863
+    },
+    "split": {
+      "regions": [
+        {
+          "ops": [
+            "div",
+            "softmax"
+          ],
+          "module": "_sparkfuse_region_0",
+          "live_ins": [
+            "matmul"
+          ],
+          "live_outs": [
+            "softmax"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        },
+        {
+          "ops": [
+            "add",
+            "layer_norm"
+          ],
+          "split": {
+            "component": "1",
+            "original_rejection": "no legal insertion point between live-ins and live-outs",
+            "covered_ops": 4,
+            "planned_regions": 2,
+            "logical_output_bytes": 101376
+          },
+          "module": "_sparkfuse_region_1_0",
+          "live_ins": [
+            "attention_output_layer_norm_weight",
+            "attention_output_layer_norm_bias",
+            "hidden_states",
+            "dropout_1"
+          ],
+          "live_outs": [
+            "layer_norm"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        },
+        {
+          "ops": [
+            "add_1",
+            "layer_norm_1"
+          ],
+          "split": {
+            "component": "1",
+            "original_rejection": "no legal insertion point between live-ins and live-outs",
+            "covered_ops": 4,
+            "planned_regions": 2,
+            "logical_output_bytes": 101376
+          },
+          "module": "_sparkfuse_region_1_1",
+          "live_ins": [
+            "output_layer_norm_weight",
+            "output_layer_norm_bias",
+            "getitem_1",
+            "dropout_2"
+          ],
+          "live_outs": [
+            "layer_norm_1"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        }
+      ],
+      "fx": "graph():\n    %attention_self_query_weight : [num_users=1] = get_attr[target=attention.self.query.weight]\n    %attention_self_query_bias : [num_users=1] = get_attr[target=attention.self.query.bias]\n    %attention_self_key_weight : [num_users=1] = get_attr[target=attention.self.key.weight]\n    %attention_self_key_bias : [num_users=1] = get_attr[target=attention.self.key.bias]\n    %attention_self_value_weight : [num_users=1] = get_attr[target=attention.self.value.weight]\n    %attention_self_value_bias : [num_users=1] = get_attr[target=attention.self.value.bias]\n    %attention_output_dense_weight : [num_users=1] = get_attr[target=attention.output.dense.weight]\n    %attention_output_dense_bias : [num_users=1] = get_attr[target=attention.output.dense.bias]\n    %attention_output_layer_norm_weight : [num_users=1] = get_attr[target=attention.output.LayerNorm.weight]\n    %attention_output_layer_norm_bias : [num_users=1] = get_attr[target=attention.output.LayerNorm.bias]\n    %intermediate_dense_weight : [num_users=1] = get_attr[target=intermediate.dense.weight]\n    %intermediate_dense_bias : [num_users=1] = get_attr[target=intermediate.dense.bias]\n    %output_dense_weight : [num_users=1] = get_attr[target=output.dense.weight]\n    %output_dense_bias : [num_users=1] = get_attr[target=output.dense.bias]\n    %output_layer_norm_weight : [num_users=1] = get_attr[target=output.LayerNorm.weight]\n    %output_layer_norm_bias : [num_users=1] = get_attr[target=output.LayerNorm.bias]\n    %hidden_states : [num_users=5] = placeholder[target=hidden_states]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states,), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_query_weight, %attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_key_weight, %attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [1, 33, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_value_weight, %attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [1, 33, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [1, 33, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %_sparkfuse_region_0 : [num_users=1] = call_module[target=_sparkfuse_region_0](args = (%matmul,), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_0, 0), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%getitem, 0.1, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 33, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %attention_output_dense_weight, %attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.1, False), kwargs = {})\n    %_sparkfuse_region_1_0 : [num_users=1] = call_module[target=_sparkfuse_region_1_0](args = (%attention_output_layer_norm_weight, %attention_output_layer_norm_bias, %hidden_states, %dropout_1), kwargs = {})\n    %getitem_1 : [num_users=2] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_0, 0), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem_1, %intermediate_dense_weight, %intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %output_dense_weight, %output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.1, False), kwargs = {})\n    %_sparkfuse_region_1_1 : [num_users=1] = call_module[target=_sparkfuse_region_1_1](args = (%output_layer_norm_weight, %output_layer_norm_bias, %getitem_1, %dropout_2), kwargs = {})\n    %getitem_2 : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_1, 0), kwargs = {})\n    return (getitem_2,)",
+      "build_or_load_ms": 6.76536001265049
+    }
+  },
+  "fx": "graph():\n    %p_attention_self_query_weight : [num_users=1] = placeholder[target=p_attention_self_query_weight]\n    %p_attention_self_query_bias : [num_users=1] = placeholder[target=p_attention_self_query_bias]\n    %p_attention_self_key_weight : [num_users=1] = placeholder[target=p_attention_self_key_weight]\n    %p_attention_self_key_bias : [num_users=1] = placeholder[target=p_attention_self_key_bias]\n    %p_attention_self_value_weight : [num_users=1] = placeholder[target=p_attention_self_value_weight]\n    %p_attention_self_value_bias : [num_users=1] = placeholder[target=p_attention_self_value_bias]\n    %p_attention_output_dense_weight : [num_users=1] = placeholder[target=p_attention_output_dense_weight]\n    %p_attention_output_dense_bias : [num_users=1] = placeholder[target=p_attention_output_dense_bias]\n    %p_attention_output_layernorm_weight : [num_users=1] = placeholder[target=p_attention_output_layernorm_weight]\n    %p_attention_output_layernorm_bias : [num_users=1] = placeholder[target=p_attention_output_layernorm_bias]\n    %p_intermediate_dense_weight : [num_users=1] = placeholder[target=p_intermediate_dense_weight]\n    %p_intermediate_dense_bias : [num_users=1] = placeholder[target=p_intermediate_dense_bias]\n    %p_output_dense_weight : [num_users=1] = placeholder[target=p_output_dense_weight]\n    %p_output_dense_bias : [num_users=1] = placeholder[target=p_output_dense_bias]\n    %p_output_layernorm_weight : [num_users=1] = placeholder[target=p_output_layernorm_weight]\n    %p_output_layernorm_bias : [num_users=1] = placeholder[target=p_output_layernorm_bias]\n    %hidden_states : [num_users=4] = placeholder[target=hidden_states]\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_attention_self_query_weight, %p_attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_attention_self_key_weight, %p_attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [1, 33, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_attention_self_value_weight, %p_attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [1, 33, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [1, 33, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %div : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%matmul, 8.0), kwargs = {})\n    %softmax : [num_users=1] = call_function[target=torch.ops.aten.softmax.int](args = (%div, -1), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%softmax, 0.1, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 33, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %p_attention_output_dense_weight, %p_attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.1, False), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_1, %hidden_states), kwargs = {})\n    %layer_norm : [num_users=2] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [768], %p_attention_output_layernorm_weight, %p_attention_output_layernorm_bias, 1e-12, False), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%layer_norm, %p_intermediate_dense_weight, %p_intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %p_output_dense_weight, %p_output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.1, False), kwargs = {})\n    %add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_2, %layer_norm), kwargs = {})\n    %layer_norm_1 : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add_1, [768], %p_output_layernorm_weight, %p_output_layernorm_bias, 1e-12, False), kwargs = {})\n    return (layer_norm_1,)",
+  "ordered_regions": [
+    {
+      "ops": [
+        "div",
+        "softmax"
+      ],
+      "module": "_sparkfuse_region_0",
+      "live_ins": [
+        "matmul"
+      ],
+      "live_outs": [
+        "softmax"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "warp_xor",
+        "cache": true,
+        "vec": 1
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add",
+        "layer_norm"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 101376
+      },
+      "module": "_sparkfuse_region_1_0",
+      "live_ins": [
+        "attention_output_layer_norm_weight",
+        "attention_output_layer_norm_bias",
+        "hidden_states",
+        "dropout_1"
+      ],
+      "live_outs": [
+        "layer_norm"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block_welford",
+        "cache": true,
+        "vec": 4
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add_1",
+        "layer_norm_1"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 101376
+      },
+      "module": "_sparkfuse_region_1_1",
+      "live_ins": [
+        "output_layer_norm_weight",
+        "output_layer_norm_bias",
+        "getitem_1",
+        "dropout_2"
+      ],
+      "live_outs": [
+        "layer_norm_1"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block_welford",
+        "cache": true,
+        "vec": 4
+      },
+      "host_backend": "native"
+    }
+  ],
+  "calibration": {
+    "status": "rejected",
+    "failure": "whole-graph train rejected; dispatch not published: Tensor-likes are not close!\n\nMismatched elements: 9 / 25344 (0.0%)\nGreatest absolute difference: 0.00244140625 at index (0, 30, 640) (up to 0.0002 allowed)\nGreatest relative difference: 0.279296875 at index (0, 30, 501) (up to 0.012 allowed)"
+  },
+  "exact_calibration": {
+    "records": {
+      "_sparkfuse_region_0": {
+        "key": "a67faafcd193059d85b67be43f3b6f068f4423b39cc4b05e71df3ce6f03ccdea",
+        "compiler": "d7ea7af237cdeee250e1fcb98d4613ffe1d4f697d0e36a490349bfcc33da2ca9",
+        "seed": 6109,
+        "precision_gate": "all boundary outputs exact on these requests",
+        "sites": [
+          "_sparkfuse_region_0"
+        ],
+        "selected": {
+          "threads": 128,
+          "layout": "warp_xor",
+          "cache": true,
+          "vec": 1
+        },
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "anchor": {
+          "threads": 128,
+          "layout": "warp_xor",
+          "cache": true,
+          "vec": 1
+        },
+        "candidate": {
+          "threads": 128,
+          "layout": "warp_xor",
+          "cache": true,
+          "vec": 1
+        },
+        "admitted": false,
+        "heldout_speedup_vs_anchor": null,
+        "paired_holdout_us": [],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp_xor",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "12a40069e4576712d0cd75700af0a5578797b5deeb6ddec816fe3d1b2172086e",
+            "device": {
+              "median_us": 1.348000019788742,
+              "p10_us": 1.3426666458447774,
+              "p90_us": 1.3500000350177288,
+              "samples_us": [
+                1.3666666733721893,
+                1.3500000350177288,
+                1.3486666915317376,
+                1.3473333480457466,
+                1.348000019788742,
+                1.348000019788742,
+                1.3426666458447774
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "4ba1e88ebf64927b394fadc5420ba170561b3c2d0bffcedcd4f905dcf274dce9",
+            "device": {
+              "median_us": 1.5613332701226075,
+              "p10_us": 1.5566667231420677,
+              "p90_us": 1.5619999418656032,
+              "samples_us": [
+                1.5786667354404926,
+                1.5619999418656032,
+                1.5619999418656032,
+                1.5599999266366165,
+                1.5613332701226075,
+                1.5613332701226075,
+                1.5566667231420677
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "warp_xor",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "2edc10ab6e5f05a95c52399778097d885e5d2264a2bbabb4727759345f6446f0",
+            "device": {
+              "median_us": 1.3900000291566055,
+              "p10_us": 1.3846666552126408,
+              "p90_us": 1.3920000443855922,
+              "samples_us": [
+                1.3993332783381145,
+                1.3920000443855922,
+                1.3900000291566055,
+                1.3900000291566055,
+                1.390666700899601,
+                1.3900000291566055,
+                1.3846666552126408
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "43f19b73a0d6ef2eb026e9393fbcb063d27d5e320f1a74be2a6c29a0851cb5df",
+            "device": {
+              "median_us": 4.121333360671997,
+              "p10_us": 4.0960001448790235,
+              "p90_us": 4.121333360671997,
+              "samples_us": [
+                4.0960001448790235,
+                4.121333360671997,
+                4.120666533708572,
+                4.121333360671997,
+                4.121333360671997,
+                4.121333360671997,
+                4.116666813691457
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "block",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "7e2f15b9f6ea8c5a84b437411e5d891a084e7d42a78abd6a32287f4e3c320704",
+            "device": {
+              "median_us": 2.5426666252315044,
+              "p10_us": 2.5379999230305352,
+              "p90_us": 2.5613332788149514,
+              "samples_us": [
+                2.5613332788149514,
+                2.5426666252315044,
+                2.5853333063423634,
+                2.5426666252315044,
+                2.5426666252315044,
+                2.5426666252315044,
+                2.5379999230305352
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp_xor",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "59d90bd472fcc04e56b6ead0e59b5f67924b8243500d245fe12f25f4a82dd81e",
+            "device": {
+              "median_us": 1.348000019788742,
+              "p10_us": 1.3419999741017818,
+              "p90_us": 1.3500000350177288,
+              "samples_us": [
+                1.3660000016291935,
+                1.3500000350177288,
+                1.348000019788742,
+                1.348000019788742,
+                1.348000019788742,
+                1.348000019788742,
+                1.3419999741017818
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "ebc576f42dfe44d6ecbe07ccec116e7aa5f81889237dbdd3045c6901205386a8",
+            "device": {
+              "median_us": 3.6526666954159737,
+              "p10_us": 3.6453334614634514,
+              "p90_us": 3.658000069359938,
+              "samples_us": [
+                3.6620000998179116,
+                3.658000069359938,
+                3.650666524966558,
+                3.6459999779860177,
+                3.656666725873947,
+                3.6526666954159737,
+                3.6453334614634514
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp_xor",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "6dc2bc17827b95fc20bdf0df7102b37e54fd5dcffde5cfb1e423a43e2dd20d06",
+            "device": {
+              "median_us": 1.348000019788742,
+              "p10_us": 1.343333317587773,
+              "p90_us": 1.3493333632747333,
+              "samples_us": [
+                1.3673333451151848,
+                1.3493333632747333,
+                1.3473333480457466,
+                1.348000019788742,
+                1.348000019788742,
+                1.348000019788742,
+                1.343333317587773
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": false,
+              "vec": 2
+            },
+            "kernel_cache_id": "7490de9df1f1688c49ebbee17f278969725fc290efef03909736b83d6327eac0",
+            "device": {
+              "median_us": 2.007999923080206,
+              "p10_us": 1.9826667072872322,
+              "p90_us": 2.0306666071216264,
+              "samples_us": [
+                2.007999923080206,
+                2.025333388398091,
+                1.9833333790302277,
+                2.0306666071216264,
+                2.0306666071216264,
+                1.9879999260107677,
+                1.9826667072872322
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "warp_xor",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "c45903182be656be49656407801a7f90a70a1818e1f25741c5fef1cbfd781d8f",
+            "device": {
+              "median_us": 1.348000019788742,
+              "p10_us": 1.3426666458447774,
+              "p90_us": 1.365333329886198,
+              "samples_us": [
+                1.365333329886198,
+                1.3506667067607243,
+                1.348000019788742,
+                1.385999998698632,
+                1.348000019788742,
+                1.348000019788742,
+                1.3426666458447774
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "abde16fe3df767e5a71c166da225c512696cc53f6ec0d07ee2f7bd8a2ca2c012",
+            "device": {
+              "median_us": 1.47733340660731,
+              "p10_us": 1.442666631191969,
+              "p90_us": 1.5093333398302395,
+              "samples_us": [
+                1.4926667014757793,
+                1.47733340660731,
+                1.5140000420312087,
+                1.442666631191969,
+                1.5093333398302395,
+                1.4760000631213188,
+                1.47733340660731
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "warp_xor",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "7316e937f86eab9d3236ea8f286dbcaf761c71a3c423a6f849b675b8e15e3d6c",
+            "device": {
+              "median_us": 1.3886666856706142,
+              "p10_us": 1.3866666704416275,
+              "p90_us": 1.39533340310057,
+              "samples_us": [
+                1.4053333240250747,
+                1.39533340310057,
+                1.3886666856706142,
+                1.3886666856706142,
+                1.390666700899601,
+                1.3866666704416275,
+                1.387333342184623
+              ]
+            }
+          }
+        ],
+        "invalid": [],
+        "third_input_errors": {
+          "_sparkfuse_region_0": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 13068,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      },
+      "_sparkfuse_region_1_0": {
+        "key": "03e0bfdc574fcaf4cb192560c6f2ea180c1517079ad9de4f7e9bb712bb1434a1",
+        "compiler": "d7ea7af237cdeee250e1fcb98d4613ffe1d4f697d0e36a490349bfcc33da2ca9",
+        "seed": 6110,
+        "precision_gate": "all boundary outputs exact on these requests",
+        "sites": [
+          "_sparkfuse_region_1_0",
+          "_sparkfuse_region_1_1"
+        ],
+        "selected": {
+          "threads": 128,
+          "layout": "block_welford",
+          "cache": true,
+          "vec": 4
+        },
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "anchor": {
+          "threads": 128,
+          "layout": "block_welford",
+          "cache": true,
+          "vec": 4
+        },
+        "candidate": {
+          "threads": 128,
+          "layout": "block_welford",
+          "cache": true,
+          "vec": 4
+        },
+        "admitted": false,
+        "heldout_speedup_vs_anchor": null,
+        "paired_holdout_us": [],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block_welford",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "72dd3b2edc2cd9a0e928b6e8a41251cdfdc91735c16d7ce8ae65720ac0e96fad",
+            "device": {
+              "median_us": 5.140666539470355,
+              "p10_us": 5.1180000106493635,
+              "p90_us": 5.145333396891753,
+              "samples_us": [
+                5.1180000106493635,
+                5.140666539470355,
+                5.145333396891753,
+                5.145333396891753,
+                5.140666539470355,
+                5.145333396891753,
+                5.140000022947788
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block_welford",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "5b17d6a69471ce92dafea260ca03ea30d41248a2cb21f0899cce12028d60f7bd",
+            "device": {
+              "median_us": 5.1446665699283285,
+              "p10_us": 5.119999870657921,
+              "p90_us": 5.145333396891753,
+              "samples_us": [
+                5.119999870657921,
+                5.145333396891753,
+                5.145999913414319,
+                5.1446665699283285,
+                5.145333396891753,
+                5.144000053405762,
+                5.1393331959843636
+              ]
+            }
+          }
+        ],
+        "invalid": [
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "421844bb053bbaa90c9c2d2f641a676e1d62b94d1a392ee0f5ffc2147307d8d6",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": true,
+              "vec": 8
+            },
+            "kernel_cache_id": "1dd55a2a27692cfc483f1f739342ea8cec260c5281289071228c5623199adbd4",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "d26831df1c67e4ce0a9ef0422c4e23b9ccb579ccf3aae95e1e8abb07c0723f09",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "a87993c33749b18855a00c800d53bcdbb90775efd1ec6409e304249a3dd5a24e",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "warp",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "70b56103e6797916a5e559fa67ba5cbf50f84086642981366feaef5df53a5cdc",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": false,
+              "vec": 8
+            },
+            "kernel_cache_id": "f28a7b1f14ddc9e3680fd728607bda8efca5a990ca98de57561d3b12e67505b6",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "0ef9a3e1f52c033a1b548e8f53c70369381e7fdc7572568cffe427e68f69951b",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "31d1f1de7fcf528a8f1d3f754959b7885761a576312f8a359ad8d261f6811987",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "e6469b6a81d5cf36b97edef3cddf34e1746235be07068288cc8ce7e14f737996",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "c3d65fb40dcb4dfa7bd3189aaeb5f500a8e52fb0ff49ac28f39aead10ad6badd",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          }
+        ],
+        "third_input_errors": {
+          "_sparkfuse_region_1_0": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ],
+          "_sparkfuse_region_1_1": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      },
+      "_sparkfuse_region_1_1": {
+        "key": "03e0bfdc574fcaf4cb192560c6f2ea180c1517079ad9de4f7e9bb712bb1434a1",
+        "compiler": "d7ea7af237cdeee250e1fcb98d4613ffe1d4f697d0e36a490349bfcc33da2ca9",
+        "seed": 6110,
+        "precision_gate": "all boundary outputs exact on these requests",
+        "sites": [
+          "_sparkfuse_region_1_0",
+          "_sparkfuse_region_1_1"
+        ],
+        "selected": {
+          "threads": 128,
+          "layout": "block_welford",
+          "cache": true,
+          "vec": 4
+        },
+        "default": {
+          "threads": 128,
+          "layout": "block",
+          "cache": true,
+          "vec": 1
+        },
+        "anchor": {
+          "threads": 128,
+          "layout": "block_welford",
+          "cache": true,
+          "vec": 4
+        },
+        "candidate": {
+          "threads": 128,
+          "layout": "block_welford",
+          "cache": true,
+          "vec": 4
+        },
+        "admitted": false,
+        "heldout_speedup_vs_anchor": null,
+        "paired_holdout_us": [],
+        "trials": [
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block_welford",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "72dd3b2edc2cd9a0e928b6e8a41251cdfdc91735c16d7ce8ae65720ac0e96fad",
+            "device": {
+              "median_us": 5.140666539470355,
+              "p10_us": 5.1180000106493635,
+              "p90_us": 5.145333396891753,
+              "samples_us": [
+                5.1180000106493635,
+                5.140666539470355,
+                5.145333396891753,
+                5.145333396891753,
+                5.140666539470355,
+                5.145333396891753,
+                5.140000022947788
+              ]
+            }
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block_welford",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "5b17d6a69471ce92dafea260ca03ea30d41248a2cb21f0899cce12028d60f7bd",
+            "device": {
+              "median_us": 5.1446665699283285,
+              "p10_us": 5.119999870657921,
+              "p90_us": 5.145333396891753,
+              "samples_us": [
+                5.119999870657921,
+                5.145333396891753,
+                5.145999913414319,
+                5.1446665699283285,
+                5.145333396891753,
+                5.144000053405762,
+                5.1393331959843636
+              ]
+            }
+          }
+        ],
+        "invalid": [
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "421844bb053bbaa90c9c2d2f641a676e1d62b94d1a392ee0f5ffc2147307d8d6",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": true,
+              "vec": 8
+            },
+            "kernel_cache_id": "1dd55a2a27692cfc483f1f739342ea8cec260c5281289071228c5623199adbd4",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "d26831df1c67e4ce0a9ef0422c4e23b9ccb579ccf3aae95e1e8abb07c0723f09",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 128,
+              "layout": "block",
+              "cache": false,
+              "vec": 4
+            },
+            "kernel_cache_id": "a87993c33749b18855a00c800d53bcdbb90775efd1ec6409e304249a3dd5a24e",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "warp",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "70b56103e6797916a5e559fa67ba5cbf50f84086642981366feaef5df53a5cdc",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 256,
+              "layout": "warp",
+              "cache": false,
+              "vec": 8
+            },
+            "kernel_cache_id": "f28a7b1f14ddc9e3680fd728607bda8efca5a990ca98de57561d3b12e67505b6",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": true,
+              "vec": 1
+            },
+            "kernel_cache_id": "0ef9a3e1f52c033a1b548e8f53c70369381e7fdc7572568cffe427e68f69951b",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 512,
+              "layout": "block",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "31d1f1de7fcf528a8f1d3f754959b7885761a576312f8a359ad8d261f6811987",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "warp",
+              "cache": true,
+              "vec": 4
+            },
+            "kernel_cache_id": "e6469b6a81d5cf36b97edef3cddf34e1746235be07068288cc8ce7e14f737996",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          },
+          {
+            "schedule": {
+              "threads": 64,
+              "layout": "block",
+              "cache": false,
+              "vec": 1
+            },
+            "kernel_cache_id": "c3d65fb40dcb4dfa7bd3189aaeb5f500a8e52fb0ff49ac28f39aead10ad6badd",
+            "phase": "train",
+            "site": "_sparkfuse_region_1_0",
+            "error": "Tensor-likes are not equal!\n\nMismatched elements: 5 / 25344 (0.0%)\nGreatest absolute difference: 0.00390625 at index (0, 30, 156)\nGreatest relative difference: 0.007568359375 at index (0, 30, 156)"
+          }
+        ],
+        "third_input_errors": {
+          "_sparkfuse_region_1_0": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ],
+          "_sparkfuse_region_1_1": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      }
+    },
+    "mixed_audit_errors": [
+      {
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "unequal": 0,
+        "finite_pairs": 25344,
+        "matched_nan": 0,
+        "matched_posinf": 0,
+        "matched_neginf": 0,
+        "rtol": 0,
+        "atol": 0
+      }
+    ],
+    "mixed_request_errors": {
+      "train": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 25344,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "holdout": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 25344,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ],
+      "audit": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 25344,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0,
+          "atol": 0
+        }
+      ]
+    },
+    "captured_distinct_storage_bytes": 692808,
+    "actual_regions": [
+      {
+        "ops": [
+          "div",
+          "softmax"
+        ],
+        "module": "_sparkfuse_region_0",
+        "live_ins": [
+          "matmul"
+        ],
+        "live_outs": [
+          "softmax"
+        ],
+        "schedule": {
+          "threads": 128,
+          "layout": "warp_xor",
+          "cache": true,
+          "vec": 1
+        },
+        "host_backend": "native"
+      },
+      {
+        "ops": [
+          "add",
+          "layer_norm"
+        ],
+        "split": {
+          "component": "1",
+          "original_rejection": "no legal insertion point between live-ins and live-outs",
+          "covered_ops": 4,
+          "planned_regions": 2,
+          "logical_output_bytes": 101376
+        },
+        "module": "_sparkfuse_region_1_0",
+        "live_ins": [
+          "attention_output_layer_norm_weight",
+          "attention_output_layer_norm_bias",
+          "hidden_states",
+          "dropout_1"
+        ],
+        "live_outs": [
+          "layer_norm"
+        ],
+        "schedule": {
+          "threads": 128,
+          "layout": "block_welford",
+          "cache": true,
+          "vec": 4
+        },
+        "host_backend": "native"
+      },
+      {
+        "ops": [
+          "add_1",
+          "layer_norm_1"
+        ],
+        "split": {
+          "component": "1",
+          "original_rejection": "no legal insertion point between live-ins and live-outs",
+          "covered_ops": 4,
+          "planned_regions": 2,
+          "logical_output_bytes": 101376
+        },
+        "module": "_sparkfuse_region_1_1",
+        "live_ins": [
+          "output_layer_norm_weight",
+          "output_layer_norm_bias",
+          "getitem_1",
+          "dropout_2"
+        ],
+        "live_outs": [
+          "layer_norm_1"
+        ],
+        "schedule": {
+          "threads": 128,
+          "layout": "block_welford",
+          "cache": true,
+          "vec": 4
+        },
+        "host_backend": "native"
+      }
+    ],
+    "captured_from": "unfused_aten",
+    "sampled_exact": true
+  },
+  "orderings": [
+    [
+      "ordered",
+      "exported_aten",
+      "sampled_exact",
+      "unsplit",
+      "eager"
+    ],
+    [
+      "eager",
+      "ordered",
+      "unsplit",
+      "exported_aten",
+      "sampled_exact"
+    ],
+    [
+      "sampled_exact",
+      "exported_aten",
+      "ordered",
+      "eager",
+      "unsplit"
+    ],
+    [
+      "unsplit",
+      "eager",
+      "sampled_exact",
+      "exported_aten",
+      "ordered"
+    ],
+    [
+      "eager",
+      "ordered",
+      "sampled_exact",
+      "exported_aten",
+      "unsplit"
+    ],
+    [
+      "eager",
+      "sampled_exact",
+      "ordered",
+      "unsplit",
+      "exported_aten"
+    ],
+    [
+      "exported_aten",
+      "sampled_exact",
+      "eager",
+      "unsplit",
+      "ordered"
+    ]
+  ],
+  "backends": {
+    "eager": {
+      "samples": [
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 53959,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 61471,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 76253,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 80039,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 92779,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "device": {
+            "median_us": 87.23100274801254,
+            "p10_us": 81.54399693012238,
+            "p90_us": 99.13499653339386,
+            "samples_us": [
+              87.23100274801254,
+              81.54399693012238,
+              81.67199790477753,
+              81.79999887943268,
+              88.27000111341476,
+              99.13499653339386,
+              113.82099986076355
+            ]
+          },
+          "host": {
+            "median_us": 161.653,
+            "p10_us": 157.525,
+            "p90_us": 168.772,
+            "samples_us": [
+              422.994,
+              170.676,
+              164.276,
+              161.748,
+              159.573,
+              164.692,
+              168.772,
+              160.612,
+              161.653,
+              157.525,
+              158.708,
+              158.661,
+              163.444,
+              157.605,
+              156.437
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.8530023097992,
+            "p10_us": 81.63899928331375,
+            "p90_us": 81.9220021367073,
+            "samples_us": [
+              87.4210000038147,
+              81.89599961042404,
+              81.67199790477753,
+              81.63899928331375,
+              81.79599791765213,
+              81.9220021367073,
+              81.8530023097992
+            ]
+          },
+          "host": {
+            "median_us": 158.708,
+            "p10_us": 155.445,
+            "p90_us": 186.307,
+            "samples_us": [
+              281.228,
+              163.332,
+              159.541,
+              155.317,
+              173.923,
+              158.485,
+              158.613,
+              158.708,
+              155.509,
+              156.309,
+              161.636,
+              155.525,
+              155.445,
+              186.307,
+              186.739
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.86200261116028,
+            "p10_us": 81.66900277137756,
+            "p90_us": 83.56499671936035,
+            "samples_us": [
+              81.82799816131592,
+              81.86200261116028,
+              81.66900277137756,
+              83.56499671936035,
+              103.55699807405472,
+              82.11000263690948,
+              81.75399899482727
+            ]
+          },
+          "host": {
+            "median_us": 156.581,
+            "p10_us": 153.541,
+            "p90_us": 162.82,
+            "samples_us": [
+              331.513,
+              163.508,
+              157.381,
+              157.477,
+              162.82,
+              160.517,
+              156.485,
+              153.541,
+              153.349,
+              155.365,
+              156.661,
+              155.477,
+              155.445,
+              156.581,
+              153.621
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.79199695587158,
+            "p10_us": 81.41300082206726,
+            "p90_us": 91.43099933862686,
+            "samples_us": [
+              81.79199695587158,
+              95.49099951982498,
+              91.43099933862686,
+              81.79699629545212,
+              81.41300082206726,
+              81.73300325870514,
+              81.62999898195267
+            ]
+          },
+          "host": {
+            "median_us": 156.484,
+            "p10_us": 154.469,
+            "p90_us": 162.58,
+            "samples_us": [
+              349.671,
+              163.956,
+              157.333,
+              162.58,
+              156.469,
+              159.525,
+              156.484,
+              154.549,
+              154.469,
+              160.613,
+              156.389,
+              154.565,
+              158.532,
+              154.597,
+              153.365
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.92799985408783,
+            "p10_us": 81.69300109148026,
+            "p90_us": 91.45600348711014,
+            "samples_us": [
+              81.69300109148026,
+              81.7359983921051,
+              81.7359983921051,
+              81.92799985408783,
+              97.16299921274185,
+              91.45600348711014,
+              82.1089968085289
+            ]
+          },
+          "host": {
+            "median_us": 156.549,
+            "p10_us": 155.365,
+            "p90_us": 165.588,
+            "samples_us": [
+              351.703,
+              169.14,
+              165.588,
+              156.613,
+              155.429,
+              159.476,
+              156.549,
+              156.517,
+              159.717,
+              158.564,
+              156.389,
+              155.605,
+              155.365,
+              154.501,
+              155.573
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.92799985408783,
+            "p10_us": 81.54000341892242,
+            "p90_us": 83.71900022029877,
+            "samples_us": [
+              81.69499784708023,
+              81.93200081586838,
+              81.54000341892242,
+              83.71900022029877,
+              102.24500298500061,
+              81.92799985408783,
+              81.75099641084671
+            ]
+          },
+          "host": {
+            "median_us": 156.341,
+            "p10_us": 153.509,
+            "p90_us": 165.22,
+            "samples_us": [
+              371.366,
+              165.22,
+              166.308,
+              157.605,
+              155.413,
+              158.501,
+              156.58,
+              154.453,
+              155.493,
+              160.725,
+              156.341,
+              154.581,
+              153.461,
+              153.509,
+              154.357
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.63300156593323,
+            "p10_us": 81.41600340604782,
+            "p90_us": 81.85199648141861,
+            "samples_us": [
+              81.63300156593323,
+              81.41600340604782,
+              81.47899806499481,
+              81.67099952697754,
+              81.57499879598618,
+              81.86499774456024,
+              81.85199648141861
+            ]
+          },
+          "host": {
+            "median_us": 156.549,
+            "p10_us": 155.397,
+            "p90_us": 167.908,
+            "samples_us": [
+              351.591,
+              167.908,
+              156.26,
+              168.82,
+              155.397,
+              157.557,
+              156.613,
+              157.413,
+              153.701,
+              159.492,
+              156.389,
+              155.477,
+              156.549,
+              155.589,
+              156.549
+            ]
+          }
+        }
+      ],
+      "device_us": 81.86200261116028,
+      "host_us": 156.549
+    },
+    "unsplit": {
+      "samples": [
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 53959,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 61471,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 76253,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 80039,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 92779,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "device": {
+            "median_us": 81.72900229692459,
+            "p10_us": 81.35200291872025,
+            "p90_us": 87.71699666976929,
+            "samples_us": [
+              81.66100084781647,
+              81.35200291872025,
+              81.60600066184998,
+              90.12000262737274,
+              87.71699666976929,
+              81.72900229692459,
+              82.11000263690948
+            ]
+          },
+          "host": {
+            "median_us": 179.779,
+            "p10_us": 173.732,
+            "p90_us": 191.218,
+            "samples_us": [
+              375.589,
+              186.691,
+              191.218,
+              183.155,
+              173.732,
+              174.835,
+              173.86,
+              173.939,
+              211.937,
+              180.947,
+              173.892,
+              172.66,
+              180.163,
+              179.779,
+              175.715
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.15299791097641,
+            "p10_us": 80.58100193738937,
+            "p90_us": 81.40499889850616,
+            "samples_us": [
+              90.9150019288063,
+              80.58100193738937,
+              80.80799877643585,
+              81.09699934720993,
+              81.1619982123375,
+              81.15299791097641,
+              81.40499889850616
+            ]
+          },
+          "host": {
+            "median_us": 177.843,
+            "p10_us": 174.1,
+            "p90_us": 184.354,
+            "samples_us": [
+              344.696,
+              189.715,
+              181.939,
+              177.843,
+              179.091,
+              179.22,
+              184.354,
+              176.596,
+              172.867,
+              175.828,
+              174.995,
+              174.1,
+              175.891,
+              175.94,
+              177.955
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.40700310468674,
+            "p10_us": 81.09299838542938,
+            "p90_us": 81.66199922561646,
+            "samples_us": [
+              81.40700310468674,
+              81.09299838542938,
+              81.4799964427948,
+              81.2240019440651,
+              81.19499683380127,
+              81.72900229692459,
+              81.66199922561646
+            ]
+          },
+          "host": {
+            "median_us": 175.123,
+            "p10_us": 173.908,
+            "p90_us": 184.083,
+            "samples_us": [
+              384.485,
+              191.394,
+              183.123,
+              184.083,
+              178.019,
+              173.908,
+              174.819,
+              174.1,
+              175.795,
+              183.123,
+              174.788,
+              175.011,
+              173.86,
+              174.868,
+              175.123
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 80.90300112962723,
+            "p10_us": 80.32699674367905,
+            "p90_us": 84.7650021314621,
+            "samples_us": [
+              81.18200302124023,
+              80.32699674367905,
+              80.90300112962723,
+              80.77599853277206,
+              80.87500184774399,
+              102.30600088834763,
+              84.7650021314621
+            ]
+          },
+          "host": {
+            "median_us": 174.836,
+            "p10_us": 171.892,
+            "p90_us": 187.107,
+            "samples_us": [
+              362.167,
+              186.738,
+              187.107,
+              176.899,
+              174.004,
+              171.86,
+              174.787,
+              171.892,
+              216.864,
+              174.836,
+              172.803,
+              173.812,
+              173.988,
+              181.011,
+              174.883
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.5650001168251,
+            "p10_us": 80.96799999475479,
+            "p90_us": 81.73800259828568,
+            "samples_us": [
+              91.96799993515015,
+              81.57200366258621,
+              81.25600218772888,
+              80.96799999475479,
+              81.73800259828568,
+              81.53700083494186,
+              81.5650001168251
+            ]
+          },
+          "host": {
+            "median_us": 174.835,
+            "p10_us": 172.739,
+            "p90_us": 182.131,
+            "samples_us": [
+              375.909,
+              194.354,
+              182.131,
+              172.868,
+              174.835,
+              175.955,
+              172.884,
+              180.115,
+              173.86,
+              173.956,
+              172.739,
+              174.964,
+              172.867,
+              179.172,
+              171.907
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 103.94100099802017,
+            "p10_us": 80.8970034122467,
+            "p90_us": 107.29700326919556,
+            "samples_us": [
+              80.8970034122467,
+              95.67400068044662,
+              106.174997985363,
+              83.79200100898743,
+              107.29700326919556,
+              127.05099582672119,
+              103.94100099802017
+            ]
+          },
+          "host": {
+            "median_us": 225.312,
+            "p10_us": 183.491,
+            "p90_us": 265.229,
+            "samples_us": [
+              395.46,
+              222.096,
+              265.229,
+              225.312,
+              191.315,
+              243.39,
+              215.249,
+              261.853,
+              261.166,
+              194.146,
+              183.491,
+              230.559,
+              183.251,
+              269.165,
+              207.457
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.44299685955048,
+            "p10_us": 81.2549963593483,
+            "p90_us": 81.66699856519699,
+            "samples_us": [
+              81.44299685955048,
+              81.28400146961212,
+              81.35499805212021,
+              81.2549963593483,
+              81.66699856519699,
+              81.53700083494186,
+              103.99799793958664
+            ]
+          },
+          "host": {
+            "median_us": 174.884,
+            "p10_us": 173.796,
+            "p90_us": 181.011,
+            "samples_us": [
+              371.398,
+              192.738,
+              179.475,
+              173.796,
+              176.003,
+              174.868,
+              173.908,
+              181.011,
+              173.891,
+              173.812,
+              172.803,
+              174.884,
+              173.796,
+              180.227,
+              174.963
+            ]
+          }
+        }
+      ],
+      "device_us": 81.44299685955048,
+      "host_us": 175.123
+    },
+    "split": {
+      "samples": [
+        {
+          "seed": 47221,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 9 / 25344 (0.0%)\nGreatest absolute difference: 0.00244140625 at index (0, 30, 640) (up to 0.0002 allowed)\nGreatest relative difference: 0.279296875 at index (0, 30, 501) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 53959,
+          "errors": [
+            {
+              "max_abs": 0.001953125,
+              "mean_abs": 7.706459122474748e-08,
+              "unequal": 1,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 61471,
+          "errors": [
+            {
+              "max_abs": 0.000244140625,
+              "mean_abs": 1.452486924450807e-08,
+              "unequal": 3,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 76253,
+          "errors": [
+            {
+              "max_abs": 0.000244140625,
+              "mean_abs": 9.633073903093435e-09,
+              "unequal": 1,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 80039,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 9 / 25344 (0.0%)\nGreatest absolute difference: 0.0048828125 at index (0, 25, 527) (up to 0.0002 allowed)\nGreatest relative difference: 0.2138671875 at index (0, 25, 308) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 92779,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 19 / 25344 (0.1%)\nGreatest absolute difference: 0.00390625 at index (0, 3, 50) (up to 0.0002 allowed)\nGreatest relative difference: 0.10400390625 at index (0, 3, 361) (up to 0.012 allowed)"
+        }
+      ],
+      "passed": false
+    },
+    "ordered": {
+      "samples": [
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 53959,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 61471,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 76253,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 80039,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 92779,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "device": {
+            "median_us": 76.33800059556961,
+            "p10_us": 75.90900361537933,
+            "p90_us": 83.13699811697006,
+            "samples_us": [
+              76.03400200605392,
+              75.90900361537933,
+              75.91000199317932,
+              76.35500282049179,
+              85.71700006723404,
+              83.13699811697006,
+              76.33800059556961
+            ]
+          },
+          "host": {
+            "median_us": 167.62,
+            "p10_us": 164.565,
+            "p90_us": 180.899,
+            "samples_us": [
+              367.078,
+              180.899,
+              168.308,
+              166.756,
+              175.811,
+              168.628,
+              167.62,
+              164.565,
+              163.668,
+              167.62,
+              164.788,
+              164.66,
+              206.306,
+              164.932,
+              167.572
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.75199955701828,
+            "p10_us": 76.29399746656418,
+            "p90_us": 87.07000315189362,
+            "samples_us": [
+              76.58500224351883,
+              76.29399746656418,
+              91.39999747276306,
+              87.07000315189362,
+              76.75199955701828,
+              76.61499828100204,
+              76.79399847984314
+            ]
+          },
+          "host": {
+            "median_us": 166.724,
+            "p10_us": 163.924,
+            "p90_us": 175.411,
+            "samples_us": [
+              335.768,
+              175.411,
+              169.812,
+              166.724,
+              180.083,
+              164.629,
+              166.772,
+              164.644,
+              164.948,
+              165.268,
+              171.876,
+              163.924,
+              163.557,
+              164.66,
+              167.924
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.79399847984314,
+            "p10_us": 76.36000216007233,
+            "p90_us": 77.09500193595886,
+            "samples_us": [
+              87.42400258779526,
+              77.09500193595886,
+              76.36000216007233,
+              76.3619989156723,
+              76.46600157022476,
+              76.86900347471237,
+              76.79399847984314
+            ]
+          },
+          "host": {
+            "median_us": 184.403,
+            "p10_us": 164.82,
+            "p90_us": 292.732,
+            "samples_us": [
+              324.024,
+              184.403,
+              230.992,
+              167.172,
+              184.482,
+              292.732,
+              396.147,
+              166.484,
+              165.621,
+              164.82,
+              168.5,
+              162.756,
+              245.311,
+              215.296,
+              165.572
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.7349973320961,
+            "p10_us": 76.43099874258041,
+            "p90_us": 76.79200172424316,
+            "samples_us": [
+              76.90300047397614,
+              76.7349973320961,
+              76.61700248718262,
+              76.43099874258041,
+              76.7429992556572,
+              76.79200172424316,
+              76.57299935817719
+            ]
+          },
+          "host": {
+            "median_us": 165.62,
+            "p10_us": 163.364,
+            "p90_us": 174.468,
+            "samples_us": [
+              349.991,
+              184.739,
+              174.468,
+              167.668,
+              164.916,
+              163.364,
+              164.677,
+              168.772,
+              165.62,
+              162.612,
+              164.74,
+              163.589,
+              164.772,
+              166.708,
+              167.812
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.7579972743988,
+            "p10_us": 76.3159990310669,
+            "p90_us": 87.84600347280502,
+            "samples_us": [
+              76.3159990310669,
+              92.26199984550476,
+              87.84600347280502,
+              76.52100175619125,
+              76.7579972743988,
+              77.05499976873398,
+              76.40299946069717
+            ]
+          },
+          "host": {
+            "median_us": 165.78,
+            "p10_us": 163.7,
+            "p90_us": 178.74,
+            "samples_us": [
+              342.183,
+              178.74,
+              166.788,
+              167.668,
+              164.676,
+              171.86,
+              164.628,
+              165.78,
+              164.612,
+              164.564,
+              163.685,
+              170.852,
+              165.716,
+              163.7,
+              312.73
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.36000216007233,
+            "p10_us": 75.97800344228745,
+            "p90_us": 76.5020027756691,
+            "samples_us": [
+              75.99300146102905,
+              75.97800344228745,
+              76.36000216007233,
+              76.35600119829178,
+              76.5020027756691,
+              76.80799812078476,
+              76.37300342321396
+            ]
+          },
+          "host": {
+            "median_us": 166.66,
+            "p10_us": 163.685,
+            "p90_us": 175.011,
+            "samples_us": [
+              332.248,
+              175.011,
+              173.892,
+              165.54,
+              164.692,
+              166.757,
+              165.716,
+              164.644,
+              170.836,
+              166.66,
+              166.836,
+              165.652,
+              163.685,
+              163.668,
+              198.658
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.82999968528748,
+            "p10_us": 76.22899860143661,
+            "p90_us": 78.83299887180328,
+            "samples_us": [
+              76.82999968528748,
+              76.22899860143661,
+              78.83299887180328,
+              100.13099759817123,
+              77.15699821710587,
+              76.34399831295013,
+              76.60499960184097
+            ]
+          },
+          "host": {
+            "median_us": 165.557,
+            "p10_us": 163.652,
+            "p90_us": 176.243,
+            "samples_us": [
+              345.063,
+              176.243,
+              165.812,
+              165.461,
+              171.939,
+              165.557,
+              164.74,
+              165.86,
+              164.596,
+              164.725,
+              196.466,
+              168.692,
+              163.652,
+              164.004,
+              163.397
+            ]
+          }
+        }
+      ],
+      "device_us": 76.75199955701828,
+      "host_us": 166.66
+    },
+    "exported_aten": {
+      "samples": [
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 53959,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 61471,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 76253,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 80039,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 92779,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "device": {
+            "median_us": 86.68900281190872,
+            "p10_us": 81.28800243139267,
+            "p90_us": 95.75100243091583,
+            "samples_us": [
+              86.68900281190872,
+              81.45099878311157,
+              81.41200244426727,
+              81.28800243139267,
+              95.75100243091583,
+              101.35000199079514,
+              86.74900233745575
+            ]
+          },
+          "host": {
+            "median_us": 181.06,
+            "p10_us": 177.907,
+            "p90_us": 193.795,
+            "samples_us": [
+              398.212,
+              200.689,
+              193.795,
+              183.971,
+              181.06,
+              180.963,
+              181.027,
+              188.258,
+              181.075,
+              182.003,
+              179.14,
+              177.219,
+              180.099,
+              179.811,
+              177.907
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.88900351524353,
+            "p10_us": 81.66799694299698,
+            "p90_us": 84.04500037431717,
+            "samples_us": [
+              81.88900351524353,
+              81.67099952697754,
+              81.66799694299698,
+              84.04500037431717,
+              103.20000350475311,
+              82.18900114297867,
+              81.8139985203743
+            ]
+          },
+          "host": {
+            "median_us": 181.475,
+            "p10_us": 179.059,
+            "p90_us": 184.898,
+            "samples_us": [
+              357.463,
+              194.05,
+              184.898,
+              182.131,
+              181.156,
+              183.762,
+              181.475,
+              180.116,
+              179.955,
+              178.947,
+              179.155,
+              183.155,
+              181.075,
+              179.059,
+              183.219
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.85400068759918,
+            "p10_us": 81.6039964556694,
+            "p90_us": 81.9920003414154,
+            "samples_us": [
+              81.69999718666077,
+              81.6039964556694,
+              81.67199790477753,
+              81.9299966096878,
+              82.14499801397324,
+              81.9920003414154,
+              81.85400068759918
+            ]
+          },
+          "host": {
+            "median_us": 180.115,
+            "p10_us": 178.932,
+            "p90_us": 186.035,
+            "samples_us": [
+              362.182,
+              191.826,
+              182.835,
+              182.083,
+              186.035,
+              177.987,
+              178.932,
+              180.196,
+              180.115,
+              179.923,
+              183.203,
+              180.019,
+              179.059,
+              179.011,
+              179.108
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.8210020661354,
+            "p10_us": 81.54399693012238,
+            "p90_us": 81.92600309848785,
+            "samples_us": [
+              81.62900060415268,
+              81.61100000143051,
+              81.54399693012238,
+              105.44899851083755,
+              81.92600309848785,
+              81.85800164937973,
+              81.8210020661354
+            ]
+          },
+          "host": {
+            "median_us": 181.059,
+            "p10_us": 178.019,
+            "p90_us": 189.026,
+            "samples_us": [
+              408.483,
+              207.681,
+              184.915,
+              184.195,
+              180.131,
+              178.019,
+              178.979,
+              182.051,
+              180.019,
+              180.099,
+              181.059,
+              180.196,
+              189.026,
+              181.171,
+              177.875
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 85.60299873352051,
+            "p10_us": 81.666000187397,
+            "p90_us": 98.471999168396,
+            "samples_us": [
+              81.85499906539917,
+              81.666000187397,
+              85.76499670743942,
+              102.6030033826828,
+              85.60299873352051,
+              98.471999168396,
+              82.23000168800354
+            ]
+          },
+          "host": {
+            "median_us": 179.987,
+            "p10_us": 177.843,
+            "p90_us": 185.363,
+            "samples_us": [
+              382.229,
+              203.121,
+              183.907,
+              179.987,
+              177.06,
+              180.051,
+              178.979,
+              185.363,
+              177.843,
+              179.011,
+              179.076,
+              178.083,
+              183.139,
+              181.107,
+              179.123
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.85400068759918,
+            "p10_us": 81.6039964556694,
+            "p90_us": 81.86399936676025,
+            "samples_us": [
+              81.7599967122078,
+              81.86399936676025,
+              81.6039964556694,
+              81.86399936676025,
+              81.77100121974945,
+              81.86300098896027,
+              81.85400068759918
+            ]
+          },
+          "host": {
+            "median_us": 179.971,
+            "p10_us": 177.012,
+            "p90_us": 192.018,
+            "samples_us": [
+              371.157,
+              192.018,
+              192.451,
+              180.019,
+              179.971,
+              178.771,
+              179.011,
+              177.012,
+              186.323,
+              180.147,
+              178.931,
+              176.051,
+              178.052,
+              183.107,
+              177.043
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 81.79999887943268,
+            "p10_us": 81.35099709033966,
+            "p90_us": 81.85700327157974,
+            "samples_us": [
+              81.60100132226944,
+              81.79999887943268,
+              82.11699873209,
+              81.35099709033966,
+              81.57899975776672,
+              81.85700327157974,
+              81.84699714183807
+            ]
+          },
+          "host": {
+            "median_us": 181.027,
+            "p10_us": 177.971,
+            "p90_us": 184.258,
+            "samples_us": [
+              370.262,
+              201.617,
+              183.955,
+              181.939,
+              181.011,
+              181.027,
+              184.227,
+              182.067,
+              178.916,
+              177.971,
+              178.083,
+              177.972,
+              184.258,
+              177.956,
+              179.075
+            ]
+          }
+        }
+      ],
+      "device_us": 81.85400068759918,
+      "host_us": 181.027
+    },
+    "sampled_exact": {
+      "samples": [
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 53959,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 61471,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 76253,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 80039,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 92779,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "device": {
+            "median_us": 77.11999863386154,
+            "p10_us": 76.39200240373611,
+            "p90_us": 86.37800067663193,
+            "samples_us": [
+              86.37800067663193,
+              100.79800337553024,
+              81.91999793052673,
+              76.39200240373611,
+              76.65599882602692,
+              77.11999863386154,
+              76.47400349378586
+            ]
+          },
+          "host": {
+            "median_us": 169.652,
+            "p10_us": 167.716,
+            "p90_us": 175.844,
+            "samples_us": [
+              396.548,
+              186.723,
+              169.652,
+              167.716,
+              168.74,
+              168.739,
+              175.844,
+              170.98,
+              170.675,
+              170.932,
+              169.508,
+              168.9,
+              174.82,
+              167.812,
+              167.604
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.44200325012207,
+            "p10_us": 76.1680006980896,
+            "p90_us": 76.74500346183777,
+            "samples_us": [
+              76.1680006980896,
+              76.4169991016388,
+              76.74500346183777,
+              76.23200118541718,
+              76.55800133943558,
+              76.93299651145935,
+              76.44200325012207
+            ]
+          },
+          "host": {
+            "median_us": 166.628,
+            "p10_us": 163.589,
+            "p90_us": 188.275,
+            "samples_us": [
+              300.746,
+              188.275,
+              331.672,
+              166.628,
+              167.572,
+              163.636,
+              163.589,
+              167.956,
+              164.388,
+              164.724,
+              164.676,
+              166.693,
+              161.908,
+              169.588,
+              163.652
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.36599987745285,
+            "p10_us": 76.02900266647339,
+            "p90_us": 79.52100038528442,
+            "samples_us": [
+              76.02900266647339,
+              76.11300051212311,
+              76.2220025062561,
+              76.36599987745285,
+              76.55300199985504,
+              79.52100038528442,
+              98.6580029129982
+            ]
+          },
+          "host": {
+            "median_us": 166.708,
+            "p10_us": 164.612,
+            "p90_us": 171.908,
+            "samples_us": [
+              307.914,
+              175.236,
+              167.332,
+              168.58,
+              165.812,
+              171.908,
+              167.54,
+              165.588,
+              165.78,
+              165.652,
+              164.612,
+              170.868,
+              166.708,
+              164.724,
+              163.605
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.55200362205505,
+            "p10_us": 76.21999830007553,
+            "p90_us": 76.67600363492966,
+            "samples_us": [
+              76.64000242948532,
+              76.24000310897827,
+              76.36299729347229,
+              76.21999830007553,
+              76.55200362205505,
+              76.67600363492966,
+              91.62300080060959
+            ]
+          },
+          "host": {
+            "median_us": 168.868,
+            "p10_us": 163.572,
+            "p90_us": 191.458,
+            "samples_us": [
+              405.603,
+              181.891,
+              178.003,
+              185.811,
+              191.458,
+              164.709,
+              165.572,
+              168.868,
+              166.836,
+              166.628,
+              309.098,
+              165.668,
+              163.572,
+              171.892,
+              161.589
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.77700370550156,
+            "p10_us": 76.36100053787231,
+            "p90_us": 76.88400149345398,
+            "samples_us": [
+              76.77700370550156,
+              76.54400169849396,
+              76.36100053787231,
+              76.49999856948853,
+              76.86000317335129,
+              76.93599909543991,
+              76.88400149345398
+            ]
+          },
+          "host": {
+            "median_us": 166.772,
+            "p10_us": 163.813,
+            "p90_us": 170.772,
+            "samples_us": [
+              369.285,
+              181.523,
+              167.572,
+              164.724,
+              162.965,
+              169.396,
+              166.788,
+              166.772,
+              166.932,
+              166.532,
+              165.78,
+              170.772,
+              164.692,
+              164.644,
+              163.813
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.43099874258041,
+            "p10_us": 76.26599818468094,
+            "p90_us": 88.00700306892395,
+            "samples_us": [
+              91.83800220489502,
+              88.00700306892395,
+              76.26800239086151,
+              76.26599818468094,
+              76.42000168561935,
+              76.43099874258041,
+              76.52799785137177
+            ]
+          },
+          "host": {
+            "median_us": 165.733,
+            "p10_us": 163.716,
+            "p90_us": 167.972,
+            "samples_us": [
+              371.11,
+              175.795,
+              167.636,
+              166.708,
+              165.636,
+              165.733,
+              165.62,
+              167.972,
+              164.676,
+              167.924,
+              166.42,
+              162.917,
+              165.556,
+              164.644,
+              163.716
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 76.42199844121933,
+            "p10_us": 75.9740024805069,
+            "p90_us": 79.13299649953842,
+            "samples_us": [
+              76.2609988451004,
+              76.42199844121933,
+              76.36400312185287,
+              75.9740024805069,
+              79.13299649953842,
+              99.78000074625015,
+              76.72200351953506
+            ]
+          },
+          "host": {
+            "median_us": 166.692,
+            "p10_us": 164.644,
+            "p90_us": 168.692,
+            "samples_us": [
+              351.271,
+              180.995,
+              168.692,
+              166.836,
+              165.444,
+              165.684,
+              166.788,
+              166.692,
+              164.629,
+              166.932,
+              165.508,
+              164.644,
+              167.028,
+              166.612,
+              164.709
+            ]
+          }
+        }
+      ],
+      "device_us": 76.44200325012207,
+      "host_us": 166.708
+    },
+    "inductor": {
+      "samples": [
+        {
+          "seed": 47221,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1792 / 25344 (7.1%)\nGreatest absolute difference: 0.03125 at index (0, 0, 614) (up to 0.0002 allowed)\nGreatest relative difference: 66.5 at index (0, 13, 17) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 53959,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1756 / 25344 (6.9%)\nGreatest absolute difference: 0.03125 at index (0, 0, 358) (up to 0.0002 allowed)\nGreatest relative difference: 47.25 at index (0, 17, 386) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 61471,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1741 / 25344 (6.9%)\nGreatest absolute difference: 0.03125 at index (0, 2, 388) (up to 0.0002 allowed)\nGreatest relative difference: 7.34375 at index (0, 14, 90) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 76253,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1778 / 25344 (7.0%)\nGreatest absolute difference: 0.03125 at index (0, 2, 401) (up to 0.0002 allowed)\nGreatest relative difference: 33.0 at index (0, 31, 293) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 80039,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1824 / 25344 (7.2%)\nGreatest absolute difference: 0.03125 at index (0, 0, 666) (up to 0.0002 allowed)\nGreatest relative difference: 122.5 at index (0, 12, 462) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 92779,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 1748 / 25344 (6.9%)\nGreatest absolute difference: 0.0625 at index (0, 2, 760) (up to 0.0002 allowed)\nGreatest relative difference: 66.5 at index (0, 6, 532) (up to 0.012 allowed)"
+        }
+      ],
+      "passed": false
+    },
+    "selected": {
+      "passed": false,
+      "failure": "whole-graph train rejected; dispatch not published: Tensor-likes are not close!\n\nMismatched elements: 9 / 25344 (0.0%)\nGreatest absolute difference: 0.00244140625 at index (0, 30, 640) (up to 0.0002 allowed)\nGreatest relative difference: 0.279296875 at index (0, 30, 501) (up to 0.012 allowed)"
+    }
+  },
+  "provenance": {
+    "git_head_at_capture": "915e70ebfbf6b4f69314a151d0c527d19de46ab4",
+    "source_tree_sha256": "2f256daad9d250ecded0c3395048c0f375a335cc67e92a89da84d2dce23235c6",
+    "archive": "sources/2f256daad9d250ecded0c3395048c0f375a335cc67e92a89da84d2dce23235c6.tar.gz"
+  }
+}

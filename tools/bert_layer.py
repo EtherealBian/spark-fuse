@@ -14,11 +14,17 @@ from provenance import capture
 
 
 @torch.inference_mode()
-def run(seq, db, verify_only, seeds):
+def run(seq, db, verify_only, seeds, sampled_exact=False, weight_seed=2643, affine="identity"):
     cfg = BertConfig(hidden_size=768, intermediate_size=3072, num_attention_heads=12)
     cfg._attn_implementation = "eager"
-    torch.manual_seed(2643)
-    model = BertLayer(cfg).eval().to(device="cuda", dtype=torch.bfloat16)
+    torch.manual_seed(weight_seed)
+    model = BertLayer(cfg).eval()
+    if affine == "perturbed":
+        for mod in model.modules():
+            if isinstance(mod, torch.nn.LayerNorm):
+                mod.weight.normal_(1, 0.15)
+                mod.bias.normal_(0, 0.05)
+    model.to(device="cuda", dtype=torch.bfloat16)
 
     def make(s):
         g = torch.Generator(device="cuda").manual_seed(s)
@@ -43,7 +49,8 @@ def run(seq, db, verify_only, seeds):
         transformers=transformers.__version__,
         compiler=backend_id(),
         device=torch.cuda.get_device_name(),
-        weight_seed=2643,
+        weight_seed=weight_seed,
+        affine=affine,
         seeds=seeds,
         seq=seq,
         decisions=decisions,
@@ -60,6 +67,15 @@ def run(seq, db, verify_only, seeds):
             )
         except AssertionError as exc:
             result["calibration"] = {"status": "rejected", "failure": str(exc)}
+        if sampled_exact:
+            # Never overwrite the standard dispatch profile with sampled-exact measurements.
+            exact_path = db.with_name(db.stem + "-sampled-exact.sqlite")
+            try:
+                paths["sampled_exact"], result["exact_calibration"] = calibrate_export(
+                    ep, *args[:3], exact_path, budget=12, seed=6109, sampled_exact=True
+                )
+            except AssertionError as exc:
+                result["exact_calibration"] = {"status": "rejected", "failure": str(exc)}
         paths["inductor"] = torch.compile(model, backend="inductor", fullgraph=True, dynamic=False)
     refs = [model(*a) for a in args]
     rows = {}
@@ -67,12 +83,19 @@ def run(seq, db, verify_only, seeds):
         samples = []
         for s, a, ref in zip(seeds, args, refs):
             try:
-                samples.append({"seed": s, "errors": compare(fn(*a), ref)})
+                exact = (
+                    tuple(range(len(torch.utils._pytree.tree_leaves(ref))))
+                    if k == "sampled_exact"
+                    else ()
+                )
+                samples.append({"seed": s, "errors": compare(fn(*a), ref, exact=exact)})
             except AssertionError as e:
                 samples.append({"seed": s, "failure": str(e)})
         rows[k] = dict(samples=samples, passed=all("errors" in v for v in samples))
     if "selected" not in paths and not verify_only:
         rows["selected"] = {"passed": False, "failure": result["calibration"]["failure"]}
+    if sampled_exact and not verify_only and "sampled_exact" not in paths:
+        rows["sampled_exact"] = {"passed": False, "failure": result["exact_calibration"]["failure"]}
     if not verify_only:
         orderings = []
         rng = random.Random(185)
@@ -106,7 +129,12 @@ if __name__ == "__main__":
     p.add_argument("--verify-only", action="store_true")
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--seeds", type=int, nargs="+", default=[794, 933, 1665, 3023])
+    p.add_argument("--sampled-exact", action="store_true")
+    p.add_argument("--weight-seed", type=int, default=2643)
+    p.add_argument("--affine", choices=("identity", "perturbed"), default="identity")
     a = p.parse_args()
+    if a.sampled_exact and a.verify_only:
+        p.error("--sampled-exact requires calibration")
     if len(set(a.seeds)) != len(a.seeds) or len(a.seeds) < 4:
         p.error("need at least four distinct seeds")
     if not a.verify_only and a.db is None:
@@ -114,12 +142,16 @@ if __name__ == "__main__":
     source = capture(
         Path(__file__).resolve().parents[1] / ".runtime" / "bert-layer-source" / "sources"
     )
-    r = run(a.seq, a.db, a.verify_only, a.seeds)
+    r = run(a.seq, a.db, a.verify_only, a.seeds, a.sampled_exact, a.weight_seed, a.affine)
     r["provenance"] = source
     a.output.write_text(json.dumps(r, indent=2, allow_nan=False) + "\n")
     print(
         {k: (v["passed"], v.get("device_us"), v.get("host_us")) for k, v in r["backends"].items()}
     )
     raise SystemExit(
-        0 if r["backends"]["ordered"]["passed"] and r["backends"]["exported_aten"]["passed"] else 2
+        0
+        if r["backends"]["ordered"]["passed"]
+        and r["backends"]["exported_aten"]["passed"]
+        and (not a.sampled_exact or r["backends"]["sampled_exact"]["passed"])
+        else 2
     )

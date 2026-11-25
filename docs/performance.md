@@ -103,3 +103,24 @@ bash tools/sanitize.sh
 **English.** An opt-in fixed-order policy matches eager element for element on 32 held-out BF16 BERT encoder-layer runs, including non-identity LayerNorm weights and biases. The comparison is a single random-weight encoder layer, not full-model inference. The table separates warm CUDA Graph replay from ordinary synchronized host latency; the latter got worse at both lengths. Reports retain rejected schedules and baseline failures.
 
 [阶段验收：262 个测试、隔离 wheel、Qwen 与 BERT 集成](../reports/affine-ordered-stage-acceptance.json) · [Compute Sanitizer 三项检查与额外无过滤 memcheck](../reports/ordered-reductions-sanitizer-gb10.txt)。
+
+### 给共享调度键选一个所有调用点都通过的布局
+
+同一 BERT 层的两处 residual + LayerNorm 拥有相同 IR、形状和设备签名，却处理不同激活。分开搜索后把它们写进同一 SQLite 键，不能代表两处都合格。`calibrate_export(..., sampled_exact=True)` 现在从**未融合 ATen** 的执行中截取各处输入；相同键的调用点联合筛选。候选必须在每个调用点的前两个请求上与 ATen 逐元素相等才计时。以第一个合格布局为基线，替代布局需在五次留出配对中至少四次更快，且中位加速至少 3%。选定后再测试第三请求，并比较三个请求的完整图；任一比较失败，不写目标数据库。建议每个模型/精度验收配置使用独立数据库；这些是样本门槛，不是任意输入的数值保证。
+
+在三个不同序列长度上，每组各用一套新随机权重、非单位 LayerNorm 仿射参数与六个输入。前三个用于校准，后三个第一次用于额外比较，最后一个计时。新策略三组的后三个请求均与 eager 逐元素相等；原有逐区选型三组均未能发布。以下为**整层**七轮中位数（µs）：
+
+| tokens | eager 设备 | 联合选型设备 | eager 同步主机 | 联合选型同步主机 |
+|---:|---:|---:|---:|---:|
+| [33](../reports/bert-layer-joint-exact-33-gb10.json) | 81.86 | 76.44 | 156.55 | 166.71 |
+| [97](../reports/bert-layer-joint-exact-97-gb10.json) | 131.82 | 132.32 | 182.79 | 198.40 |
+| [129](../reports/bert-layer-joint-exact-129-gb10.json) | 117.25 | 120.93 | 169.62 | 186.23 |
+
+不能把联合搜索说成相对固定顺序的稳定提速。33、97 tokens 的两处 LayerNorm 在 12 个候选中都只留下 2 个，最终保留固定顺序基线。97 tokens 的整层窗口有较大波动，没有可靠的设备优势。公开 JSON 保留失败位置、每个候选的精度筛选、原始窗口与整图误差。复现第三组：
+
+```bash
+python tools/bert_layer.py --sampled-exact --seq 129 --weight-seed 99173 --affine perturbed \
+  --seeds 12539 20747 32429 42899 57641 64489 --db /tmp/bert-joint.sqlite --output /tmp/bert-joint.json
+```
+
+**English.** Sampled-exact calibration tunes identical GPU dispatch keys across all call sites on unfused activations. A separate request audits the chosen schedules, and database updates are atomic. On the three BERT layer cases all nine extra requests matched eager exactly. Only the 33-token case showed a lower median than eager in warm device replay; eager returned sooner on the host at every length. [Regression suite and integration checks](../reports/joint-exact-stage-acceptance.json).
