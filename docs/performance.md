@@ -555,3 +555,22 @@ Then we traced the copies through a real single-layer Qwen2 decode. The fixture 
 Why copy at all? The private strided views miss both the dense-input rotary and cache-append fusions (38 kernels). Three clones restore them (31); horizontally fusing the same copies retains both passes (29). The fair isolation of the new pass is **31 vs 29**, not 48 vs 29. Re-exporting the unchanged graph itself alters partition coverage (30 launches vs the direct compiler’s 17), so both controls are reported. All four layer outputs met the exact bits/strides gate for SparkFuse. Layer-level Inductor did not meet its predeclared accuracy gate and has no latency entry; it did pass the independent copy-only gate. Layer-forward time is not model throughput.
 
 [First weight, raw windows and FX](../reports/qkv-layout-layer-gb10.json) · [Independent weight](../reports/qkv-layout-layer-heldout-gb10.json) · [CUDA sources](../examples/generated/split-copy3) · [Sanitizer](../reports/split-copy3-sanitizer-gb10.txt) · [Release suite](../reports/split-copy3-stage-acceptance.json). Reproduce with `python tools/qwen_qkv_layout.py --seed-offset 86783 --past 127 1024 --output /tmp/qkv-layout.json` and `bash tools/sanitize_split_copy.sh`.
+
+<a id="packed-rotary"></a>
+
+### 省去 Q/K 的中间写回 / Packed Q/K RoPE and V copy
+
+当 Q/K 的显式拷贝只用于分头和 RoPE 时，`partition_export(ep, packed_rotary=True)` 直接从原宽张量读两个半头，按原精度分别舍入两个乘积，再相加并写入 Q/K 的最终布局。同一次 launch 为 V 复制原始位型；三个输出各有独立存储。未复制的切片仍然指向原输入。若图返回 Q/K 的中间拷贝、暴露旋转内的乘积，或所需相位计算晚于第一个 V 用户，就保留原路径。此选项默认关闭。
+
+| 已有宽张量上的后处理，设备 µs | eager | 原两个 kernel | 融合后一个 kernel |
+|---|---:|---:|---:|
+| 权重 141144 · 127-token prefill | 32.18 | 4.88 | 3.51 |
+| 权重 141144 · 1,024-token prefill | 269.98 | 90.62 | 42.94 |
+| 权重 147096 · 1,024-token prefill | 272.90 | 93.53 | 47.10 |
+| 权重 141144 · 前缀 127，第一步解码 | 18.53 | 2.32 | 1.76 |
+
+Both compiled paths run their full FX wrappers. At 1,024-token prefill, synchronized host time was **120.67 → 60.91 µs** for the first weight. These are epilogue measurements: every method receives the **same already-computed wide tensor**. In particular, the upstream wide GEMM still differs from the three original HF projections at 127-token prefill. Inductor’s epilogue changed some Q/K bits and was excluded from exact-gate timing; the report retains its mismatch counts.
+
+For the full single-layer **decode**, we compared the same exported packed-checkpoint graph on two random weights, two prefixes and five held-out two-step trajectories per combination. The four outputs matched HF bits and strides, cache prefixes stayed intact, and every backend consumed its own cache on step two. The joint pass removed **one launch (29 → 28)**. The device-time change was small and inconsistent: at prefix 1,024, first weight, step one was slower (**564.82 → 571.17 µs**) and step two faster (**565.51 → 563.72 µs**). Synchronized host latency decreased on each of these eight measured weight/prefix/step combinations. Whole-layer Inductor did not meet its existing tolerance; it has no reported latency. No claim about full-model speed follows from these results.
+
+[Raw samples and graphs](../reports/qwen-packed-rotary-gb10.json) · [Second weight](../reports/qwen-packed-rotary-heldout-gb10.json) · [Generated CUDA](../examples/generated/packed-rotary) · [Compute Sanitizer](../reports/packed-rotary-sanitizer-gb10.txt) · [Regression suite](../reports/packed-rotary-stage-acceptance.json). To reproduce with the Transformers-enabled environment, use `python tools/qwen_packed_rotary.py --past 127 1024 --seed-offset 80831 --output /tmp/joint.json`; run `bash tools/sanitize_packed_rotary.sh` for memory, race and synchronization checks.

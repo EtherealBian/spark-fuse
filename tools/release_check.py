@@ -249,6 +249,22 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "qwen_joint_packed_rotary",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_packed_rotary.py"),
+                    "--past",
+                    "127",
+                    "--verify-only",
+                    "--seed-offset",
+                    "91733",
+                    "--output",
+                    str(report.with_name(report.stem + "-packed-rotary.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (
