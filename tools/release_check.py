@@ -30,6 +30,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "shared_state_shape_family",
+                [
+                    opt,
+                    str(ROOT / "tools/shape_family_panel.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-shape-family.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "resident_qwen_requests",
                 [
                     opt,

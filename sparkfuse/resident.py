@@ -10,7 +10,7 @@ from torch import fx, nn
 from torch.export._unlift import GuardsFn
 from torch.utils import _pytree as tree
 
-from .contextual import _exact
+from .contextual import _bytes, _exact
 from .ir import Unsupported
 from .index_program import IndexRegion
 from .partition import _RegionModule, partition_export
@@ -112,7 +112,7 @@ def _get(root, path):
     return root
 
 
-def _snapshot(gm, dev, args, max_bytes):
+def _snapshot(gm, dev, args, max_bytes, shared):
     # Create a separate module hierarchy. Rebinding/mutating the caller's Parameters
     # after setup cannot free or overwrite cuBLAS/CUDA addresses captured here.
     root = nn.Module()
@@ -122,6 +122,15 @@ def _snapshot(gm, dev, args, max_bytes):
     if used > max_bytes:
         raise ValueError("request staging + weight snapshot exceeds byte limit")
     graph = copy.deepcopy(gm.graph)
+    # An export may lift an unused buffer from another shape-specific branch.
+    # Do not count or retain dead state as a dependency of this executable.
+    for n in list(graph.nodes):
+        if n.op == "get_attr" and not n.users:
+            graph.erase_node(n)
+    names = {n.target for n in graph.nodes if n.op == "get_attr"}
+    if shared is not None and names != set(shared):
+        raise Unsupported("shape family changed its named state")
+    private_keys = set()
     for n in list(graph.nodes):
         if n.op == "call_module":
             if "." in n.target:
@@ -156,7 +165,24 @@ def _snapshot(gm, dev, args, max_bytes):
                 used += t.untyped_storage().nbytes()
                 if used > max_bytes:
                     raise ValueError("request staging + weight snapshot exceeds byte limit")
-                copied[key] = t.detach().clone()
+                if shared is None:
+                    copied[key] = t.detach().clone()
+                else:
+                    candidate = shared[n.target]
+                    if (
+                        candidate.device != t.device
+                        or _geometry(candidate) != _geometry(t)
+                        or not torch.equal(_bytes(t), _bytes(candidate))
+                    ):
+                        raise Unsupported(
+                            "shape family state contents or layout changed: " + n.target
+                        )
+                    if _store(candidate) in private_keys:
+                        raise Unsupported("shape family state alias groups changed")
+                    private_keys.add(_store(candidate))
+                    copied[key] = candidate
+            if shared is not None and _store(copied[key]) != _store(shared[n.target]):
+                raise Unsupported("shape family state alias groups changed")
             if _geometry(copied[key]) != _geometry(t):
                 raise Unsupported("incompatible tied state layouts")
             parent = root
@@ -322,6 +348,11 @@ def capture_export(
     staging inputs and copied model state, not graph-private intermediates, external workspace or outputs.
     Caller provides stream dependencies for inputs, and excludes concurrent process-wide capture/setup.
     """
+    return _capture_export(ep, example, audit, backend, partition_options, max_static_bytes, None)
+
+
+@torch.inference_mode()
+def _capture_export(ep, example, audit, backend, partition_options, max_static_bytes, shared):
     if backend not in ("aten", "mixed") or (backend == "aten" and partition_options):
         raise ValueError("choose aten without partition options, or mixed")
     if type(max_static_bytes) is not int or max_static_bytes < 1:
@@ -359,7 +390,9 @@ def capture_export(
             if backend == "mixed"
             else (raw, [])
         )
-        fn, original_state, private_state, used = _snapshot(gm, dev, example, max_static_bytes)
+        fn, original_state, private_state, used = _snapshot(
+            gm, dev, example, max_static_bytes, shared
+        )
         if any(_store(x) in original_state for x in audit):
             raise Unsupported("audit request aliases model state")
         static = tuple(x.clone() for x in example)

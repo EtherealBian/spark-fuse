@@ -772,3 +772,41 @@ source tools/env.sh  # use a Python environment with the optional Transformers d
 python tools/resident_qwen.py --output /tmp/resident-qwen.json
 python -m pytest -q tests/test_resident.py tests/test_resident_evidence.py
 ```
+
+<a id="shape-family"></a>
+
+### 三种序列长度，共用一份模型权重 / Multiple shapes, one frozen weight snapshot
+
+Qwen2 的输入长度会变，投影和归一化的权重并不变。`capture_family` 对同一个 eval 模型分别导出指定形状，在 DGX Spark 上为每种形状捕获一张独立 CUDA Graph，但只复制一次权重。后续形状绑定快照前，逐项核对实际使用的状态名、布局、共享存储关系和每个字节。旧请求返回的结果在切换形状后仍然有效。未登记的形状直接报错，不在请求路径编译。
+
+**实测省下 187,191,296 字节（178.52 MiB）**。长度 33、65、129 的 BF16 Qwen2 层共有 12 个权重张量。独立捕获三次会保留 36 块权重存储，共享后只有 12 块。下表是**相对准备前的 PyTorch 活动分配增量**，不是系统总内存或显存预留量。每组随机权重、每种方案都在独立进程测量，预热流程相同：
+
+| 三种长度全部就绪时 | 各自捕获 | 共享权重 |
+|---|---:|---:|
+| 权重（字节） | 280,786,944 | 93,595,648 |
+| 输入暂存（字节） | 1,714,956 | 1,714,956 |
+| 活动分配增量，含图私有分配（字节） | 385,619,456 | 198,428,160 |
+
+两组权重的分配结果相同；关闭三张图并清理临时对象后，四个进程各自回到准备前的计数。形状切换实验交替输入三种长度，各保留四个请求的两个输出。共 24 个请求中，路由路径的隐藏状态、注意力概率、布局与别名都与 eager 一致。
+
+**速度基本持平。** 两组权重上，预先指定独立图与调用共享路由的同步响应分别是 **605.67 → 605.54 µs**、**615.94 → 616.60 µs**。在同一组共享图内，路由比预先指定增加了约 1.9 和 2.5 µs 的 CPU 提交时间。12 个请求排队时，共享路由和普通混合图在两组权重上互有胜负。默认 Inductor 在两组均未达到逐位一致；保留精度转换的 Inductor 分别通过 7/12、9/12 个请求，未纳入整个混合序列的同精度排名。
+
+```python
+from sparkfuse.family import capture_family
+
+# One eval model, initialized on the owning GPU; two distinct input tuples per shape.
+with capture_family(model.eval(), [(ex33, audit33), (ex65, audit65), (ex129, audit129)],
+                    partition_options=opts, max_static_bytes=100_000_000) as serve:
+    out65 = serve(*req65)
+    out33 = serve(*req33)  # out65 is still valid
+```
+
+**Limits.** Admission is explicit, all-or-nothing, for 1–16 distinct shape/dtype keys. Each graph has its own input and intermediate storage. The byte cap covers one frozen model and all input staging, not graph pools, temporaries, driver allocations or library workspaces. In the example it fits under a 100 MB *static* cap; it does not run with 100 MB total memory. All handles use one device, stream and thread. Direct timings pick the handle before the clock; routed timings pay for selection. The memory reduction is verified for these shapes and does not imply faster model execution.
+
+[Independent process counters, storage census, request gates and timing windows](../reports/shape-family-qwen-gb10.json) · [Release checks](../reports/family-stage-acceptance.json) · [Generated-kernel sanitizer checks](../reports/shape-family-sanitizer-gb10.txt).
+
+```bash
+source tools/env.sh
+python tools/shape_family_panel.py --output /tmp/shape-family.json
+python -m pytest -q tests/test_family.py tests/test_shape_family_evidence.py
+```
