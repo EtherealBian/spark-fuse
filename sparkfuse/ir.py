@@ -50,6 +50,20 @@ class Plan:
         )
 
 
+def broadcast_domain(shapes):
+    """Join dense input extents axis by axis; no single input need span the output."""
+    rev = []
+    for shape in shapes:
+        for axis, size in enumerate(reversed(shape)):
+            if axis == len(rev):
+                rev.append(size)
+            elif rev[axis] == 1:
+                rev[axis] = size
+            elif size not in (1, rev[axis]):
+                raise Unsupported("incompatible broadcast domains")
+    return tuple(reversed(rev))
+
+
 def lower(ep):
     vs = []
     ids = {}
@@ -196,13 +210,16 @@ def lower(ep):
             keep = a[2] if len(a) > 2 else k.get("keepdim", False)
             if red is not None or list(a[1]) not in ([-1], [len(shape) - 1]) or not keep:
                 raise Unsupported("mean must reduce last axis with keepdim=True")
+            if k.get("dtype") is not None and vs[src].dt != dt:
+                # ATen first rounds each element to the requested dtype, then reduces.
+                src = put("cast", shape, dt, [src])
             red = idx = put("mean", sh, dt, [src])
         else:
             raise Unsupported(f"unsupported operator: {op}")
         ids[n] = idx
     if not ins or not outs:
         raise Unsupported("empty graph")
-    domain = max((vs[i].shape for i in ins), key=lambda s: (len(s), math.prod(s)))
+    domain = broadcast_domain(vs[i].shape for i in ins)
     if not domain or math.prod(domain) >= 2**31:
         raise Unsupported("requires a nonempty, 32-bit index domain")
 

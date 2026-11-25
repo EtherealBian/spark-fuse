@@ -37,3 +37,18 @@ On four independent BF16 inputs to the **same real Qwen2Attention module**, acti
 ### 长行分数：内存指令是否真的变宽？
 
 With BF16 **12 × 8192** scores, holding `block/256/cache` fixed, eight-element packets were **2.21×** faster than scalar lanes in seven paired address-hot windows. On independent input seed 12572 the scalar kernel took 9.39 µs, packed 4.02 µs, eager 5.94 µs and Inductor 3.54 µs (packed comparison round). All passed parity. Inductor still won this three-way comparison. `cuobjdump` found 128-bit global loads/stores in the packed cubin, with scalar instructions also present for the alignment fallback; those are static code counts, not runtime transaction counts. At 47 × 97, the same eight-element policy was only 0.45× its scalar baseline at fixed warp layout. The compiler therefore offers packets to the tuner rather than making them mandatory. [All schedules and paired windows](../reports/softmax-packets-gb10.json) · [Independent input, generated CUDA, SASS counts and kernel events](../reports/long-score-heldout-gb10.json).
+
+### Qwen 主尺寸：固定编译器的复验
+
+Six BF16 primitive shapes, same compiler fingerprint `354c84411574`, separately recorded source-tree snapshots and independent tuning/confirmation/benchmark inputs. Warm CUDA Graph device medians in µs. These are constituent operations, not the complete Qwen model.
+
+| Region | Rows × width | eager | Inductor | SparkFuse |
+|---|---:|---:|---:|---:|
+| resnorm2 | 1 × 1536 | 2.96 | 1.46 | 1.52 |
+| resnorm2 | 32 × 1536 | 2.96 | 1.81 | 1.84 |
+| resnorm2 | 512 × 1536 | 6.42 | 4.47 | 5.64 |
+| gate | 1 × 8960 | 2.45 | 0.88 | 0.95 |
+| gate | 32 × 8960 | 3.19 | 1.55 | 1.91 |
+| gate | 512 × 8960 | 178.72 | 119.65 | 118.43 |
+
+[All trials, source identifiers, raw device/host samples and third-input parity](../reports/qwen-current-panel-gb10.json).

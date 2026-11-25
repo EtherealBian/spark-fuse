@@ -52,8 +52,10 @@ class DynamicRows:
                         raise Unsupported(
                             "symbol must occur only as the leading dimension of a rank-2 tensor"
                         )
-                if t.ndim >= 2 and not dynamic:
-                    raise Unsupported("all row tensors must carry the same leading symbol")
+                if t.ndim >= 2 and not dynamic and not (t.ndim == 2 and dims[0] == 1):
+                    raise Unsupported(
+                        "rank-2 tensors require the leading symbol or a singleton broadcast row"
+                    )
                 if not t.is_contiguous():
                     raise Unsupported("requires contiguous dynamic tensors")
                 with mode:
@@ -93,7 +95,13 @@ class DynamicRows:
         def adapt(rows):
             k = copy(self.kernel)
             p = k.plan
-            vs = [replace(v, shape=(rows, v.shape[1])) if len(v.shape) == 2 else v for v in p.vals]
+            # representative >= 2: a static singleton row never aliases the symbolic extent.
+            vs = [
+                replace(v, shape=(rows, v.shape[1]))
+                if len(v.shape) == 2 and v.shape[0] == representative
+                else v
+                for v in p.vals
+            ]
             k.plan = Plan(vs, p.inputs, p.outputs, (rows, p.width), p.red)
             return k
 

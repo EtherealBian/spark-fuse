@@ -14,6 +14,17 @@ ROOT = Path(__file__).resolve().parents[1]
 def check(until, report):
     results = []
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
+    commands.append(
+        (
+            "installed_wheel",
+            [
+                sys.executable,
+                str(ROOT / "tools/wheel_smoke.py"),
+                "--output",
+                str(report.with_name(report.stem + "-wheel.json")),
+            ],
+        )
+    )
     opt = os.environ.get("SPARKFUSE_QWEN_PY")
     qreport = report.with_name(report.stem + "-qwen.json")
     if opt:
