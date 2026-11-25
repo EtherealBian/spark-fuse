@@ -24,12 +24,8 @@ class Schedule:
     vec: int = 1
 
     def validate(self, p):
-        if (
-            self.vec not in (1, 2, 4, 8)
-            or p.width % self.vec
-            or any(
-                self.vec * (4 if p.vals[i].dt == "f32" else 2) > 16 for i in p.inputs + p.outputs
-            )
+        if self.vec not in (1, 2, 4, 8) or any(
+            self.vec * (4 if p.vals[i].dt == "f32" else 2) > 16 for i in p.inputs + p.outputs
         ):
             raise Unsupported("illegal vector pack for width/dtype")
         if self.threads not in (32, 64, 128, 256, 512, 1024) or self.layout not in (

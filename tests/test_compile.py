@@ -45,8 +45,10 @@ def test_tail(name):
     ep = torch.export.export(m, a)
     k = compile_export(ep, schedule=Schedule(64, "warp", name != "gate"))
     compare(k(*a), m(*a))
+    tail = compile_export(ep, schedule=Schedule(64, "warp", name != "gate", 4))
+    compare(tail(*a), m(*a), exact=(1,) if name == "resnorm2" else ())
     with pytest.raises(Unsupported):
-        generate(k.plan, Schedule(64, "warp", False, 4))
+        generate(k.plan, Schedule(64, "warp", False, 8))  # 32-byte packs are not legal for FP32
 
 
 def test_visibility():

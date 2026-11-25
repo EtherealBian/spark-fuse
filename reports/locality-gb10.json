@@ -1,0 +1,612 @@
+[
+  {
+    "case": "resnorm2",
+    "shape": [
+      512,
+      1536
+    ],
+    "dtype": "torch.bfloat16",
+    "device": "NVIDIA GB10",
+    "l2_bytes": 25165824,
+    "ring_slots": 24,
+    "seed": 550,
+    "schedule": {
+      "threads": 512,
+      "layout": "block",
+      "cache": false,
+      "vec": 4
+    },
+    "order": [
+      [
+        "eager:hot",
+        "sparkfuse:hot",
+        "inductor:hot",
+        "eager:rotating",
+        "sparkfuse:rotating",
+        "inductor:rotating"
+      ],
+      [
+        "inductor:hot",
+        "inductor:rotating",
+        "sparkfuse:hot",
+        "sparkfuse:rotating",
+        "eager:rotating",
+        "eager:hot"
+      ],
+      [
+        "inductor:rotating",
+        "inductor:hot",
+        "sparkfuse:hot",
+        "eager:rotating",
+        "sparkfuse:rotating",
+        "eager:hot"
+      ],
+      [
+        "eager:rotating",
+        "sparkfuse:rotating",
+        "eager:hot",
+        "inductor:hot",
+        "sparkfuse:hot",
+        "inductor:rotating"
+      ],
+      [
+        "eager:rotating",
+        "sparkfuse:rotating",
+        "eager:hot",
+        "inductor:hot",
+        "sparkfuse:hot",
+        "inductor:rotating"
+      ],
+      [
+        "sparkfuse:hot",
+        "sparkfuse:rotating",
+        "inductor:rotating",
+        "eager:rotating",
+        "eager:hot",
+        "inductor:hot"
+      ],
+      [
+        "inductor:rotating",
+        "eager:rotating",
+        "sparkfuse:hot",
+        "sparkfuse:rotating",
+        "eager:hot",
+        "inductor:hot"
+      ],
+      [
+        "eager:hot",
+        "inductor:hot",
+        "eager:rotating",
+        "inductor:rotating",
+        "sparkfuse:rotating",
+        "sparkfuse:hot"
+      ],
+      [
+        "eager:rotating",
+        "inductor:hot",
+        "sparkfuse:hot",
+        "inductor:rotating",
+        "eager:hot",
+        "sparkfuse:rotating"
+      ],
+      [
+        "sparkfuse:rotating",
+        "eager:rotating",
+        "sparkfuse:hot",
+        "inductor:hot",
+        "eager:hot",
+        "inductor:rotating"
+      ],
+      [
+        "eager:rotating",
+        "eager:hot",
+        "sparkfuse:rotating",
+        "inductor:rotating",
+        "inductor:hot",
+        "sparkfuse:hot"
+      ],
+      [
+        "sparkfuse:hot",
+        "inductor:rotating",
+        "sparkfuse:rotating",
+        "eager:rotating",
+        "inductor:hot",
+        "eager:hot"
+      ],
+      [
+        "inductor:rotating",
+        "sparkfuse:rotating",
+        "sparkfuse:hot",
+        "eager:rotating",
+        "eager:hot",
+        "inductor:hot"
+      ],
+      [
+        "eager:rotating",
+        "eager:hot",
+        "inductor:rotating",
+        "sparkfuse:hot",
+        "sparkfuse:rotating",
+        "inductor:hot"
+      ],
+      [
+        "inductor:hot",
+        "eager:hot",
+        "sparkfuse:hot",
+        "sparkfuse:rotating",
+        "inductor:rotating",
+        "eager:rotating"
+      ]
+    ],
+    "paths": {
+      "eager:hot": {
+        "unique_output_count": 4,
+        "unique_output_logical_bytes": 6291456,
+        "unique_activation_input_bytes": 3145728,
+        "device": {
+          "median_us": 6.305333475271861,
+          "p10_us": 6.262933214505513,
+          "p90_us": 7.414400080839793,
+          "samples_us": [
+            6.229333579540253,
+            6.686133146286011,
+            7.789866626262665,
+            6.400266786416371,
+            6.718666851520538,
+            6.296800076961517,
+            6.28053347269694,
+            8.081333339214325,
+            6.262933214505513,
+            6.294666727383931,
+            6.305333475271861,
+            6.858666737874349,
+            6.3016002376874285,
+            7.414400080839793,
+            6.28080020348231
+          ]
+        }
+      },
+      "eager:rotating": {
+        "unique_output_count": 48,
+        "unique_output_logical_bytes": 75497472,
+        "unique_activation_input_bytes": 75497472,
+        "device": {
+          "median_us": 31.01759950319926,
+          "p10_us": 30.822932720184326,
+          "p90_us": 32.62373407681783,
+          "samples_us": [
+            31.403199831644695,
+            30.7805339495341,
+            31.623466809590656,
+            31.01759950319926,
+            32.78479973475138,
+            30.822932720184326,
+            30.977600812911987,
+            32.62373407681783,
+            34.33440128962199,
+            30.88559905687968,
+            30.904799699783325,
+            30.91520071029663,
+            30.87493379910787,
+            31.860266129175823,
+            31.188533703486126
+          ]
+        }
+      },
+      "inductor:hot": {
+        "unique_output_count": 4,
+        "unique_output_logical_bytes": 6291456,
+        "unique_activation_input_bytes": 3145728,
+        "device": {
+          "median_us": 10.077599684397379,
+          "p10_us": 8.567466338475546,
+          "p90_us": 10.298400123914083,
+          "samples_us": [
+            10.077599684397379,
+            10.119199752807617,
+            10.266400376955668,
+            9.87173318862915,
+            10.009599725405375,
+            10.298400123914083,
+            10.18880009651184,
+            5.413066844145457,
+            9.821866949399313,
+            10.146666566530863,
+            10.402133067448935,
+            9.905599554379782,
+            9.693599740664164,
+            10.623733202616373,
+            8.567466338475546
+          ]
+        }
+      },
+      "inductor:rotating": {
+        "unique_output_count": 48,
+        "unique_output_logical_bytes": 75497472,
+        "unique_activation_input_bytes": 75497472,
+        "device": {
+          "median_us": 29.934134085973103,
+          "p10_us": 29.398399591445923,
+          "p90_us": 31.757599115371704,
+          "samples_us": [
+            29.934134085973103,
+            30.30266761779785,
+            32.216266791025795,
+            30.355199178059895,
+            29.887733856836956,
+            30.354666709899902,
+            31.76426688830058,
+            30.770399173100788,
+            29.628533124923706,
+            29.66266671816508,
+            29.552000761032104,
+            29.398399591445923,
+            29.17626698811849,
+            31.757599115371704,
+            29.790933926900227
+          ]
+        }
+      },
+      "sparkfuse:hot": {
+        "unique_output_count": 4,
+        "unique_output_logical_bytes": 6291456,
+        "unique_activation_input_bytes": 3145728,
+        "device": {
+          "median_us": 6.534400085608165,
+          "p10_us": 6.484533349672954,
+          "p90_us": 7.425866524378459,
+          "samples_us": [
+            6.485599776109059,
+            6.4792002240816755,
+            8.046666781107584,
+            6.491466859976451,
+            6.484533349672954,
+            6.485333542029063,
+            7.425866524378459,
+            6.53653343518575,
+            7.996533314387004,
+            6.569866836071014,
+            6.53653343518575,
+            6.528000036875407,
+            6.534400085608165,
+            7.348000009854634,
+            6.5274665753046675
+          ]
+        }
+      },
+      "sparkfuse:rotating": {
+        "unique_output_count": 48,
+        "unique_output_logical_bytes": 75497472,
+        "unique_activation_input_bytes": 75497472,
+        "device": {
+          "median_us": 30.04853328069051,
+          "p10_us": 29.687732458114624,
+          "p90_us": 30.557600657145183,
+          "samples_us": [
+            29.959734280904133,
+            29.99546726544698,
+            30.165332555770874,
+            30.557600657145183,
+            31.284000476201374,
+            29.77306644121806,
+            30.183200041453045,
+            29.577332735061646,
+            30.108799537022907,
+            29.936800400416057,
+            30.04853328069051,
+            30.370932817459106,
+            29.798400402069092,
+            29.687732458114624,
+            30.849067370096844
+          ]
+        }
+      }
+    },
+    "interpretation": "Hot reuses inputs and allows allocator output reuse. Rotating holds distinct activation inputs and output buffers; norm weight stays shared. Logical footprint, not a DRAM hardware counter."
+  },
+  {
+    "case": "gate",
+    "shape": [
+      128,
+      8960
+    ],
+    "dtype": "torch.bfloat16",
+    "device": "NVIDIA GB10",
+    "l2_bytes": 25165824,
+    "ring_slots": 17,
+    "seed": 550,
+    "schedule": {
+      "threads": 256,
+      "layout": "flat",
+      "cache": false,
+      "vec": 4
+    },
+    "order": [
+      [
+        "eager:hot",
+        "sparkfuse:hot",
+        "inductor:hot",
+        "eager:rotating",
+        "sparkfuse:rotating",
+        "inductor:rotating"
+      ],
+      [
+        "inductor:hot",
+        "inductor:rotating",
+        "sparkfuse:hot",
+        "sparkfuse:rotating",
+        "eager:rotating",
+        "eager:hot"
+      ],
+      [
+        "inductor:rotating",
+        "inductor:hot",
+        "sparkfuse:hot",
+        "eager:rotating",
+        "sparkfuse:rotating",
+        "eager:hot"
+      ],
+      [
+        "eager:rotating",
+        "sparkfuse:rotating",
+        "eager:hot",
+        "inductor:hot",
+        "sparkfuse:hot",
+        "inductor:rotating"
+      ],
+      [
+        "eager:rotating",
+        "sparkfuse:rotating",
+        "eager:hot",
+        "inductor:hot",
+        "sparkfuse:hot",
+        "inductor:rotating"
+      ],
+      [
+        "sparkfuse:hot",
+        "sparkfuse:rotating",
+        "inductor:rotating",
+        "eager:rotating",
+        "eager:hot",
+        "inductor:hot"
+      ],
+      [
+        "inductor:rotating",
+        "eager:rotating",
+        "sparkfuse:hot",
+        "sparkfuse:rotating",
+        "eager:hot",
+        "inductor:hot"
+      ],
+      [
+        "eager:hot",
+        "inductor:hot",
+        "eager:rotating",
+        "inductor:rotating",
+        "sparkfuse:rotating",
+        "sparkfuse:hot"
+      ],
+      [
+        "eager:rotating",
+        "inductor:hot",
+        "sparkfuse:hot",
+        "inductor:rotating",
+        "eager:hot",
+        "sparkfuse:rotating"
+      ],
+      [
+        "sparkfuse:rotating",
+        "eager:rotating",
+        "sparkfuse:hot",
+        "inductor:hot",
+        "eager:hot",
+        "inductor:rotating"
+      ],
+      [
+        "eager:rotating",
+        "eager:hot",
+        "sparkfuse:rotating",
+        "inductor:rotating",
+        "inductor:hot",
+        "sparkfuse:hot"
+      ],
+      [
+        "sparkfuse:hot",
+        "inductor:rotating",
+        "sparkfuse:rotating",
+        "eager:rotating",
+        "inductor:hot",
+        "eager:hot"
+      ],
+      [
+        "inductor:rotating",
+        "sparkfuse:rotating",
+        "sparkfuse:hot",
+        "eager:rotating",
+        "eager:hot",
+        "inductor:hot"
+      ],
+      [
+        "eager:rotating",
+        "eager:hot",
+        "inductor:rotating",
+        "sparkfuse:hot",
+        "sparkfuse:rotating",
+        "inductor:hot"
+      ],
+      [
+        "inductor:hot",
+        "eager:hot",
+        "sparkfuse:hot",
+        "sparkfuse:rotating",
+        "inductor:rotating",
+        "eager:rotating"
+      ]
+    ],
+    "paths": {
+      "eager:hot": {
+        "unique_output_count": 2,
+        "unique_output_logical_bytes": 4587520,
+        "unique_activation_input_bytes": 4587520,
+        "device": {
+          "median_us": 8.265411853790283,
+          "p10_us": 8.239058887257295,
+          "p90_us": 9.72272929023294,
+          "samples_us": [
+            8.264658731572768,
+            8.337694055893841,
+            10.937976135927087,
+            8.265411853790283,
+            9.831152944003835,
+            9.72272929023294,
+            8.361411795896643,
+            9.66814125285429,
+            8.265035292681526,
+            8.216847391689525,
+            8.253364703234505,
+            8.265411853790283,
+            8.239058887257295,
+            8.265035292681526,
+            8.242447236004997
+          ]
+        }
+      },
+      "eager:rotating": {
+        "unique_output_count": 17,
+        "unique_output_logical_bytes": 38993920,
+        "unique_activation_input_bytes": 77987840,
+        "device": {
+          "median_us": 34.6981637618121,
+          "p10_us": 34.118399900548596,
+          "p90_us": 36.232283536125635,
+          "samples_us": [
+            34.00734172147863,
+            35.369413039263556,
+            37.883859522202435,
+            36.225128173828125,
+            36.396424910601446,
+            36.232283536125635,
+            34.46588235742905,
+            34.118399900548596,
+            34.73242310916676,
+            34.72075181848862,
+            34.46776446174173,
+            34.575434292063996,
+            34.6981637618121,
+            34.286305483649755,
+            34.46400025311638
+          ]
+        }
+      },
+      "inductor:hot": {
+        "unique_output_count": 2,
+        "unique_output_logical_bytes": 4587520,
+        "unique_activation_input_bytes": 4587520,
+        "device": {
+          "median_us": 4.505223386427936,
+          "p10_us": 4.481505997040692,
+          "p90_us": 4.534588140599868,
+          "samples_us": [
+            4.490917570450726,
+            4.483764662462122,
+            4.696847060147454,
+            4.4833881013533645,
+            4.481505997040692,
+            4.47811764829299,
+            5.254776337567498,
+            4.505976508645451,
+            4.505223386427936,
+            4.501835388295791,
+            4.490541009341969,
+            4.511246961705825,
+            4.507482402464923,
+            4.517647098092472,
+            4.534588140599868
+          ]
+        }
+      },
+      "inductor:rotating": {
+        "unique_output_count": 17,
+        "unique_output_logical_bytes": 38993920,
+        "unique_activation_input_bytes": 77987840,
+        "device": {
+          "median_us": 31.540329316083124,
+          "p10_us": 31.214683196123907,
+          "p90_us": 32.44498757755055,
+          "samples_us": [
+            31.44395211163689,
+            33.79199925590964,
+            31.540329316083124,
+            32.44498757755055,
+            31.214683196123907,
+            34.468894846299115,
+            31.23915335711311,
+            31.53844721177045,
+            31.612988079295437,
+            32.082069621366614,
+            31.110398909624884,
+            31.40705894021427,
+            31.540329316083124,
+            31.829458124497357,
+            31.73345958485323
+          ]
+        }
+      },
+      "sparkfuse:hot": {
+        "unique_output_count": 2,
+        "unique_output_logical_bytes": 4587520,
+        "unique_activation_input_bytes": 4587520,
+        "device": {
+          "median_us": 4.577882500255809,
+          "p10_us": 4.553411638035493,
+          "p90_us": 4.5827763922074265,
+          "samples_us": [
+            4.553411638035493,
+            4.577882500255809,
+            4.794352896073285,
+            4.577882500255809,
+            4.5827763922074265,
+            4.818823407678043,
+            4.541364838095272,
+            4.577882500255809,
+            4.577882500255809,
+            4.577882500255809,
+            4.577129378038294,
+            4.578258710749009,
+            4.576752816929536,
+            4.575246923110065,
+            4.577882500255809
+          ]
+        }
+      },
+      "sparkfuse:rotating": {
+        "unique_output_count": 17,
+        "unique_output_logical_bytes": 38993920,
+        "unique_activation_input_bytes": 77987840,
+        "device": {
+          "median_us": 32.21458827748018,
+          "p10_us": 32.094116771922394,
+          "p90_us": 32.94945885153378,
+          "samples_us": [
+            32.11482272428625,
+            32.0338810191435,
+            32.94945885153378,
+            32.19049397636862,
+            32.33543564291561,
+            33.44602304346421,
+            34.08941100625431,
+            32.213836557724896,
+            32.260894775390625,
+            32.284989076502185,
+            32.26315273958094,
+            32.14230537414551,
+            32.094116771922394,
+            32.177316441255456,
+            32.21458827748018
+          ]
+        }
+      }
+    },
+    "interpretation": "Hot reuses inputs and allows allocator output reuse. Rotating holds distinct activation inputs and output buffers; norm weight stays shared. Logical footprint, not a DRAM hardware counter."
+  }
+]

@@ -97,16 +97,24 @@ def _region(members, pos):
 
 
 class _RegionModule(nn.Module):
-    def __init__(self, k):
+    def __init__(self, k, host_backend):
         super().__init__()
         self.kernel = k
+        if host_backend == "native":
+            from .native import native_dispatch
+
+            self.dispatch = native_dispatch(k)
+        else:
+            self.dispatch = k
 
     def forward(self, *args):
-        return self.kernel(*args)
+        return self.dispatch(*args)
 
 
-def partition_export(ep, device="cuda", database=None, min_ops=2):
+def partition_export(ep, device="cuda", database=None, min_ops=2, host_backend="python"):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
+    if host_backend not in ("python", "native"):
+        raise ValueError("unknown host backend")
     if any(s.kind.name != "USER_OUTPUT" for s in ep.graph_signature.output_specs):
         raise Unsupported("graph with externally observable effects")
     gm = ep.module()
@@ -148,7 +156,7 @@ def partition_export(ep, device="cuda", database=None, min_ops=2):
             rec["fallback"] = str(e)
             continue
         label = f"_sparkfuse_region_{ci}"
-        gm.add_module(label, _RegionModule(k))
+        gm.add_module(label, _RegionModule(k, host_backend))
         with gm.graph.inserting_before(anchor):
             call = gm.graph.call_module(label, tuple(inputs))
             items = []
@@ -167,6 +175,7 @@ def partition_export(ep, device="cuda", database=None, min_ops=2):
             live_ins=[n.name for n in inputs],
             live_outs=[n.name for n in outputs],
             schedule=vars(k.schedule),
+            host_backend=host_backend,
         )
     gm.graph.lint()
     gm.recompile()

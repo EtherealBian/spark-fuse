@@ -56,6 +56,7 @@ def lower(ep):
     ins = []
     outs = []
     red = None
+    aliases = {}  # Alias roots for no-copy casts; observable input/output aliasing cannot be erased.
 
     def put(op, shape, dt, deps=(), imm=None):
         vs.append(Val(op, shape, dt, tuple(deps), imm))
@@ -146,7 +147,12 @@ def lower(ep):
                 torch.contiguous_format,
             ):
                 raise Unsupported("unsupported cast options")
-            idx = put("cast", sh, dt, [arg(a[0])])
+            source = arg(a[0])
+            idx = put("cast", sh, dt, [source])
+            if op in ("aten.to.dtype", "aten.to.dtype_layout") and dt == vs[source].dt:
+                force_copy = a[3] if len(a) > 3 else k.get("copy", False)
+                if not force_copy:
+                    aliases[idx] = aliases.get(source, source)
         elif op == "aten.rms_norm.default":
             src = arg(a[0])
             shape = vs[src].shape
@@ -188,6 +194,7 @@ def lower(ep):
         raise Unsupported("reduction must span the iteration domain")
     if any(vs[i].shape not in (domain, (*domain[:-1], 1)) for i in outs):
         raise Unsupported("unsupported output shape")
-    if any(vs[i].op == "input" for i in outs) or len(set(outs)) != len(outs):
+    roots = [aliases.get(i, i) for i in outs]
+    if any(vs[i].op == "input" for i in roots) or len(set(roots)) != len(roots):
         raise Unsupported("aliased outputs unsupported")
     return Plan(vs, ins, outs, domain, red)

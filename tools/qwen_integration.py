@@ -6,11 +6,11 @@ import torch, transformers
 from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP, Qwen2RMSNorm
 from transformers import Qwen2Config
 from sparkfuse.partition import partition_export
-from sparkfuse.measure import compare, device_time
+from sparkfuse.measure import compare, device_time, host_time
 
 
 @torch.inference_mode()
-def run(rows=32):
+def run(rows=32, host_backend="python"):
     torch.manual_seed(711)
     cfg = Qwen2Config(
         hidden_size=1536, intermediate_size=8960, num_attention_heads=12, num_key_value_heads=2
@@ -21,7 +21,7 @@ def run(rows=32):
     for label, mod in [("rms_norm", Qwen2RMSNorm(1536, eps=1e-6)), ("mlp", Qwen2MLP(cfg))]:
         mod = mod.eval().to(device="cuda", dtype=dtype)
         ep = torch.export.export(mod, a)
-        gm, regions = partition_export(ep)
+        gm, regions = partition_export(ep, host_backend=host_backend)
         if sum("module" in r for r in regions) != 1:
             raise AssertionError(regions)
         ref = mod(*a)
@@ -34,6 +34,8 @@ def run(rows=32):
             "errors": errors,
             "eager_device": device_time(lambda: mod(*a)),
             "mixed_device": device_time(fn),
+            "eager_host": host_time(lambda: mod(*a)),
+            "mixed_host": host_time(fn),
         }
     return {
         "torch": str(torch.__version__),
@@ -42,6 +44,7 @@ def run(rows=32):
         "hidden_size": 1536,
         "intermediate_size": 8960,
         "rows": rows,
+        "host_backend": host_backend,
         "dtype": str(dtype),
         "modules": result,
     }
@@ -51,5 +54,6 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--rows", type=int, default=32)
+    p.add_argument("--host-backend", choices=("native", "python"), default="python")
     a = p.parse_args()
-    a.output.write_text(json.dumps(run(a.rows), indent=2) + "\n")
+    a.output.write_text(json.dumps(run(a.rows, a.host_backend), indent=2) + "\n")

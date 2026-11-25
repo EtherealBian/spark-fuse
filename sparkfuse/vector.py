@@ -23,20 +23,49 @@ template<class T,int V> __device__ __forceinline__ void storev(T* p,Pack<T,V> q)
 }"""
 
 
+TAIL_HEADER = """
+template<class T,int V> __device__ __forceinline__ Pack<T,V> load_tail(const T* p,int remain){
+  if(remain>=V) return loadv<T,V>(p);
+  Pack<T,V> value{};
+  #pragma unroll
+  for(int i=0;i<V;i++) if(i<remain) value.x[i]=p[i];
+  return value;
+}
+template<class T,int V> __device__ __forceinline__ void store_tail(T* p,Pack<T,V> value,int remain){
+  if(remain>=V){ storev(p,value); return; }
+  #pragma unroll
+  for(int i=0;i<V;i++) if(i<remain) p[i]=value.x[i];
+}
+"""
+
+
 def generate_vector(p, s, emit, index):
     h = p.width
     v = s.vec
+    tail = h % v != 0
+    packets = (h + v - 1) // v
     t = s.threads
     warp = s.layout == "warp"
     flat = s.layout == "flat"
+    # If all tensors are scalars or span the full domain, vector packets can
+    # cross row boundaries. This avoids one partial pack per odd-width row.
+    linear = flat and tail and all(p.vals[i].shape in ((), p.domain) for i in p.inputs)
+    extent = f"rows*{h}" if linear else str(h)
     stride = 32 if warp else t
     params = [f"const {CT[p.vals[i].dt]}* __restrict__ in{k}" for k, i in enumerate(p.inputs)] + [
         f"{CT[p.vals[i].dt]}* __restrict__ out{k}" for k, i in enumerate(p.outputs)
     ]
-    src = [HEADER, "__global__ void fused(" + ", ".join(params + ["int rows"]) + ") {"]
-    if flat:
+    src = [
+        HEADER + (TAIL_HEADER if tail else ""),
+        "__global__ void fused(" + ", ".join(params + ["int rows"]) + ") {",
+    ]
+    if linear:
         src += [
-            f"const int packet=blockIdx.x*blockDim.x+threadIdx.x;if(packet>=rows*{h // v})return; const int row=packet/{h // v}, first=(packet%{h // v})*{v};"
+            f"const int packet=blockIdx.x*blockDim.x+threadIdx.x; if(packet>=(rows*{h}-1)/{v}+1)return; const int row=0, first=packet*{v};"
+        ]
+    elif flat:
+        src += [
+            f"const int packet=blockIdx.x*blockDim.x+threadIdx.x;if(packet>=rows*{packets})return; const int row=packet/{packets}, first=(packet%{packets})*{v};"
         ]
     else:
         row = "blockIdx.x*(blockDim.x/32)+threadIdx.x/32" if warp else "blockIdx.x"
@@ -44,6 +73,8 @@ def generate_vector(p, s, emit, index):
         src += [f"const int row={row}; if(row>=rows)return; const int lane={lane};"]
     loop = f"for(int first=lane*{v};first<{h};first+={stride * v}) {{"
     inner = f"#pragma unroll\nfor(int q=0;q<{v};q++){{ const int j=first+q, pos=row*{h}+j;"
+    if tail:
+        inner = f"#pragma unroll\nfor(int q=0;q<{v};q++){{ const int j=first+q; if(j>={extent})continue; const int pos=row*{h}+j;"
     pre = {}
 
     def packed(ids, known):
@@ -66,7 +97,9 @@ def generate_vector(p, s, emit, index):
             if i in active and ix in ("pos", "j"):
                 offset = "first" if ix == "j" else f"row*{h}+first"
                 k = n.imm
-                lines.append(f"auto pack{i}=loadv<{CT[n.dt]},{v}>(in{k}+{offset});")
+                load = "load_tail" if tail else "loadv"
+                extra = f",{extent}-first" if tail else ""
+                lines.append(f"auto pack{i}={load}<{CT[n.dt]},{v}>(in{k}+{offset}{extra});")
                 extended[i] = LOAD[n.dt](f"pack{i}.x[q]")
         return lines, extended
 
@@ -112,16 +145,21 @@ def generate_vector(p, s, emit, index):
         text, names = emit(ids, known)
         src += ([] if flat else [loop]) + loads
         for k, i in full:
-            src += [f"Pack<{CT[p.vals[i].dt]},{v}> dst{k};"]
+            init = "{}" if tail else ""
+            src += [f"Pack<{CT[p.vals[i].dt]},{v}> dst{k}{init};"]
         src += [inner, text]
         for (k, i), nm in zip(full, names):
             src += [f"dst{k}.x[q]=" + STORE[p.vals[i].dt](nm) + ";"]
         src += ["}"]
         for k, i in full:
-            src += [f"storev(out{k}+row*{h}+first,dst{k});"]
+            store = "store_tail" if tail else "storev"
+            extra = f",{extent}-first" if tail else ""
+            src += [f"{store}(out{k}+row*{h}+first,dst{k}{extra});"]
         if not flat:
             src += ["}"]
-    blocks = f"(rows*{h // v}-1)/{t}+1" if flat else f"(rows-1)/{t // 32}+1" if warp else "rows"
+    blocks = f"(rows*{packets}-1)/{t}+1" if flat else f"(rows-1)/{t // 32}+1" if warp else "rows"
+    if linear:
+        blocks = f"((rows*{h}-1)/{v})/{t}+1"
     args = [f"({CT[p.vals[i].dt]}*)ptr[{k}]" for k, i in enumerate(p.inputs + p.outputs)]
     src += [
         "}",
