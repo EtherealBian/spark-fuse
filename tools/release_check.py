@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "qualified_static_decode_sdpa",
+            [
+                sys.executable,
+                str(ROOT / "tools/decode_sdpa_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-decode-sdpa.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "fresh_cuda_output_transport",
             [
                 sys.executable,

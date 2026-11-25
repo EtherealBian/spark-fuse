@@ -1062,3 +1062,32 @@ DGX Spark 上用两组不同的随机权重测试真实的 Hugging Face `BertLay
 逐层调用也有胜例：两层、17 个 token、第一组权重的同步延迟为 261.90 µs，整图为 264.76 µs。两种 Inductor 配置都运行了，但没有在这些用例的所有可见输出上达到逐字节一致，未列入计时。这里不据此声称快于 Inductor。库不提供相应矩阵尺寸的算法时，整图分组模式会明确拒绝，不会把 OOM 或其他执行错误当成可回退的能力限制。
 
 The [full panel](../reports/stacked-bert-gb10.json) records all eight cases, both Inductor gates, two CPU INT32 Q/K/V audits per layer, weight and output digests, setup cost, launch traces and seven shuffled timing windows. Layerwise and whole-graph paths expose exactly the same intermediate hidden states and probabilities. The control captures the residual in the first layer, rather than charging it an extra host operation. Only the fixed-shape single-export path supports multi-group packing; this is not an end-to-end BERT task or accuracy benchmark. Reproduce with `python tools/stacked_bert_panel.py --output /tmp/stacked.json` in the Transformers environment and `bash tools/sanitize_packed_groups.sh`.
+
+<a id="decode-sdpa"></a>
+### 单 token 解码：一次读取一段 KV / One-token SDPA
+
+这条可选路径只接收**整张图为一个 ATen SDPA 调用**的静态导出。每个 CUDA block 为一个 query head 计算一段 KV：warp 归约 Q·K，在共享内存中求最大值并计算相对权重，同时累积 V。跨段时，第二个 kernel 用各段的最大值重新缩放分子与分母，合并结果。它不分配完整注意力矩阵，也不把 KV 头复制到 query 头数。单段直接写回；多段的显式 FP32 工作区为 `4 × B × H × ceil(S/tile) × (D+2)` 字节。
+
+设备重放中位数（µs），DGX Spark，同一台机器、首个种子，固定 `tile=32`，未按每行挑最快参数：
+
+| 单步输入 | eager | Inductor | SparkFuse | kernel 次数（同序） |
+|---|---:|---:|---:|---|
+| B1，16/4 头，S=257，D=64，FP16 | 7.61 | 7.61 | 5.39 | 2 / 2 / 2 |
+| B2，12/3 头，S=1025，D=128，BF16，逐批 FP32 偏置 | 357.38 | 119.39 | 12.39 | 17 / 8 / 2 |
+| B1，16/4 头，S=8193，D=64，BF16，无掩码 | 19.73 | 19.73 | 35.60 | 2 / 2 / 2 |
+
+第二行包含一个完全被遮蔽的批次。该配置默认 eager 有 17 次发射，不能把提速倍数外推到已经使用高效 fused attention 的配置。最后一行所有自定义 tile 的设备时间都慢于 eager。两套种子、七种形状；每套另留三份输入与**逐 KV 头的 CPU FP64** 参考比对。结果有误差容限，不承诺与 eager 逐位相同。实际输出的 stride（包括长度为 1 的轴）在原导出上独立核验，所有请求返回独占张量。
+
+```python
+from sparkfuse.decode_attention import compile_decode_attention
+
+with torch.inference_mode():
+    ep = torch.export.export(model, examples)
+    decode = compile_decode_attention(ep, examples, independent_audit, tile=32)
+    y = decode(*request)               # 每次扫描数值范围并同步
+    y = decode.run_bounded(*request)   # 仅当上游已保证数值合同
+```
+
+The fast entry requires finite `|Q,K,V| ≤ 64` and either finite `|bias| ≤ 10000` or `-inf`. The checked entry scans these limits every request. For the masked S=1025 case above, the separate synchronized host comparison was **141.17 µs checked vs 23.63 µs bounded**. Both entries guard the qualified backend configuration, descriptors and alignment. Supported inputs: one query token, D=64/128, dense FP16/BF16, regular or grouped query heads, optional FP32 per-batch or broadcast GQA bias, dropout zero, noncausal. No prefill, mutable KV cache, arbitrary mask, dynamic shape, or general-graph replacement is implied. All timings use newly allocated outputs; GPU-graph timings reuse captured addresses. Clocks exclude export, qualification and compilation.
+
+[All gates, kernel names, cubin resources and shuffled timing samples](../reports/decode-sdpa-gb10.json) · [sanitizers](../reports/decode-sdpa-sanitizer-gb10.txt) · [exportable example](../examples/single_decode.py). Reproduce with `python tools/decode_sdpa_panel.py --output /tmp/decode-gb10.json` after sourcing `tools/env.sh`.
