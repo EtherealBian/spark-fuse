@@ -82,6 +82,32 @@ def check(until, report):
                 ],
             )
         )
+        for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
+            commands.append(
+                (
+                    "t5_" + proj,
+                    [
+                        opt,
+                        str(ROOT / "tools/t5_gate.py"),
+                        "--proj",
+                        proj,
+                        "--verify-only",
+                        "--output",
+                        str(report.with_name(report.stem + "-t5-" + proj + ".json")),
+                    ],
+                )
+            )
+    commands.append(
+        (
+            "all_low_precision_activation_encodings",
+            [
+                sys.executable,
+                str(ROOT / "tools/activation_audit.py"),
+                "--output",
+                str(report.with_name(report.stem + "-activations.json")),
+            ],
+        )
+    )
     for name, cmd in commands:
         left = until - time.time() - 3
         if left < 1:

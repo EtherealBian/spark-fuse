@@ -30,3 +30,12 @@ with torch.inference_mode():
         k = compile_export(torch.export.export(m, a), schedule=s)
         compare(k(*a), m(*a), exact=(1,) if name in ("resnorm2", "scores2", "layernorm2") else ())
         print(name, rows, h, s, "passed", flush=True)
+
+    from activation_audit import Activations
+
+    for dtype, vec in ((torch.float16, 4), (torch.bfloat16, 8)):
+        x = torch.randn(33 * 129 + 1, device="cuda", dtype=dtype)[1:].view(33, 129)
+        m = Activations()
+        k = compile_export(torch.export.export(m, (x,)), schedule=Schedule(128, "flat", False, vec))
+        compare(k(x), m(x), exact=(0, 1, 2))
+        print("gelu erf/tanh and cube", dtype, vec, "passed", flush=True)

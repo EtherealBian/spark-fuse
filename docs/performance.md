@@ -124,3 +124,31 @@ python tools/bert_layer.py --sampled-exact --seq 129 --weight-seed 99173 --affin
 ```
 
 **English.** Sampled-exact calibration tunes identical GPU dispatch keys across all call sites on unfused activations. A separate request audits the chosen schedules, and database updates are atomic. On the three BERT layer cases all nine extra requests matched eager exactly. Only the 33-token case showed a lower median than eager in warm device replay; eager returned sooner on the host at every length. [Regression suite and integration checks](../reports/joint-exact-stage-acceptance.json).
+
+### T5 门控 FFN：分解 GELU 与原生 GELU 不是同一张图
+
+同一个 Hugging Face `T5DenseGatedActDense` 类，默认 `gated-gelu` 会将 GELU 展开（含三次幂），`gated-gelu_pytorch_tanh` 则导出原生 `aten.gelu`。改动前，前者因 `pow(3)` 不支持、后者因乘法是单节点而无法融合，见[两张原始导出图的分区记录](../reports/t5-gate-before-gb10.json)。现在分别把 9 个和 2 个算子降为一个 CUDA kernel。三处线性投影仍由 ATen 执行。
+
+数值上不能直接把低精度 `x.pow(3)` 替换成 FP32 连乘再转回。在 98,304 个 BF16 样本中，这样改有 [21,896 个结果与 eager 不同](../reports/t5-cube-rounding-probe-gb10.json)。IR 现在保留每次乘法的元素类型舍入；原生 GELU 的 erf/tanh 则在一个算子内部用 FP32 计算。对 FP16、BF16 **各 65,536 个可能输入编码**，在对齐标量和非对齐向量两条路径上，GELU-erf、GELU-tanh、cube 的[全枚举测试](../reports/activation-exhaustive-dev-gb10.json)均为零差异。比较区分正负零，双方均为 NaN 时不比较 NaN 载荷；结论仅限本次 GB10 软件栈上的这三个一元操作。
+
+batch 1、33 tokens、768 → 3072 → 768、BF16 随机权重。在独立权重与输入上，**实际 profiler** 看到分解版整个 FFN 的 GPU 事件从 **12 降至 4**，PyTorch 统计的调用期间增量峰值分配从 811,008 降至 608,256 字节；原生版则是 **5 → 4**。两个混合图都只保留一个门控内核，不能把分解版的收益套在原生版上。[事件明细与分配](../reports/t5-gate-profiler-gb10.json)。
+
+| 33 tokens，完整 FFN | eager 设备 µs | 选型后设备 µs | eager 同步主机 µs | 选型后同步主机 µs |
+|---|---:|---:|---:|---:|
+| [分解 GELU](../reports/t5-gated-gelu-dev-gb10.json) | 48.27 | 40.98 | 77.72 | 75.31 |
+| [原生 tanh GELU](../reports/t5-gated-gelu_pytorch_tanh-dev-gb10.json) | 41.60 | 40.48 | 56.67 | 74.38 |
+
+前三个输入用于校准与整图验收；用第四个新输入做七轮交错计时。两种导出下 Inductor 都未通过这一轮的原有数值门槛，不赋予速度排名。`python tools/activation_audit.py --output /tmp/all-encodings.json` 可复核编码穷举；`python tools/t5_trace.py --seq 33 --output /tmp/t5-trace.json` 可复核事件计数。这是 FFN，不是完整 T5 编码器或解码器。
+
+**English.** Both decomposed and native-tanh GEGLU gate graphs now compile on the real T5 FFN. An independent trace counted 12→4 GPU events for the decomposed path and 5→4 for the native path. The host latency improvement did not carry over to the native variant. [Full suite, wheel, module integrations and exhaustive low-precision check](../reports/t5-gelu-stage-acceptance.json).
+
+换一套权重与输入，再测短请求和较长请求（每种导出、每个长度各有两个不参与选型的输入）。八个额外输入的完整 FFN 输出都与各自 eager 参考逐元素相等。下表同为七轮中位数；同步主机列包含调用和等待，非单核时间。
+
+| 导出 / tokens | eager → 选型后，设备 µs | eager → 选型后，同步主机 µs |
+|---|---:|---:|
+| [分解 / 1](../reports/t5-gated-gelu-fresh-1-gb10.json) | 24.42 → 18.11 | 69.79 → 56.14 |
+| [分解 / 97](../reports/t5-gated-gelu-fresh-97-gb10.json) | 55.11 → 45.54 | 83.82 → 77.85 |
+| [原生 / 1](../reports/t5-gated-gelu_pytorch_tanh-fresh-1-gb10.json) | 18.60 → 17.64 | 41.62 → 55.21 |
+| [原生 / 97](../reports/t5-gated-gelu_pytorch_tanh-fresh-97-gb10.json) | 46.12 → 44.61 | 61.31 → 77.23 |
+
+原生版在三个长度都没有同步主机优势。[Compute Sanitizer](../reports/t5-gelu-sanitizer-gb10.txt) 覆盖非对齐输入和向量尾部；用 `python tools/cube_rounding_probe.py` 可单独复核低精度乘法舍入。

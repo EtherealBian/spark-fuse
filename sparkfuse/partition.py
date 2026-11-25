@@ -23,6 +23,7 @@ CALLS = frozenset(
         "mul.Scalar",
         "sub.Scalar",
         "silu.default",
+        "gelu.default",
         "rsqrt.default",
         "relu.default",
         "neg.default",

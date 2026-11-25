@@ -128,6 +128,9 @@ def generate(p, s):
                     "sigmoid": f"1.f/(1.f+expf(-{a}))",
                     "neg": f"-{a}",
                     "tanh": f"tanhf({a})",
+                    "gelu_erf": f"(0.5f*{a})*(1.f+erff(0.7071067811865475f*{a}))",
+                    # Contraction is local to this single op; preserve rounding of its DAG consumers.
+                    "gelu_tanh": f"(0.5f*{a})*(1.f+tanhf(0.7978845608028654f*fmaf(0.044715f,({a}*{a})*{a},{a})))",
                     "cast": a,
                 }[v.op]
                 expr = LOAD[v.dt](STORE[v.dt](expr))

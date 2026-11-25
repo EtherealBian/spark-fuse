@@ -1,0 +1,173 @@
+{
+  "seq": 33,
+  "dtype": "bfloat16",
+  "weight_seed": 71339,
+  "input_seed": 97843,
+  "torch": "2.13.0+cu130",
+  "transformers": "4.51.3",
+  "device": "NVIDIA GB10",
+  "provenance": {
+    "git_head_at_capture": "24693a775f26230d2b803133ac859c7edfcd0e6a",
+    "source_tree_sha256": "09c0680aa07cf5c89deec8832f02200e1803c59623f02718cb06ddf248897af2",
+    "archive": "sources/09c0680aa07cf5c89deec8832f02200e1803c59623f02718cb06ddf248897af2.tar.gz"
+  },
+  "cases": [
+    {
+      "variant": "gated-gelu",
+      "regions": [
+        {
+          "ops": [
+            "mul",
+            "pow_1",
+            "mul_1",
+            "add",
+            "mul_2",
+            "tanh",
+            "add_1",
+            "mul_3",
+            "mul_4"
+          ],
+          "module": "_sparkfuse_region_0",
+          "live_ins": [
+            "linear",
+            "linear_1"
+          ],
+          "live_outs": [
+            "mul_4"
+          ],
+          "schedule": {
+            "threads": 256,
+            "layout": "flat",
+            "cache": false,
+            "vec": 1
+          },
+          "host_backend": "native"
+        }
+      ],
+      "observed": {
+        "eager": {
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ],
+          "allocation_peak_above_entry_bytes": 811008,
+          "device_events": 12,
+          "event_names": {
+            "void cutlass::Kernel2<cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_128x1_tn_align2>(cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_128x1_tn_align2::Params)": 2,
+            "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul> >(int, at::native::AUnaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul>)": 3,
+            "void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::pow_tensor_scalar_kernel_impl<c10::BFloat16, c10::BFloat16>(at::TensorIteratorBase&, c10::BFloat16)::{lambda(c10::BFloat16)#2}, std::array<char*, 2ul> >(int, at::native::(anonymous namespace)::pow_tensor_scalar_kernel_impl<c10::BFloat16, c10::BFloat16>(at::TensorIteratorBase&, c10::BFloat16)::{lambda(c10::BFloat16)#2}, std::array<char*, 2ul>)": 1,
+            "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat16>, std::array<char*, 3ul> >(int, at::native::CUDAFunctor_add<c10::BFloat16>, std::array<char*, 3ul>)": 1,
+            "void at::native::vectorized_elementwise_kernel<4, at::native::tanh_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#4}::operator()() const::{lambda(c10::BFloat16)#1}, std::array<char*, 2ul> >(int, at::native::tanh_kernel_cuda(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#4}::operator()() const::{lambda(c10::BFloat16)#1}, std::array<char*, 2ul>)": 1,
+            "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctorOnSelf_add<c10::BFloat16>, std::array<char*, 2ul> >(int, at::native::CUDAFunctorOnSelf_add<c10::BFloat16>, std::array<char*, 2ul>)": 1,
+            "void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 3ul> >(int, at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 3ul>)": 2,
+            "nvjet_sm121_tst_mma_64x32x64_8_16x32x64_tmaAB_bz_TNNN": 1
+          }
+        },
+        "default_mixed": {
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ],
+          "allocation_peak_above_entry_bytes": 608256,
+          "device_events": 4,
+          "event_names": {
+            "void cutlass::Kernel2<cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_128x1_tn_align2>(cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_128x1_tn_align2::Params)": 2,
+            "fused(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, int)": 1,
+            "nvjet_sm121_tst_mma_64x32x64_8_16x32x64_tmaAB_bz_TNNN": 1
+          }
+        }
+      }
+    },
+    {
+      "variant": "gated-gelu_pytorch_tanh",
+      "regions": [
+        {
+          "ops": [
+            "gelu",
+            "mul"
+          ],
+          "module": "_sparkfuse_region_0",
+          "live_ins": [
+            "linear",
+            "linear_1"
+          ],
+          "live_outs": [
+            "mul"
+          ],
+          "schedule": {
+            "threads": 256,
+            "layout": "flat",
+            "cache": false,
+            "vec": 1
+          },
+          "host_backend": "native"
+        }
+      ],
+      "observed": {
+        "eager": {
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ],
+          "allocation_peak_above_entry_bytes": 658944,
+          "device_events": 5,
+          "event_names": {
+            "void cutlass::Kernel2<cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_128x1_tn_align2>(cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_128x1_tn_align2::Params)": 2,
+            "void at::native::vectorized_elementwise_kernel<4, at::native::GeluCUDAKernelImpl(at::TensorIteratorBase&, at::native::GeluType)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(c10::BFloat16)#1}, std::array<char*, 2ul> >(int, at::native::GeluCUDAKernelImpl(at::TensorIteratorBase&, at::native::GeluType)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(c10::BFloat16)#1}, std::array<char*, 2ul>)": 1,
+            "void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 3ul> >(int, at::native::BinaryFunctor<c10::BFloat16, c10::BFloat16, c10::BFloat16, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 3ul>)": 1,
+            "nvjet_sm121_tst_mma_64x32x64_8_16x32x64_tmaAB_bz_TNNN": 1
+          }
+        },
+        "default_mixed": {
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ],
+          "allocation_peak_above_entry_bytes": 608256,
+          "device_events": 4,
+          "event_names": {
+            "void cutlass::Kernel2<cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_128x1_tn_align2>(cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_128x1_tn_align2::Params)": 2,
+            "fused(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, int)": 1,
+            "nvjet_sm121_tst_mma_64x32x64_8_16x32x64_tmaAB_bz_TNNN": 1
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "compiler": "d7ea7af237cdeee250e1fcb98d4613ffe1d4f697d0e36a490349bfcc33da2ca9",
+  "torch": "2.13.0+cu130",
+  "transformers": "4.51.3",
+  "scope": "Pre-extension partition probe only. CPU export; no performance claim. Ineligible regions will not trigger a CUDA build.",
+  "traces": [
+    {
+      "proj": "gated-gelu",
+      "activation": "NewGELUActivation",
+      "nodes": [
+        "aten.linear.default",
+        "aten.mul.Tensor",
+        "aten.pow.Tensor_Scalar",
+        "aten.mul.Tensor",
+        "aten.add.Tensor",
+        "aten.mul.Tensor",
+        "aten.tanh.default",
+        "aten.add.Tensor",
+        "aten.mul.Tensor",
+        "aten.linear.default",
+        "aten.mul.Tensor",
+        "aten.dropout.default",
+        "aten.linear.default"
+      ],
+      "regions": [
+        {
+          "ops": [
+            "mul",
+            "pow_1",
+            "mul_1",
+            "add",
+            "mul_2",
+            "tanh",
+            "add_1",
+            "mul_3",
+            "mul_4"
+          ],
+          "fallback": "unsupported operator: aten.pow.Tensor_Scalar"
+        }
+      ]
+    },
+    {
+      "proj": "gated-gelu_pytorch_tanh",
+      "activation": "PytorchGELUTanh",
+      "nodes": [
+        "aten.linear.default",
+        "aten.gelu.default",
+        "aten.linear.default",
+        "aten.mul.Tensor",
+        "aten.dropout.default",
+        "aten.linear.default"
+      ],
+      "regions": [
+        {
+          "ops": [
+            "mul"
+          ],
+          "fallback": "below minimum region size"
+        }
+      ]
+    }
+  ]
+}

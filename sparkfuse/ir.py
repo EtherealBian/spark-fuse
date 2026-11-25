@@ -145,6 +145,16 @@ def lower(ep):
             "aten.square.default",
         ):
             idx = put(op.split(".")[1], sh, dt, [arg(a[0])])
+        elif op == "aten.gelu.default":
+            mode = k.get("approximate", "none")
+            if len(a) != 1 or set(k) - {"approximate"} or mode not in ("none", "tanh"):
+                raise Unsupported("unsupported GELU approximation")
+            idx = put("gelu_erf" if mode == "none" else "gelu_tanh", sh, dt, [arg(a[0])])
+        elif op == "aten.pow.Tensor_Scalar" and type(a[1]) in (int, float) and a[1] == 3:
+            # The real CUDA scalar-cube specialization rounds in Base_type on each multiply.
+            x = arg(a[0])
+            sq = put("square", sh, dt, [x])
+            idx = put("mul", sh, dt, [sq, x])
         elif op == "aten.pow.Tensor_Scalar" and a[1] == 2:
             idx = put("square", sh, dt, [arg(a[0])])
         elif op in (
