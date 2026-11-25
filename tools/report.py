@@ -9,6 +9,21 @@ from statistics import median
 
 def render(run, output):
     rows = [json.loads(x) for x in (run / "index.jsonl").read_text().splitlines()]
+    # New rejected workers preserve backend/source evidence even though older supervisor
+    # processes record only a status string in their append-only index. Never rewrite it.
+    for r in rows:
+        if r["status"] == "ok":
+            continue
+        rejected = run / "evidence" / (r["id"] + ".rejected.json")
+        if rejected.is_file():
+            detail = json.loads(rejected.read_text())
+            tuning = detail.get("tuning", {})
+            version = tuning.get("compiler")
+            if version:
+                r.setdefault("compiler", version)
+            b = detail.get("comparison", {}).get("backends", {})
+            r["rejected_backends"] = [n for n, v in b.items() if v.get("parity") != "pass"]
+            r["rejection_path"] = rejected.name
     ok = [r for r in rows if r["status"] == "ok"]
     bad = [r for r in rows if r["status"] != "ok"]
     text = [
@@ -64,7 +79,15 @@ def render(run, output):
         ]
     if bad:
         text += ["", "## Failed / interrupted cases", ""] + [
-            f"- `{r['id']}`: {r['status']}. See index for full diagnostics." for r in bad
+            f"- `{r['id']}`: {r['status']}. "
+            + (
+                "Parity failed for " + ", ".join(r["rejected_backends"]) + ". "
+                if r.get("rejected_backends")
+                else ""
+            )
+            + (f"Raw: `{r['rejection_path']}`. " if r.get("rejection_path") else "")
+            + "See index for full diagnostics."
+            for r in bad
         ]
     output.write_text("\n".join(text) + "\n")
 
