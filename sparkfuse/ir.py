@@ -50,6 +50,13 @@ class Plan:
         )
 
 
+def ordered_score_limit(result_dt, half_to_float):
+    # On the qualified GB10 build, implicit CUDA Half -> Float uses a
+    # different reduction beyond 1024. Explicit Float input is a distinct op.
+    # Wide native low-precision outputs are not qualified by this policy.
+    return 2048 if result_dt == "f32" and not half_to_float else 1024
+
+
 def broadcast_domain(shapes):
     """Join dense input extents axis by axis; no single input need span the output."""
     rev = []
@@ -189,14 +196,17 @@ def lower(ep):
             axis = a[1] if len(a) > 1 else k.get("dim")
             if not shape or axis not in (-1, len(shape) - 1) or red is not None:
                 raise Unsupported("softmax requires one last-axis collective region")
+            half_to_float = vs[src].dt == "f16" and dt == "f32"
             if op == "aten.softmax.int":
-                # torch.softmax(..., dtype=D) casts the input to D before normalization.
+                # Preserve implicit Half->Float provenance separately from the math cast.
                 target = a[2] if len(a) > 2 else k.get("dtype")
                 if target is not None and DT.get(target) != vs[src].dt:
                     if target not in DT:
                         raise Unsupported("unsupported softmax dtype")
                     src = put("cast", shape, DT[target], [src])
-            red = idx = put("softmax", sh, dt, [src])
+            red = idx = put(
+                "softmax", sh, dt, [src], imm="half_to_float" if half_to_float else None
+            )
         elif op == "aten.layer_norm.default":
             src = arg(a[0])
             shape = vs[src].shape

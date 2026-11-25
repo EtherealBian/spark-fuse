@@ -161,6 +161,7 @@ def run(
     emit_dir,
     head_repeats=False,
     framework_softmax=False,
+    score_panel=False,
 ):
     export = trajectory(model, rope, length, 60401 + offset)
     graphs = []
@@ -169,33 +170,60 @@ def run(
         ep = torch.export.export(model, args)
         stage = {"eager": model, "exported_aten": ep.module()}
         details = {}
-        variants = [("rotary", False), ("append", True)]
+        variants = [
+            ("rotary", False, False, framework_softmax, None),
+            ("append", True, False, framework_softmax, None),
+        ]
         if head_repeats:
-            variants.append(("repeat", True))
-        for name, enable in variants:
+            variants.append(("repeat", True, True, framework_softmax, None))
+        if score_panel:
+            variants = [
+                ("framework", True, True, True, None),
+                ("loop", True, True, False, "loop"),
+                ("slots", True, True, False, "slots"),
+            ]
+        for name, enable, repeat, keep, order in variants:
             gm, records = partition_export(
                 ep,
                 host_backend="native",
                 rotary_pairs=True,
                 paired_appends=enable,
-                paired_head_repeats=name == "repeat",
-                framework_softmax=framework_softmax,
+                paired_head_repeats=repeat,
+                framework_softmax=keep,
+                ordered_scores=order,
                 schedule_policy=ordered_collectives,
             )
             gm.graph.lint()
-            assert sum(r.get("reason") == "framework_softmax" for r in records) == int(
-                framework_softmax
-            )
+            assert sum(r.get("reason") == "framework_softmax" for r in records) == int(keep)
             stage[name] = gm
-            hits = [r for r in records if r.get("kind") == "paired_append"]
-            assert len(hits) == int(enable) and any(r.get("kind") == "rotary_pair" for r in records)
+            appends = [r for r in records if r.get("kind") == "paired_append"]
             reps = [r for r in records if r.get("kind") == "paired_head_repeat"]
-            assert len(reps) == int(name == "repeat")
-            if enable:
-                if reps:
-                    hits = reps
-                src = gm.get_submodule(hits[0]["module"]).program.source
-                assert sha256(src.encode()).hexdigest() == hits[0]["cuda_sha256"]
+            assert (
+                len(appends) == int(enable)
+                and len(reps) == int(repeat)
+                and any(r.get("kind") == "rotary_pair" for r in records)
+            )
+            if score_panel:
+                keys = length + i + 1
+                expected = order and 32 <= keys <= 2048
+                score = [r for r in records if "module" in r and "softmax" in r.get("ops", [])]
+                assert len(score) == int(bool(expected)) and sum(
+                    r.get("reason") == "outside_ordered_score_domain" for r in records
+                ) == int(order is not None and not expected)
+                if score:
+                    (r,) = score
+                    assert r["schedule"]["layout"] == (
+                        "warp_slots" if order == "slots" and keys > 1024 else "warp_xor"
+                    )
+                    src = gm.get_submodule(r["module"]).kernel.source
+                    r["cuda_sha256"] = sha256(src.encode()).hexdigest()
+                    if emit_dir:
+                        emit_dir.mkdir(parents=True, exist_ok=True)
+                        (emit_dir / f"p{length}-step{i + 1}-{name}.cu").write_text(src)
+            elif enable:
+                hit = (reps or appends)[0]
+                src = gm.get_submodule(hit["module"]).program.source
+                assert sha256(src.encode()).hexdigest() == hit["cuda_sha256"]
                 if emit_dir and (not head_repeats or reps):
                     emit_dir.mkdir(parents=True, exist_ok=True)
                     (emit_dir / f"p{length}-step{i + 1}.cu").write_text(src)
@@ -319,12 +347,19 @@ def main():
         action="store_true",
         help="keep the original softmax as a PyTorch boundary for every variant",
     )
+    p.add_argument(
+        "--score-panel",
+        action="store_true",
+        help="compare framework softmax, ordered loop and register slots; all three fuse head copies",
+    )
     p.add_argument("--profile", action="store_true")
     p.add_argument("--emit-dir", type=Path)
     p.add_argument("--output", type=Path, required=True)
     a = p.parse_args()
     if min(a.past) < 2 or len(set(a.past)) != len(a.past):
         p.error("distinct prefix lengths >=2 required")
+    if a.score_panel and (a.head_repeats or a.framework_softmax):
+        p.error("--score-panel defines its own ablation variants")
     if a.profile and a.verify_only:
         p.error("use --profile for measurement only")
     model, rope = suite(a.seed_offset)
@@ -341,6 +376,7 @@ def main():
         verify_only=a.verify_only,
         head_repeats=a.head_repeats,
         framework_softmax=a.framework_softmax,
+        score_panel=a.score_panel,
         profile=a.profile,
         provenance=capture(ROOT / ".runtime/decode-audit/sources"),
         cases=[],
@@ -356,6 +392,7 @@ def main():
             a.emit_dir,
             a.head_repeats,
             a.framework_softmax,
+            a.score_panel,
         )
         doc["cases"].append(c)
         print(

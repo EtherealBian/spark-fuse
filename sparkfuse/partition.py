@@ -7,7 +7,7 @@ import operator
 from types import SimpleNamespace
 from torch import fx, nn
 from torch.utils import _pytree as tree
-from .ir import Unsupported, lower
+from .ir import DT, Unsupported, lower, ordered_score_limit
 from .runtime import compile_export
 from .codegen import Schedule
 from .tuning import compile_tuned
@@ -216,8 +216,15 @@ def partition_export(
     paired_appends=False,
     paired_head_repeats=False,
     framework_softmax=False,
+    ordered_scores=None,
 ):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
+    if ordered_scores not in (None, "loop", "slots") or (
+        framework_softmax and ordered_scores is not None
+    ):
+        raise ValueError(
+            "choose one softmax policy: framework_softmax or ordered_scores='loop'/'slots'"
+        )
     if host_backend not in ("python", "native"):
         raise ValueError("unknown host backend")
     if any(s.kind.name != "USER_OUTPUT" for s in ep.graph_signature.output_specs):
@@ -243,20 +250,45 @@ def partition_export(
     nodes = list(gm.graph.nodes)
     pos = {n: i for i, n in enumerate(nodes)}
     pot = {n for n in nodes if eligible(n)}
-    if framework_softmax:
-        # An explicit floating-point reference boundary, not a tuned width whitelist.
+    if framework_softmax or ordered_scores is not None:
         for n in nodes:
-            if n in pot and str(n.target) in ("aten.softmax.int", "aten._softmax.default"):
-                pot.remove(n)
-                records.append(
-                    dict(
-                        kind="reference_boundary",
-                        ops=[n.name],
-                        target=str(n.target),
-                        reason="framework_softmax",
-                        fallback="preserve framework softmax",
-                    )
+            if n not in pot or str(n.target) not in ("aten.softmax.int", "aten._softmax.default"):
+                continue
+            shape = getattr(n.meta.get("val"), "shape", ())
+            last_axis = (
+                len(n.args) >= 2 and type(n.args[1]) is int and n.args[1] in (-1, len(shape) - 1)
+            )
+            arg0 = n.args[0] if n.args else n.kwargs.get("self")
+            src_dt = DT.get(getattr(getattr(arg0, "meta", {}).get("val"), "dtype", None))
+            dst_dt = DT.get(getattr(n.meta.get("val"), "dtype", None))
+            half_to_float = src_dt == "f16" and dst_dt == "f32"
+            limit = ordered_score_limit(dst_dt, half_to_float)
+            if (
+                not framework_softmax
+                and shape
+                and last_axis
+                and type(shape[-1]) is int
+                and src_dt is not None
+                and dst_dt is not None
+                and 32 <= shape[-1] <= limit
+            ):
+                continue
+            pot.remove(n)
+            records.append(
+                dict(
+                    kind="reference_boundary",
+                    ops=[n.name],
+                    target=str(n.target),
+                    reason="framework_softmax"
+                    if framework_softmax
+                    else "outside_ordered_score_domain",
+                    input_dtype=src_dt,
+                    output_dtype=dst_dt,
+                    ordered_width_limit=limit,
+                    half_to_float=half_to_float,
+                    fallback="preserve framework softmax",
                 )
+            )
     components = []
     while pot:
         first = min(pot, key=pos.get)
@@ -289,7 +321,17 @@ def partition_export(
             positions = {n: i for i, n in enumerate(gm.graph.nodes)}
             rep, inputs, outputs, anchor = _region(group, positions)
             plan = lower(rep)
-            override = schedule_policy(plan) if schedule_policy is not None else None
+            if (
+                ordered_scores is not None
+                and plan.red is not None
+                and plan.vals[plan.red].op == "softmax"
+            ):
+                layout = (
+                    "warp_slots" if ordered_scores == "slots" and plan.width > 1024 else "warp_xor"
+                )
+                override = Schedule(128, layout, True)
+            else:
+                override = schedule_policy(plan) if schedule_policy is not None else None
             if override is not None:
                 k = compile_export(rep, device, schedule=override)
             else:

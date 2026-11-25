@@ -160,6 +160,24 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "qwen_decode_ordered_scores",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_cached_decode.py"),
+                    "--past",
+                    "1023",
+                    "2047",
+                    "--verify-only",
+                    "--score-panel",
+                    "--seed-offset",
+                    "59879",
+                    "--output",
+                    str(report.with_name(report.stem + "-ordered-scores.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (

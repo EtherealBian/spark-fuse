@@ -7,7 +7,8 @@ def generate_rowwise(p, s, emit, index):
     h = p.width
     t = s.threads
     online = s.layout == "block_welford"
-    xor = s.layout == "warp_xor"
+    slots = s.layout == "warp_slots"
+    xor = slots or s.layout == "warp_xor"
     warp = xor or s.layout == "warp"
     stride = 32 if warp else t
     inp = p.vals[p.red].deps[0]
@@ -39,6 +40,8 @@ def generate_rowwise(p, s, emit, index):
         )
     off = f"j/{stride}" if v == 1 else f"(first/{stride * v})*{v}+q"
     held_count = ((h + stride * v - 1) // (stride * v)) * v
+    if slots:
+        off = "slot"
     if s.cache:
         src.append(f"float held[{held_count}];")
     # Keep a wide cached score row in a real strip-mined loop, too. The GB10
@@ -48,6 +51,16 @@ def generate_rowwise(p, s, emit, index):
     def phase(targets, pre, body, full=()):
         # Gather only input packs used by this phase. Broadcast-only dimensions
         # retain scalar loads, while an unexpanded key dimension permits vectors.
+        if slots:
+            # Slot (not j/stride) is a compile-time constant after unrolling. This
+            # lets ptxas scalarize the per-lane cache; predicate memory ops at the tail.
+            return [
+                "#pragma unroll",
+                f"for(int slot=0;slot<{held_count};++slot){{ const int j=lane+slot*32;",
+                f"if(j<{h}){{ const int pos=row*{h}+j;",
+                *body(dict(pre)),
+                "}}",
+            ]
         if v == 1:
             return (["#pragma unroll 1"] if bounded_loop else []) + [
                 f"for(int j=lane;j<{h};j+={stride}){{const int pos=row*{h}+j;",

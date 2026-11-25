@@ -66,6 +66,7 @@ def main(argv=None):
             "warp",
             "flat",
             "warp_xor",
+            "warp_slots",
             "block_welford",
             "compact_mean",
             "mean_tree",

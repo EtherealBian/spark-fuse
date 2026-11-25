@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from math import prod
-from .ir import Unsupported
+from .ir import Unsupported, ordered_score_limit
 
 CT = {"f32": "float", "f16": "__half", "bf16": "__nv_bfloat16"}
 LOAD = {
@@ -33,6 +33,7 @@ class Schedule:
             "block",
             "warp",
             "warp_xor",
+            "warp_slots",
             "block_welford",
             "compact_mean",
             "mean_tree",
@@ -79,13 +80,23 @@ class Schedule:
             raise Unsupported(
                 "block_welford requires LayerNorm, 128 threads, four-element vectors and a multiple-of-four width"
             )
-        if self.layout == "warp_xor" and (
+        if self.layout in ("warp_xor", "warp_slots") and (
             p.red is None
             or p.vals[p.red].op != "softmax"
             or self.vec != 1
-            or not 32 <= p.width <= 1024
+            or not 32 <= p.width <= 2048
         ):
-            raise Unsupported("warp_xor requires scalar last-axis softmax, width 32..1024")
+            raise Unsupported("warp_xor requires scalar last-axis softmax, width 32..2048")
+        if self.layout in ("warp_xor", "warp_slots"):
+            red = p.vals[p.red]
+            if p.width > ordered_score_limit(red.dt, red.imm == "half_to_float"):
+                raise Unsupported(
+                    "wide ordered softmax requires a qualified FP32 reduction; keep ATen"
+                )
+        if self.layout == "warp_slots" and (not self.cache or self.threads > 256 or p.width < 1025):
+            raise Unsupported(
+                "warp_slots requires cached 1025..2048-wide scalar softmax and <=256 threads"
+            )
         if self.layout == "flat" and (
             p.red is not None or any(p.vals[i].shape != p.domain for i in p.outputs)
         ):

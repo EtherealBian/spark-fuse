@@ -25,7 +25,7 @@ def test_ordered_softmax_both_outputs(dtype, width, cache):
             torch.testing.assert_close(result, expected, rtol=0, atol=0)
 
 
-@pytest.mark.parametrize("width,vec", [(31, 1), (1025, 1), (97, 2)])
+@pytest.mark.parametrize("width,vec", [(31, 1), (2049, 1), (97, 2)])
 def test_ordered_illegal(width, vec):
     ep = torch.export.export(Score(), (torch.randn(2, width),))
     p = lower(ep)

@@ -1,0 +1,139 @@
+{
+  "checks": [
+    {
+      "check": "tests",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "........................................................................ [ 13%]\n........................................................................ [ 26%]\n........................................................................ [ 40%]\n........................................................................ [ 53%]\n........................................................................ [ 67%]\n........................................................................ [ 80%]\n........................................................................ [ 93%]\n.................................                                        [100%]\n537 passed in 10.72s\n",
+      "elapsed_s": 11.886643729172647
+    },
+    {
+      "check": "installed_wheel",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 2.788758272305131
+    },
+    {
+      "check": "qwen_modules",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.557415395975113
+    },
+    {
+      "check": "qwen_modules_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.7630743021145463
+    },
+    {
+      "check": "qwen_attention_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.8172615487128496
+    },
+    {
+      "check": "bert_self_output_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "BertSelfOutput verified\n",
+      "elapsed_s": 3.014212764799595
+    },
+    {
+      "check": "bert_encoder_layer_fixed_order",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "{'eager': (True, None, None), 'unsplit': (False, None, None), 'split': (False, None, None), 'ordered': (True, None, None), 'exported_aten': (True, None, None)}\n",
+      "elapsed_s": 3.2722161561250687
+    },
+    {
+      "check": "bert_host_call_equivalence",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "bert 33 [('eager', True, None), ('export', True, None), ('export_fast', True, None), ('mixed', True, None), ('mixed_fast', True, None)]\n{}\n",
+      "elapsed_s": 3.098571960814297
+    },
+    {
+      "check": "qwen_decoder_layer_residual_barrier",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "33 witness True {'eager': (True, None, None), 'exported_aten': (True, None, None), 'prior': (True, None, None), 'split': (True, None, None)}\n",
+      "elapsed_s": 3.6660515684634447
+    },
+    {
+      "check": "qwen_decoder_paired_rotary",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "33 witness True {'eager': (True, None, None), 'exported_aten': (True, None, None), 'prior': (True, None, None), 'split': (True, None, None), 'rotary': (True, None, None)}\n",
+      "elapsed_s": 3.6958162104710937
+    },
+    {
+      "check": "qwen_decode_cache_carry",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "63 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': []}\n",
+      "elapsed_s": 3.933582437224686
+    },
+    {
+      "check": "qwen_decode_head_repeat",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "255 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': [], 'repeat': []}\n1025 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': [], 'repeat': []}\n",
+      "elapsed_s": 4.474374765530229
+    },
+    {
+      "check": "qwen_decode_ordered_scores",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "1023 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': []}\n2047 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': []}\n",
+      "elapsed_s": 6.0160404443740845
+    },
+    {
+      "check": "t5_gated-gelu",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gated-gelu [('eager', True, None, None), ('exported_aten', True, None, None), ('mixed', True, None, None)]\n",
+      "elapsed_s": 2.9585281712934375
+    },
+    {
+      "check": "t5_gated-gelu_pytorch_tanh",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gated-gelu_pytorch_tanh [('eager', True, None, None), ('exported_aten', True, None, None), ('mixed', True, None, None)]\n",
+      "elapsed_s": 3.1045734249055386
+    },
+    {
+      "check": "all_low_precision_activation_encodings",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "torch.float16 1 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.float16 4 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.bfloat16 1 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.bfloat16 4 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\n",
+      "elapsed_s": 2.18733742646873
+    },
+    {
+      "check": "wide_cached_score_schedules",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "scores 24 8192 float16 31885 pass\nscores 24 8192 float16 39804 pass\nscores 24 8192 float16 47723 pass\nscores 24 8192 float16 55642 pass\nscores2 24 2048 float16 32395 pass\nscores2 24 2048 float16 40314 pass\nscores2 24 2048 float16 48233 pass\nscores2 24 2048 float16 56152 pass\nscores 384 4096 bfloat16 32497 pass\nscores 384 4096 bfloat16 40416 pass\nscores 384 4096 bfloat16 48335 pass\nscores 384 4096 bfloat16 56254 pass\n",
+      "elapsed_s": 2.1882302640005946
+    },
+    {
+      "check": "dynamic_native_shape_matrix",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gate verify only excluded: []\nresnorm2 verify only excluded: []\nmean verify only excluded: []\n",
+      "elapsed_s": 2.311750628054142
+    },
+    {
+      "check": "offline_campaign_evidence",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "{\"run\": \"gb10-attention\", \"panel\": \"attention\", \"indexed\": 122, \"passed\": 117, \"distinct_sources_verified\": 44, \"missing_source\": 0, \"state\": \"in progress at capture\"}\n{\"run\": \"gb10-overnight\", \"panel\": \"general\", \"indexed\": 230, \"passed\": 224, \"distinct_sources_verified\": 55, \"missing_source\": 87, \"state\": \"in progress at capture\"}\n",
+      "elapsed_s": 0.25263592787086964
+    }
+  ],
+  "passed": true,
+  "completed_epoch": 1795627959.2340832
+}

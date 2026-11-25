@@ -355,3 +355,23 @@ python tools/qwen_cached_decode.py --head-repeats --framework-softmax --past 31 
 ```
 
 [阶段验收](../reports/head-repeat-stage-acceptance.json)另外用不同的权重和五条新轨迹检查预填长度 255、1025，两步的四个可见输出均通过。此处报告样本范围内的逐位结果，而非对所有输入的等价性证明。生成的复制 kernel 也通过 [memcheck、racecheck、synccheck](../reports/head-repeat-sanitizer-gb10.txt)。
+
+### 长行 Softmax：寄存器缓存与精度边界 / Register-resident score rows
+
+`partition_export(ep, ordered_scores="slots")` 是可选策略，不改变默认调度。一个 warp 处理一行，每个 lane 按固定顺序累加，随后按 XOR 蝶形顺序合并。宽度 1025–2048 的已验证 FP32 归约把跨阶段的数组改为编译期下标；改变的是缓存位置，不是加法次序。`ordered_scores="loop"` 是同序循环对照。域外保留原 ATen Softmax。低精度最终输出不能代替对中间 FP32 概率的检查。
+
+- **子图**：[独立对照](../reports/ordered-score-slots-gb10.json)包含 5 个种子、2 种地址偏移、7 个交错计时时窗，只对通过逐位与步幅检查的实现计时。对齐的 24×1537 BF16、三个输出可见时，eager / loop / slots 为 **10.801 / 26.161 / 5.683 µs**。实际二进制的每线程栈从 **200 B 降至 0 B**，寄存器从 **36 增到 128**。384×2047 时为 48.097 / 58.959 / 29.133 µs。更窄或少输出的图不一定选它：24×1025 仅保留 BF16 概率时，普通 block 在本组种子上比 slots 更快。
+- **为什么有时回退？** [初次测量](../reports/ordered-score-slots-initial-gb10.json)发现，FP16 宽 2048 的掩码分数无一处变化，但首个种子的 FP32 概率有 **19,131** 个元素不同。[同一份 `z` 的独立复验](../reports/ordered-score-half-origin-gb10.json)区分了 `z.softmax(-1, dtype=float32)` 和 `z.float().softmax(-1)`：从 1025 开始，当前 ATen 对两者使用不同的 CUDA kernel。在这里仅前者触发 FP16→FP32 回退；不把它偷偷改成显式转换。显式转换图中的缩放值、掩码分数和两种概率输出逐位匹配。域和结论限于此 GB10 / PyTorch 构建。
+- **真实子层**：[Qwen2 两步缓存解码](../reports/qwen-decode-ordered-scores-qualified-gb10.json)在相同配对头复制、KV 拼接、旋转和 GEMM 下仅替换分数路径。预填 1535 时，第一步的 eager / 框架 Softmax 分区 / loop / slots 为 **664.600 / 622.819 / 635.891 / 620.477 µs**；第二步为 **659.101 / 630.528 / 647.440 / 625.224 µs**。框架分区的 20 个 kernel 在此降为 17 个。预填 2047 的第二步宽 2049，三种分区均保留 ATen，计时差不能算 slots 加速。未通过既有数值门槛的整层 Inductor 不计时；这不是模型 token 吞吐。[旧反例的权重与输入种子](../reports/qwen-ordered-score-replay-gb10.json)也重跑了两步，检查各后端自己的 K/V、隐藏态和注意力概率。
+
+**English.** This opt-in GB10 policy keeps the ordered warp reduction but makes wide per-lane cache slots statically addressable. The isolated register/stack measurements explain the loop comparison, not an end-to-end speedup. The profiler and a same-input witness distinguish native Half-to-Float Softmax from Softmax on an already-cast Float tensor. Unqualified paths retain ATen. See the [emitted CUDA](../examples/generated/ordered-scores), [sanitizer summary](../reports/ordered-score-sanitizer-gb10.txt), and [stage acceptance](../reports/ordered-scores-stage-acceptance.json).
+
+```bash
+source tools/env.sh
+python tools/half_score_witness.py --output /tmp/half-origin.json
+python tools/ordered_score_panel.py --emit-dir /tmp/score-kernels --output /tmp/scores.json
+python tools/qwen_cached_decode.py --score-panel --past 1024 1535 2047 --seed-offset 52753 \
+  --profile --emit-dir /tmp/decode-kernels --output /tmp/decode-scores.json
+python tools/qwen_cached_decode.py --score-panel --past 1024 2046 --seed-offset 44234 \
+  --verify-only --output /tmp/old-weights.json
+```
