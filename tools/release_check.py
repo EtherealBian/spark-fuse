@@ -186,6 +186,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "segmented_qwen_cache",
+                [
+                    opt,
+                    str(ROOT / "tools/segmented_qwen_panel.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-segmented-qwen.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "qwen_sdpa_sites",
                 [
                     opt,

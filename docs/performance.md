@@ -1125,3 +1125,18 @@ The middle row reverses direction when KV storage rotates. In the separate synch
 All entries are **whole-layer CUDA Graph device replay µs**, not throughput. Both CUDA ablations in the table fix tile=32 and one query head per thread block. At 1025 tokens removal eliminates two materializations totalling **4,198,400 logical bytes**, taking launches from 43 to 41; this is not a DRAM byte counter. The separately measured rotating, synchronized request still favors Inductor: HF eager **317.60**, original export **397.67**, retained-repeat CUDA **392.39**, compact CUDA **365.44**, Inductor **192.34 µs**. Inductor passed the numerical, prefix and fresh-storage checks in all six panels, but its returned full caches were not byte-identical. Its times are provided as a numerical baseline, not a byte-exact substitute. Grouping four query heads was slower than one at each tested layer length. These tests do not measure pretrained model quality or an entire autoregressive model.
 
 [Executable real-model boundary](../examples/qwen_sdpa_step.py) · [raw gates, held-out hashes, kernel traces and timing windows](../reports/qwen-sdpa-sites-gb10.json) · [sanitizers](../reports/qwen-sdpa-sites-sanitizer-gb10.txt). Reproduce: `python tools/qwen_sdpa_sites.py --output /tmp/qwen-sdpa-sites.json` with the optional Transformers environment.
+
+<a id="segmented-cache"></a>
+### 两步解码：把缓存追加并入注意力是否更快？ / Cache append inside attention
+
+`partition_segmented_decode` 让注意力直接从历史缓存和新 token 的四段 K/V 读取。调用者需要完整新缓存时，每个物理 KV 头由指定查询头的线程块写出一次；若缓存仅用于注意力，则不分配公开副本。存在必须提前读取拼接结果的依赖时保留原图。下面使用真实 Qwen2 层、两步各自传递缓存，并同时保留**两步的六个输出**，不是单个 kernel 的计时。首步历史来自预填（token-major），第二步读第一步返回的 head-major 缓存。
+
+| 初始历史（首套随机权重） | HF eager | 导出 ATen | 两次 cat + 注意力 | 成对追加 + 注意力 | 追加并入注意力 | Inductor |
+|---|---:|---:|---:|---:|---:|---:|
+| 64，带偏置 | 147.46 | 147.30 | 133.12 | 129.75 | 138.62 | **76.56** |
+| 256，无偏置 | 148.11 | 147.98 | 134.27 | 130.14 | 138.42 | **78.51** |
+| 1024，带偏置 | 252.41 | 252.75 | 143.89 | **135.75** | 142.29 | 170.01 |
+
+Time is CUDA Graph device replay in µs **for both steps together**, without qualification or capture. At history 1024 the six paths launch 88/88/82/80/78/36 kernels. Fusing removed launches but lost to paired append in **all six** seed/length cells. On rotating inputs, synchronized request medians at 1024 were 625.30/782.39/729.83/719.68/707.98/363.36 µs. The fused path does not give a material peak-allocation saving when both new caches must remain visible. These are different clocks and different storage lifetimes; launch count alone does not select a winner.
+
+Eight held-out trajectories per cell, two independently initialized layers. The three CUDA paths agree byte-for-byte on all six final tensors, and checks at both attention sites cover FP32 partials and a CPU FP64 reference. Inductor meets the numerical gates but does not produce byte-identical full caches. [Raw results, allocation peaks and timing windows](../reports/segmented-qwen-gb10.json) · [sanitizer transcripts](../reports/segmented-qwen-sanitizer-gb10.txt). Reproduce: `python tools/segmented_qwen_panel.py --output /tmp/segmented-qwen.json` in the optional Transformers environment.
