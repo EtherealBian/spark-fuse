@@ -5,19 +5,32 @@ import torch
 from torch import nn
 from torch.utils import _pytree as tree
 from .ir import Val, Unsupported
-from .runtime import DenseKernelCall, build
+from .runtime import DenseKernelCall, STORAGE_DT, build
 
 
 class IndexProgram(DenseKernelCall):
     def __init__(
-        self, inputs, outputs, dtype, device, source, *, input_strides=None, output_dtypes=None
+        self,
+        inputs,
+        outputs,
+        dtype,
+        device,
+        source,
+        *,
+        input_strides=None,
+        input_dtypes=None,
+        output_dtypes=None,
     ):
         n = len(inputs)
         m = len(outputs)
-        out_types = (dtype,) * m if output_dtypes is None else tuple(output_dtypes)
-        if len(out_types) != m or any(t not in ("f16", "bf16", "f32", "i8") for t in out_types):
-            raise ValueError("expected one supported storage dtype per output")
-        types = (dtype,) * n + out_types
+
+        def checked(ds, count):
+            types = (dtype,) * count if ds is None else tuple(ds)
+            if len(types) != count or any(t not in STORAGE_DT.values() for t in types):
+                raise ValueError("expected one supported storage dtype per tensor")
+            return types
+
+        types = checked(input_dtypes, n) + checked(output_dtypes, m)
         # A descriptor is relative to data_ptr(), never the backing storage base.
         # None keeps the normal dense guard. Only an explicitly specialized index
         # program can accept a noncompact input. Output allocation is unchanged.

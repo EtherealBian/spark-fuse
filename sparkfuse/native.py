@@ -84,7 +84,7 @@ def _native_dispatch(kernel, row_bounds):
     desc = [p.vals[i] for i in p.inputs + p.outputs]
     out_spec = kernel.ep.call_spec.out_spec
     in_spec = kernel.ep.call_spec.in_spec
-    num = {"f32": 0, "f16": 1, "bf16": 2, "i8": 3}
+    num = {"f32": 0, "f16": 1, "bf16": 2, "i8": 3, "i32": 4}
     host = _extension()._Plan(
         kernel.lib,
         ctypes.cast(kernel.lib.launch, ctypes.c_void_p).value,

@@ -225,6 +225,7 @@ def partition_export(
     sliced_rotary=False,
     sliced_cache=False,
     token_quant=False,
+    projection_epilogue=False,
 ):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
     if ordered_scores not in (None, "loop", "slots", "guarded") or (
@@ -253,6 +254,10 @@ def partition_export(
         from .token_quant import fuse_token_quant
 
         records.extend(fuse_token_quant(gm, device, host_backend))
+    if projection_epilogue:
+        from .projection_epilogue import fuse_epilogues
+
+        records.extend(fuse_epilogues(gm, device, host_backend))
     if sliced_cache:
         from .sliced_cache import fuse_sliced_cache
 

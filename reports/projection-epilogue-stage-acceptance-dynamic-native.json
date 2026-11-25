@@ -1,0 +1,3293 @@
+{
+  "provenance": {
+    "git_head_at_capture": "3555834ca9f028410a9132a9c3530bcd4b9f71c8",
+    "source_tree_sha256": "647b8425952a6b323b4c7b1621517d81a8b6f47a1d628248bf40e663eefa19f4",
+    "archive": "sources/647b8425952a6b323b4c7b1621517d81a8b6f47a1d628248bf40e663eefa19f4.tar.gz"
+  },
+  "device": "NVIDIA GB10",
+  "torch": "2.13.0+cu130",
+  "cuda": "13.0",
+  "compiler": "eb34728abd6aaae675f675ac5c1d6b1825d2d91ed36128f5710ad2c34eb71497",
+  "method": "Rank-2 dynamic exports. Identical seeded inputs across all backends. Single SparkFuse binary and native descriptor per workload. Raw synchronized host microseconds for nine randomized rounds, each with three shuffled traversals of 13 held-out lengths. CUDA Graph timings are per fixed row count and exclude host dispatch. Setup is reported separately (cache state not controlled). Inductor excluded from timing if any length fails eager-based parity.",
+  "cases": [
+    {
+      "case": "gate",
+      "width": 8960,
+      "dtype": "torch.bfloat16",
+      "bounds": [
+        1,
+        129
+      ],
+      "example_rows": 7,
+      "warmup_rows": [
+        1,
+        7,
+        32
+      ],
+      "held_out_rows": [
+        2,
+        3,
+        15,
+        31,
+        33,
+        47,
+        48,
+        64,
+        65,
+        96,
+        97,
+        128,
+        129
+      ],
+      "kernel_cache_id": "d0eaeb00d23451e8799a334b7fc44741a80ab8edb5c0804a498251fcebb6ceb1",
+      "schedule": {
+        "threads": 256,
+        "layout": "flat",
+        "cache": false,
+        "vec": 4
+      },
+      "construction_s": {
+        "dynamic_plan": 0.0035632411018013954,
+        "native_host_plan": 0.02188863791525364
+      },
+      "checks": {
+        "eager": [
+          {
+            "rows": 1,
+            "offset": 0,
+            "seed": 4109,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 8960,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 7,
+            "offset": 1,
+            "seed": 4110,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 62720,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 32,
+            "offset": 0,
+            "seed": 4111,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 286720,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 2,
+            "offset": 1,
+            "seed": 4112,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 17920,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 3,
+            "offset": 0,
+            "seed": 4113,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 26880,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 15,
+            "offset": 1,
+            "seed": 4114,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 134400,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 31,
+            "offset": 0,
+            "seed": 4115,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 277760,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 33,
+            "offset": 1,
+            "seed": 4116,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 295680,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 47,
+            "offset": 0,
+            "seed": 4117,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 421120,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 48,
+            "offset": 1,
+            "seed": 4118,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 430080,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 64,
+            "offset": 0,
+            "seed": 4119,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 573440,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 65,
+            "offset": 1,
+            "seed": 4120,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 582400,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 96,
+            "offset": 0,
+            "seed": 4121,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 860160,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 97,
+            "offset": 1,
+            "seed": 4122,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 869120,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 128,
+            "offset": 0,
+            "seed": 4123,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1146880,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 129,
+            "offset": 1,
+            "seed": 4124,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1155840,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          }
+        ],
+        "python": [
+          {
+            "rows": 1,
+            "offset": 0,
+            "seed": 4109,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 8960,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 7,
+            "offset": 1,
+            "seed": 4110,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 62720,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 32,
+            "offset": 0,
+            "seed": 4111,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 286720,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 2,
+            "offset": 1,
+            "seed": 4112,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 17920,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 3,
+            "offset": 0,
+            "seed": 4113,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 26880,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 15,
+            "offset": 1,
+            "seed": 4114,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 134400,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 31,
+            "offset": 0,
+            "seed": 4115,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 277760,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 33,
+            "offset": 1,
+            "seed": 4116,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 295680,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 47,
+            "offset": 0,
+            "seed": 4117,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 421120,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 48,
+            "offset": 1,
+            "seed": 4118,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 430080,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 64,
+            "offset": 0,
+            "seed": 4119,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 573440,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 65,
+            "offset": 1,
+            "seed": 4120,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 582400,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 96,
+            "offset": 0,
+            "seed": 4121,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 860160,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 97,
+            "offset": 1,
+            "seed": 4122,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 869120,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 128,
+            "offset": 0,
+            "seed": 4123,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1146880,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 129,
+            "offset": 1,
+            "seed": 4124,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1155840,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          }
+        ],
+        "native": [
+          {
+            "rows": 1,
+            "offset": 0,
+            "seed": 4109,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 8960,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 7,
+            "offset": 1,
+            "seed": 4110,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 62720,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 32,
+            "offset": 0,
+            "seed": 4111,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 286720,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 2,
+            "offset": 1,
+            "seed": 4112,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 17920,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 3,
+            "offset": 0,
+            "seed": 4113,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 26880,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 15,
+            "offset": 1,
+            "seed": 4114,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 134400,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 31,
+            "offset": 0,
+            "seed": 4115,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 277760,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 33,
+            "offset": 1,
+            "seed": 4116,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 295680,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 47,
+            "offset": 0,
+            "seed": 4117,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 421120,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 48,
+            "offset": 1,
+            "seed": 4118,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 430080,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 64,
+            "offset": 0,
+            "seed": 4119,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 573440,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 65,
+            "offset": 1,
+            "seed": 4120,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 582400,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 96,
+            "offset": 0,
+            "seed": 4121,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 860160,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 97,
+            "offset": 1,
+            "seed": 4122,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 869120,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 128,
+            "offset": 0,
+            "seed": 4123,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1146880,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          },
+          {
+            "rows": 129,
+            "offset": 1,
+            "seed": 4124,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1155840,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              }
+            ]
+          }
+        ]
+      },
+      "rejected": {},
+      "host_windows": [],
+      "device": {},
+      "verify_only": true
+    },
+    {
+      "case": "resnorm2",
+      "width": 1536,
+      "dtype": "torch.bfloat16",
+      "bounds": [
+        1,
+        129
+      ],
+      "example_rows": 7,
+      "warmup_rows": [
+        1,
+        7,
+        32
+      ],
+      "held_out_rows": [
+        2,
+        3,
+        15,
+        31,
+        33,
+        47,
+        48,
+        64,
+        65,
+        96,
+        97,
+        128,
+        129
+      ],
+      "kernel_cache_id": "19e208dd9d1f4ba0da724e7227ff72b58d14d938091115f64a47a47c7de201ca",
+      "schedule": {
+        "threads": 128,
+        "layout": "block",
+        "cache": true,
+        "vec": 4
+      },
+      "construction_s": {
+        "dynamic_plan": 0.0020406246185302734,
+        "native_host_plan": 4.40133735537529e-05
+      },
+      "checks": {
+        "eager": [
+          {
+            "rows": 1,
+            "offset": 0,
+            "seed": 4109,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1536,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1536,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 7,
+            "offset": 1,
+            "seed": 4110,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 10752,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 10752,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 32,
+            "offset": 0,
+            "seed": 4111,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 49152,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 49152,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 2,
+            "offset": 1,
+            "seed": 4112,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 3072,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 3072,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 3,
+            "offset": 0,
+            "seed": 4113,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 4608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 4608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 15,
+            "offset": 1,
+            "seed": 4114,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 23040,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 23040,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 31,
+            "offset": 0,
+            "seed": 4115,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 47616,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 47616,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 33,
+            "offset": 1,
+            "seed": 4116,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 50688,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 50688,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 47,
+            "offset": 0,
+            "seed": 4117,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 72192,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 72192,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 48,
+            "offset": 1,
+            "seed": 4118,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 73728,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 73728,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 64,
+            "offset": 0,
+            "seed": 4119,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 65,
+            "offset": 1,
+            "seed": 4120,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 99840,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 99840,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 96,
+            "offset": 0,
+            "seed": 4121,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 147456,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 147456,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 97,
+            "offset": 1,
+            "seed": 4122,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 148992,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 148992,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 128,
+            "offset": 0,
+            "seed": 4123,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 196608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 196608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 129,
+            "offset": 1,
+            "seed": 4124,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 198144,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 198144,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          }
+        ],
+        "python": [
+          {
+            "rows": 1,
+            "offset": 0,
+            "seed": 4109,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1536,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1536,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 7,
+            "offset": 1,
+            "seed": 4110,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 10752,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 10752,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 32,
+            "offset": 0,
+            "seed": 4111,
+            "errors": [
+              {
+                "max_abs": 0.00048828125,
+                "mean_abs": 9.934107462565104e-09,
+                "unequal": 1,
+                "finite_pairs": 49152,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 49152,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 2,
+            "offset": 1,
+            "seed": 4112,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 3072,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 3072,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 3,
+            "offset": 0,
+            "seed": 4113,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 4608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 4608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 15,
+            "offset": 1,
+            "seed": 4114,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 23040,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 23040,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 31,
+            "offset": 0,
+            "seed": 4115,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 47616,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 47616,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 33,
+            "offset": 1,
+            "seed": 4116,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 50688,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 50688,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 47,
+            "offset": 0,
+            "seed": 4117,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 72192,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 72192,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 48,
+            "offset": 1,
+            "seed": 4118,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 73728,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 73728,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 64,
+            "offset": 0,
+            "seed": 4119,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 65,
+            "offset": 1,
+            "seed": 4120,
+            "errors": [
+              {
+                "max_abs": 0.0001220703125,
+                "mean_abs": 1.2226593800080128e-09,
+                "unequal": 1,
+                "finite_pairs": 99840,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 99840,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 96,
+            "offset": 0,
+            "seed": 4121,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 147456,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 147456,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 97,
+            "offset": 1,
+            "seed": 4122,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 148992,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 148992,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 128,
+            "offset": 0,
+            "seed": 4123,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 196608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 196608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 129,
+            "offset": 1,
+            "seed": 4124,
+            "errors": [
+              {
+                "max_abs": 0.001953125,
+                "mean_abs": 1.2321373596979975e-08,
+                "unequal": 2,
+                "finite_pairs": 198144,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 198144,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          }
+        ],
+        "native": [
+          {
+            "rows": 1,
+            "offset": 0,
+            "seed": 4109,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1536,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1536,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 7,
+            "offset": 1,
+            "seed": 4110,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 10752,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 10752,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 32,
+            "offset": 0,
+            "seed": 4111,
+            "errors": [
+              {
+                "max_abs": 0.00048828125,
+                "mean_abs": 9.934107462565104e-09,
+                "unequal": 1,
+                "finite_pairs": 49152,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 49152,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 2,
+            "offset": 1,
+            "seed": 4112,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 3072,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 3072,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 3,
+            "offset": 0,
+            "seed": 4113,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 4608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 4608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 15,
+            "offset": 1,
+            "seed": 4114,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 23040,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 23040,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 31,
+            "offset": 0,
+            "seed": 4115,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 47616,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 47616,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 33,
+            "offset": 1,
+            "seed": 4116,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 50688,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 50688,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 47,
+            "offset": 0,
+            "seed": 4117,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 72192,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 72192,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 48,
+            "offset": 1,
+            "seed": 4118,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 73728,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 73728,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 64,
+            "offset": 0,
+            "seed": 4119,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 98304,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 65,
+            "offset": 1,
+            "seed": 4120,
+            "errors": [
+              {
+                "max_abs": 0.0001220703125,
+                "mean_abs": 1.2226593800080128e-09,
+                "unequal": 1,
+                "finite_pairs": 99840,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 99840,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 96,
+            "offset": 0,
+            "seed": 4121,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 147456,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 147456,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 97,
+            "offset": 1,
+            "seed": 4122,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 148992,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 148992,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 128,
+            "offset": 0,
+            "seed": 4123,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 196608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 196608,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          },
+          {
+            "rows": 129,
+            "offset": 1,
+            "seed": 4124,
+            "errors": [
+              {
+                "max_abs": 0.001953125,
+                "mean_abs": 1.2321373596979975e-08,
+                "unequal": 2,
+                "finite_pairs": 198144,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0.012,
+                "atol": 0.0002
+              },
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 198144,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 0,
+                "atol": 0
+              }
+            ]
+          }
+        ]
+      },
+      "rejected": {},
+      "host_windows": [],
+      "device": {},
+      "verify_only": true
+    },
+    {
+      "case": "mean",
+      "width": 768,
+      "dtype": "torch.float32",
+      "bounds": [
+        1,
+        129
+      ],
+      "example_rows": 7,
+      "warmup_rows": [
+        1,
+        7,
+        32
+      ],
+      "held_out_rows": [
+        2,
+        3,
+        15,
+        31,
+        33,
+        47,
+        48,
+        64,
+        65,
+        96,
+        97,
+        128,
+        129
+      ],
+      "kernel_cache_id": "c33ece55d1210a1485fe383ca23c003be6d82f94c38e68ad0e645cc19c428fa6",
+      "schedule": {
+        "threads": 128,
+        "layout": "block",
+        "cache": true,
+        "vec": 4
+      },
+      "construction_s": {
+        "dynamic_plan": 0.0011570127680897713,
+        "native_host_plan": 3.406219184398651e-05
+      },
+      "checks": {
+        "eager": [
+          {
+            "rows": 1,
+            "offset": 0,
+            "seed": 4109,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 7,
+            "offset": 1,
+            "seed": 4110,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 7,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 32,
+            "offset": 0,
+            "seed": 4111,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 32,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 2,
+            "offset": 1,
+            "seed": 4112,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 2,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 3,
+            "offset": 0,
+            "seed": 4113,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 3,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 15,
+            "offset": 1,
+            "seed": 4114,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 15,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 31,
+            "offset": 0,
+            "seed": 4115,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 31,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 33,
+            "offset": 1,
+            "seed": 4116,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 33,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 47,
+            "offset": 0,
+            "seed": 4117,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 47,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 48,
+            "offset": 1,
+            "seed": 4118,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 48,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 64,
+            "offset": 0,
+            "seed": 4119,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 64,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 65,
+            "offset": 1,
+            "seed": 4120,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 65,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 96,
+            "offset": 0,
+            "seed": 4121,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 96,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 97,
+            "offset": 1,
+            "seed": 4122,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 97,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 128,
+            "offset": 0,
+            "seed": 4123,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 128,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 129,
+            "offset": 1,
+            "seed": 4124,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 129,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          }
+        ],
+        "python": [
+          {
+            "rows": 1,
+            "offset": 0,
+            "seed": 4109,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 7,
+            "offset": 1,
+            "seed": 4110,
+            "errors": [
+              {
+                "max_abs": 5.960464477539063e-08,
+                "mean_abs": 1.7029898507254463e-08,
+                "unequal": 2,
+                "finite_pairs": 7,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 32,
+            "offset": 0,
+            "seed": 4111,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 2.2351741790771484e-08,
+                "unequal": 8,
+                "finite_pairs": 32,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 2,
+            "offset": 1,
+            "seed": 4112,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 2,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 3,
+            "offset": 0,
+            "seed": 4113,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 3,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 15,
+            "offset": 1,
+            "seed": 4114,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 1.1920928955078126e-08,
+                "unequal": 2,
+                "finite_pairs": 15,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 31,
+            "offset": 0,
+            "seed": 4115,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 3.460914857925907e-08,
+                "unequal": 11,
+                "finite_pairs": 31,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 33,
+            "offset": 1,
+            "seed": 4116,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 2.1674416281960228e-08,
+                "unequal": 8,
+                "finite_pairs": 33,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 47,
+            "offset": 0,
+            "seed": 4117,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 2.6631862559217086e-08,
+                "unequal": 14,
+                "finite_pairs": 47,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 48,
+            "offset": 1,
+            "seed": 4118,
+            "errors": [
+              {
+                "max_abs": 1.7881393432617188e-07,
+                "mean_abs": 2.2351741790771484e-08,
+                "unequal": 9,
+                "finite_pairs": 48,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 64,
+            "offset": 0,
+            "seed": 4119,
+            "errors": [
+              {
+                "max_abs": 2.384185791015625e-07,
+                "mean_abs": 3.5390257835388184e-08,
+                "unequal": 20,
+                "finite_pairs": 64,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 65,
+            "offset": 1,
+            "seed": 4120,
+            "errors": [
+              {
+                "max_abs": 1.7881393432617188e-07,
+                "mean_abs": 2.84268305851863e-08,
+                "unequal": 19,
+                "finite_pairs": 65,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 96,
+            "offset": 0,
+            "seed": 4121,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 3.2285849253336586e-08,
+                "unequal": 34,
+                "finite_pairs": 96,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 97,
+            "offset": 1,
+            "seed": 4122,
+            "errors": [
+              {
+                "max_abs": 2.384185791015625e-07,
+                "mean_abs": 2.273579233700467e-08,
+                "unequal": 21,
+                "finite_pairs": 97,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 128,
+            "offset": 0,
+            "seed": 4123,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 2.468004822731018e-08,
+                "unequal": 32,
+                "finite_pairs": 128,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 129,
+            "offset": 1,
+            "seed": 4124,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 2.4950781533884446e-08,
+                "unequal": 32,
+                "finite_pairs": 129,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          }
+        ],
+        "native": [
+          {
+            "rows": 1,
+            "offset": 0,
+            "seed": 4109,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 1,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 7,
+            "offset": 1,
+            "seed": 4110,
+            "errors": [
+              {
+                "max_abs": 5.960464477539063e-08,
+                "mean_abs": 1.7029898507254463e-08,
+                "unequal": 2,
+                "finite_pairs": 7,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 32,
+            "offset": 0,
+            "seed": 4111,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 2.2351741790771484e-08,
+                "unequal": 8,
+                "finite_pairs": 32,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 2,
+            "offset": 1,
+            "seed": 4112,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 2,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 3,
+            "offset": 0,
+            "seed": 4113,
+            "errors": [
+              {
+                "max_abs": 0.0,
+                "mean_abs": 0.0,
+                "unequal": 0,
+                "finite_pairs": 3,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 15,
+            "offset": 1,
+            "seed": 4114,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 1.1920928955078126e-08,
+                "unequal": 2,
+                "finite_pairs": 15,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 31,
+            "offset": 0,
+            "seed": 4115,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 3.460914857925907e-08,
+                "unequal": 11,
+                "finite_pairs": 31,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 33,
+            "offset": 1,
+            "seed": 4116,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 2.1674416281960228e-08,
+                "unequal": 8,
+                "finite_pairs": 33,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 47,
+            "offset": 0,
+            "seed": 4117,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 2.6631862559217086e-08,
+                "unequal": 14,
+                "finite_pairs": 47,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 48,
+            "offset": 1,
+            "seed": 4118,
+            "errors": [
+              {
+                "max_abs": 1.7881393432617188e-07,
+                "mean_abs": 2.2351741790771484e-08,
+                "unequal": 9,
+                "finite_pairs": 48,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 64,
+            "offset": 0,
+            "seed": 4119,
+            "errors": [
+              {
+                "max_abs": 2.384185791015625e-07,
+                "mean_abs": 3.5390257835388184e-08,
+                "unequal": 20,
+                "finite_pairs": 64,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 65,
+            "offset": 1,
+            "seed": 4120,
+            "errors": [
+              {
+                "max_abs": 1.7881393432617188e-07,
+                "mean_abs": 2.84268305851863e-08,
+                "unequal": 19,
+                "finite_pairs": 65,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 96,
+            "offset": 0,
+            "seed": 4121,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 3.2285849253336586e-08,
+                "unequal": 34,
+                "finite_pairs": 96,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 97,
+            "offset": 1,
+            "seed": 4122,
+            "errors": [
+              {
+                "max_abs": 2.384185791015625e-07,
+                "mean_abs": 2.273579233700467e-08,
+                "unequal": 21,
+                "finite_pairs": 97,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 128,
+            "offset": 0,
+            "seed": 4123,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 2.468004822731018e-08,
+                "unequal": 32,
+                "finite_pairs": 128,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          },
+          {
+            "rows": 129,
+            "offset": 1,
+            "seed": 4124,
+            "errors": [
+              {
+                "max_abs": 1.1920928955078125e-07,
+                "mean_abs": 2.4950781533884446e-08,
+                "unequal": 32,
+                "finite_pairs": 129,
+                "matched_nan": 0,
+                "matched_posinf": 0,
+                "matched_neginf": 0,
+                "rtol": 2e-05,
+                "atol": 2e-06
+              }
+            ]
+          }
+        ]
+      },
+      "rejected": {},
+      "host_windows": [],
+      "device": {},
+      "verify_only": true
+    }
+  ]
+}

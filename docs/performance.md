@@ -832,3 +832,18 @@ The table measures warm device replay on DGX Spark; synchronized host samples ar
 python tools/token_quant_panel.py --output /tmp/token-quant.json
 bash tools/sanitize_token_quant.sh
 ```
+
+<a id="int32-epilogue"></a>
+### 整数投影的反量化尾部 / Ordered INT32 epilogue
+
+上一组实验的五次发射里仍有三次用于反量化。`projection_epilogue=True` 将 INT32 累加结果升至 FP32，先乘每个 token 的尺度，再乘每个输出通道的尺度。两次乘法不能重新结合。累加器保留在框架中，可见的中间结果按需写回。`token_quant=True, projection_epilogue=True` 可同时启用两端；中间的 INT8 GEMM 始终由 PyTorch 执行。
+
+| 投影片段，种子 903757 | eager | 只融合量化 | 只融合反量化 | 两端融合 |
+|---|---:|---:|---:|---:|
+| BF16 `2×16×1536 → 128` | 25.50 | 15.10 | 22.63 | 11.71 |
+| FP16 `33×1536 → 64` | 51.48 | 40.38 | 48.55 | 37.64 |
+| BF16 `2×32×3072 → 256` | 37.06 | 23.31 | 33.72 | 20.22 |
+
+单位为热 CUDA Graph 设备 µs。两组种子 × 三个尺寸中，投影的发射计数分别为 14、5、12、3；每组四次独立请求与 eager 逐字节一致，整数累加另经 CPU 核对。只测反量化时，Inductor 也通过了准入：两者都是一次发射，生成的 CUDA 设备中位数为 1.47–1.74 µs，Inductor 为 3.51–3.52 µs。不过这个小片段的混合 FX **同步主机调用慢于直接 eager**。整段投影没有这个结论；两种 Inductor 配置均因量化边界输出不一致，未参与整段等精度计时。
+
+The [ablation report](../reports/projection-epilogue-gb10.json) separates isolated dequantization, each pass on its own, and the combined projection. It includes per-output byte diagnostics, shuffled raw device/host samples and a profiler census. This remains a static synthetic W8A8 projection experiment, not a pretrained-model result. Run `python tools/projection_epilogue_panel.py --output /tmp/dequant.json` and `bash tools/sanitize_projection_epilogue.sh` after sourcing the environment.

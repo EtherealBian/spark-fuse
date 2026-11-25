@@ -1,0 +1,317 @@
+{
+ "protocol": "Fixed historical selected schedule, unchanged module for both Inductor options. The original comparison input and two independent seeds must all pass the original BF16 assert_close gate before timing the last input, in seven shuffled hot-device and synchronized-host windows. Four eager counterfactuals preserve or omit the BF16 round after the residual add and before the weight multiply; they are diagnostics, not generated code or timed paths.",
+ "rtol": 0.012,
+ "atol": 0.0002,
+ "device": "NVIDIA GB10",
+ "torch": "2.13.0+cu130",
+ "cuda": "13.0",
+ "default_emulate_precision_casts": false,
+ "comparator_options": {
+  "inductor": {},
+  "inductor_casts": {
+   "emulate_precision_casts": true
+  }
+ },
+ "seed_offset": 59419,
+ "catalog_sha256": "28cb69092d4c6e52ddf91b1550b75321e38280b1fe861ace373330c7fd5df366",
+ "provenance": {
+  "git_head_at_capture": "3555834ca9f028410a9132a9c3530bcd4b9f71c8",
+  "source_tree_sha256": "647b8425952a6b323b4c7b1621517d81a8b6f47a1d628248bf40e663eefa19f4",
+  "archive": "sources/647b8425952a6b323b4c7b1621517d81a8b6f47a1d628248bf40e663eefa19f4.tar.gz"
+ },
+ "cases": [
+  {
+   "id": "decomp-31x1024-bfloat16",
+   "cohort": "retained_rejection",
+   "original_worker_sha256": "c62d21f600b787029b2bd49bc4d6e1a6b526eda66d6dd07f350b7eed9ea9413a",
+   "original_admission_reproduced": {
+    "eager": true,
+    "selected": true,
+    "inductor": true
+   },
+   "export_sha256": "448110e496331cd669d60420df4b66b1c9403c840d0ade31af47f0e2753b5fe6",
+   "seeds": [
+    {
+     "seed": 7098,
+     "inputs_sha256": [
+      "7f7ba74640423faa24cd5f7620f42f711819b1bba088de4214860ce126144f6d",
+      "bf2b0b7f079c1d2735bb974ef539631c0da4594b449c8d7ac80584176200494d",
+      "c471038e91c0a198acf10a3a2b3562b3293ec07b65b6a9e499f4703c2755caf4"
+     ],
+     "output_sha256": "71df56a4ebf697c2f953908abec511d769fd092801a61cdc81d9798f46d9c6e1",
+     "checks": {
+      "eager": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8354,
+        "wide_rounded": 5804,
+        "wide_wide": 10858
+       }
+      },
+      "selected": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8354,
+        "wide_rounded": 5804,
+        "wide_wide": 10858
+       }
+      },
+      "current": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8354,
+        "wide_rounded": 5804,
+        "wide_wide": 10858
+       }
+      },
+      "inductor": {
+       "passed": false,
+       "elements": 31744,
+       "bit_mismatches": 10858,
+       "outside_tolerance": 1,
+       "model_bit_mismatches": {
+        "rounded_rounded": 10858,
+        "rounded_wide": 6445,
+        "wide_rounded": 8240,
+        "wide_wide": 0
+       },
+       "first_outside": {
+        "index": [
+         24,
+         424
+        ],
+        "actual": -1.21875,
+        "expected": -1.203125,
+        "model_values": {
+         "rounded_rounded": {
+          "residual": -2.0625,
+          "mean": 1.880949854850769,
+          "rsqrt": 0.72914057970047,
+          "normalized": -1.5038524866104126,
+          "before_weight": -1.5,
+          "output": -1.203125
+         },
+         "rounded_wide": {
+          "residual": -2.0625,
+          "mean": 1.880949854850769,
+          "rsqrt": 0.72914057970047,
+          "normalized": -1.5038524866104126,
+          "before_weight": -1.5038524866104126,
+          "output": -1.2109375
+         },
+         "wide_rounded": {
+          "residual": -2.0703125,
+          "mean": 1.880508542060852,
+          "rsqrt": 0.7292261719703674,
+          "normalized": -1.5097260475158691,
+          "before_weight": -1.5078125,
+          "output": -1.2109375
+         },
+         "wide_wide": {
+          "residual": -2.0703125,
+          "mean": 1.880508542060852,
+          "rsqrt": 0.7292261719703674,
+          "normalized": -1.5097260475158691,
+          "before_weight": -1.5097260475158691,
+          "output": -1.21875
+         }
+        }
+       }
+      },
+      "inductor_casts": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8354,
+        "wide_rounded": 5804,
+        "wide_wide": 10858
+       }
+      }
+     }
+    },
+    {
+     "seed": 171246,
+     "inputs_sha256": [
+      "b018b3f2f49f29436233b892a21ac03f1cc81b0417f56172d60831dc2d86f9fc",
+      "82727a214c984cc9b478fdf2b888e70be176251dd548621e5254740d13bb56fd",
+      "2c2a7342b241f625866bb70b0d669890abf4b07b4b43e73050b9456471017c05"
+     ],
+     "output_sha256": "59f337ff2dc9d66f843d8b0995560b5ce081e1f13bb5dc411081237bf452064e",
+     "checks": {
+      "eager": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8275,
+        "wide_rounded": 5933,
+        "wide_wide": 10910
+       }
+      },
+      "selected": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8275,
+        "wide_rounded": 5933,
+        "wide_wide": 10910
+       }
+      },
+      "current": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8275,
+        "wide_rounded": 5933,
+        "wide_wide": 10910
+       }
+      },
+      "inductor": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 10910,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 10910,
+        "rounded_wide": 6663,
+        "wide_rounded": 8159,
+        "wide_wide": 0
+       }
+      },
+      "inductor_casts": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8275,
+        "wide_rounded": 5933,
+        "wide_wide": 10910
+       }
+      }
+     }
+    },
+    {
+     "seed": 196880,
+     "inputs_sha256": [
+      "eafb31f3d00d0905e51aebdbcea59cea46a811d182ef5777c477ec89677a8366",
+      "6abe79d7601ba8378a0ac82c26685a1e23fd378c64cebf44211fccd511dea375",
+      "06ea99f2fc69710d71ad1422bc70292e4ebc971bbb0842527c70f05006edacba"
+     ],
+     "output_sha256": "6460f8cab7b9bc481a98a5760e96ddd4e1bd0aa811be2ab8ddf9707492c471e4",
+     "checks": {
+      "eager": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8344,
+        "wide_rounded": 5815,
+        "wide_wide": 10907
+       }
+      },
+      "selected": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8344,
+        "wide_rounded": 5815,
+        "wide_wide": 10907
+       }
+      },
+      "current": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8344,
+        "wide_rounded": 5815,
+        "wide_wide": 10907
+       }
+      },
+      "inductor": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 10907,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 10907,
+        "rounded_wide": 6299,
+        "wide_rounded": 8362,
+        "wide_wide": 0
+       }
+      },
+      "inductor_casts": {
+       "passed": true,
+       "elements": 31744,
+       "bit_mismatches": 0,
+       "outside_tolerance": 0,
+       "model_bit_mismatches": {
+        "rounded_rounded": 0,
+        "rounded_wide": 8344,
+        "wide_rounded": 5815,
+        "wide_wide": 10907
+       }
+      }
+     }
+    }
+   ],
+   "admitted": [
+    "eager",
+    "selected",
+    "current",
+    "inductor_casts"
+   ],
+   "current_schedule": {
+    "threads": 256,
+    "layout": "mean_cohort",
+    "cache": true,
+    "vec": 4
+   },
+   "selected_schedule": {
+    "threads": 512,
+    "layout": "mean_cohort",
+    "cache": true,
+    "vec": 4
+   },
+   "cuda_sha256": {
+    "current": "d76b33fe05901f055c38ae5ee8dad88828f95aa0514bafae218405759559ab73",
+    "selected": "a38a7ec91951185de1d4536257e94276e9edf5e0c419185d35ce62a08978c634"
+   },
+   "timing_seed": null,
+   "timing": null
+  }
+ ],
+ "passed": true
+}

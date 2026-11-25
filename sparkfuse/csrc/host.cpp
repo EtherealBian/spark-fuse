@@ -20,6 +20,7 @@ static at::ScalarType dtype(int key) {
     case 1: return at::kHalf;
     case 2: return at::kBFloat16;
     case 3: return at::kChar;
+    case 4: return at::kInt;
     default: throw py::value_error("unsupported dtype");
   }
 }

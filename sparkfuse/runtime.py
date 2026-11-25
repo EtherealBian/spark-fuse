@@ -12,6 +12,10 @@ from .ir import DT, Unsupported, lower
 from .codegen import Schedule, generate
 
 
+# Index programs may consume or produce integer storage without admitting integer scalar IR.
+STORAGE_DT = {**DT, torch.int8: "i8", torch.int32: "i32"}
+
+
 @lru_cache(None)
 def toolchain():
     nvcc = os.environ.get("NVCC") or shutil.which("nvcc") or "/usr/local/cuda/bin/nvcc"
@@ -84,7 +88,7 @@ class DenseKernelCall:
             if (
                 not isinstance(t, torch.Tensor)
                 or tuple(t.shape) != v.shape
-                or DT.get(t.dtype) != v.dt
+                or STORAGE_DT.get(t.dtype) != v.dt
                 or t.device != self.device
                 or t.layout != torch.strided
                 or (tuple(t.stride()) != stride if stride else not t.is_contiguous())
@@ -94,8 +98,7 @@ class DenseKernelCall:
                 raise ValueError("input shape/dtype/device/layout mismatch")
             if torch.is_grad_enabled() and t.requires_grad:
                 raise ValueError("inference only: run under torch.inference_mode()")
-        dtype = {v: k for k, v in DT.items()}
-        dtype["i8"] = torch.int8  # Storage ABI only; not an admissible floating scalar IR type.
+        dtype = {v: k for k, v in STORAGE_DT.items()}
         out = [
             torch.empty(p.vals[i].shape, dtype=dtype[p.vals[i].dt], device=self.device)
             for i in p.outputs

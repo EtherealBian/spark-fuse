@@ -37,6 +37,18 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "int32_dequantization_ablation",
+            [
+                sys.executable,
+                str(ROOT / "tools/projection_epilogue_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-projection-epilogue.json")),
+            ],
+        )
+    )
     opt = os.environ.get("SPARKFUSE_QWEN_PY")
     qreport = report.with_name(report.stem + "-qwen.json")
     if opt:

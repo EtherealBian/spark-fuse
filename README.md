@@ -10,7 +10,7 @@
 
 [Q/K/V 布局实验](docs/performance.md#packed-rotary)保留图要求的拷贝；在[原生 Phi-3 解码层](docs/performance.md#phi3-native)上，V 必须保留为视图。将 Q/K 旋转与[两次 KV 缓存拼接](docs/performance.md#phi3-cache)合成一个 CUDA kernel 后，单 token 更新的整层发射数从 15 次降到 13 次；不改权重。
 
-[逐 token INT8 量化](docs/performance.md#token-quant)在一个 kernel 中计算残差、编码和尺度；接上 PyTorch 整数矩阵乘法后，两个投影片段的实测发射数从 14 次降到 5 次。
+[逐 token INT8 量化](docs/performance.md#token-quant)在一个 kernel 中计算残差、编码和尺度；配合[有序反量化](docs/performance.md#int32-epilogue)，三个投影片段从 14 次发射降到 3 次，整数矩阵乘法仍由 PyTorch 执行。
 
 ### 跑一个例子
 
@@ -54,4 +54,4 @@ The [packed QKV study](docs/performance.md#packed-rotary) preserves explicit cop
 
 For [decomposed residual RMSNorm](docs/performance.md#packed-mean), a packed shared-memory tile preserves both narrow rounding points and the FP32 sum order. Across 18 held-out shape/alignment comparisons it was 1.12–1.73× as fast as the best measured previous schedule; it does not always beat cast-aware Inductor. [Inside Qwen2](docs/performance.md#qwen-packed-mean), one of three layer lengths regressed. An opt-in [whole-graph tuner](docs/performance.md#context-site) can now change one site without retuning its neighbors. [Resident graph execution](docs/performance.md#resident) returns fresh outputs for rotating requests; the Qwen2 panel separates single-request latency from queued throughput. [Multiple fixed shapes](docs/performance.md#shape-family) can share the frozen weights.
 
-[Per-token INT8 quantization](docs/performance.md#token-quant) fuses the residual, codes and scales into one kernel while leaving the integer GEMM in PyTorch.
+[Per-token INT8 quantization](docs/performance.md#token-quant) fuses the residual, codes and scales into one kernel. With the [ordered dequantization epilogue](docs/performance.md#int32-epilogue), three tested projections take three launches each, including the unchanged PyTorch integer GEMM.
