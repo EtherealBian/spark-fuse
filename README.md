@@ -13,6 +13,9 @@
 ```bash
 source tools/env.sh
 python -m pytest -q
+# 也可先离线导出一个子图，检查 manifest 与生成的 kernel.cu
+python examples/export_scores.py /tmp/scores.pt2
+python -m sparkfuse emit /tmp/scores.pt2 --out /tmp/scores-cuda --layout warp --vec 4 --cache
 python tools/bench.py --case resnorm2 --rows 32 --width 1536 --dtype bfloat16 --profile
 python tools/tune_once.py --case resnorm2 --rows 32 --width 1536 \
   --db /tmp/dispatch.sqlite --output /tmp/tuning.json

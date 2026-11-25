@@ -1,0 +1,7 @@
+graph():
+    %scores : [num_users=1] = placeholder[target=scores]
+    %bias : [num_users=1] = placeholder[target=bias]
+    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%scores, 0.125), kwargs = {})
+    %add : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul, %bias), kwargs = {})
+    %softmax : [num_users=1] = call_function[target=torch.ops.aten.softmax.int](args = (%add, -1), kwargs = {})
+    return (softmax, add)

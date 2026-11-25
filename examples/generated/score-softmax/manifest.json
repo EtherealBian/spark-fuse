@@ -1,0 +1,109 @@
+{
+  "format": "sparkfuse.cuda-source.v1",
+  "input_archive_sha256": "136f45860fc045400146c7100e72d0ff934d27e91e17a984edc5766824529df2",
+  "compiler_sha256": "354c8441157449a29f55ee8cb0234839d0994698f031d19bd74d5c4851782bb0",
+  "torch": "2.13.0+cu130",
+  "schedule": {
+    "threads": 128,
+    "layout": "warp",
+    "cache": true,
+    "vec": 4
+  },
+  "source_sha256": "71fe303fad5d1ea216d25913899be257f0ffc2147ef7d126af02ee4a2a524b3a",
+  "plan": {
+    "domain": [
+      12,
+      129
+    ],
+    "reduction": 5,
+    "input_ids": [
+      0,
+      1
+    ],
+    "output_ids": [
+      5,
+      4
+    ],
+    "values": [
+      {
+        "op": "input",
+        "shape": [
+          12,
+          129
+        ],
+        "dt": "bf16",
+        "deps": [],
+        "imm": 0
+      },
+      {
+        "op": "input",
+        "shape": [
+          129
+        ],
+        "dt": "bf16",
+        "deps": [],
+        "imm": 1
+      },
+      {
+        "op": "const",
+        "shape": [],
+        "dt": "f32",
+        "deps": [],
+        "imm": 0.125
+      },
+      {
+        "op": "mul",
+        "shape": [
+          12,
+          129
+        ],
+        "dt": "bf16",
+        "deps": [
+          0,
+          2
+        ],
+        "imm": null
+      },
+      {
+        "op": "add",
+        "shape": [
+          12,
+          129
+        ],
+        "dt": "bf16",
+        "deps": [
+          3,
+          1
+        ],
+        "imm": null
+      },
+      {
+        "op": "softmax",
+        "shape": [
+          12,
+          129
+        ],
+        "dt": "bf16",
+        "deps": [
+          4
+        ],
+        "imm": null
+      }
+    ],
+    "launches": 1,
+    "global_intermediate_bytes": 0
+  },
+  "bindings": [
+    {
+      "value_id": 0,
+      "kind": "USER_INPUT",
+      "target": null
+    },
+    {
+      "value_id": 1,
+      "kind": "USER_INPUT",
+      "target": null
+    }
+  ],
+  "abi": "launch(void **ptr, int rows, void *cuda_stream): input pointers in binding order then outputs in plan order. Source only; no weights or GPU binary included."
+}
