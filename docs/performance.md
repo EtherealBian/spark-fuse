@@ -1091,3 +1091,20 @@ with torch.inference_mode():
 The fast entry requires finite `|Q,K,V| ≤ 64` and either finite `|bias| ≤ 10000` or `-inf`. The checked entry scans these limits every request. For the masked S=1025 case above, the separate synchronized host comparison was **141.17 µs checked vs 23.63 µs bounded**. Both entries guard the qualified backend configuration, descriptors and alignment. Supported inputs: one query token, D=64/128, dense FP16/BF16, regular or grouped query heads, optional FP32 per-batch or broadcast GQA bias, dropout zero, noncausal. No prefill, mutable KV cache, arbitrary mask, dynamic shape, or general-graph replacement is implied. All timings use newly allocated outputs; GPU-graph timings reuse captured addresses. Clocks exclude export, qualification and compilation.
 
 [All gates, kernel names, cubin resources and shuffled timing samples](../reports/decode-sdpa-gb10.json) · [sanitizers](../reports/decode-sdpa-sanitizer-gb10.txt) · [exportable example](../examples/single_decode.py). Reproduce with `python tools/decode_sdpa_panel.py --output /tmp/decode-gb10.json` after sourcing `tools/env.sh`.
+
+<a id="grouped-decode"></a>
+### 多个查询头复用 K/V：热地址与独立请求 / Grouped decode
+
+`compile_decode_attention(..., head_group=R)` 可让一个线程块内的 1、2 或 4 个相邻查询头共用 K/V 读取；它们仍独立计算点积、softmax 和加权和。组不能跨 KV 头；第二阶段归并不变。五种形状、两套种子；每种候选另留八个输入检查 CPU FP64 参考。在同一 tile 下，R=2/4 的 FP32 分块中间量和最终窄类型输出都与 R=1 **逐位相同**。默认仍为 R=1。
+
+以下为首套种子的设备重放中位数（µs）。表中每对数字都是 R=1 → 4，tile 不变。地址实验另行捕获，九个随机顺序窗口，对每个请求保留并检查独占的新输出。
+
+| 输入 / tile | 重放同一 QKV | 每个请求独立 QKV | 独立 QKV：Inductor |
+|---|---:|---:|---:|
+| B2，12/3 头，S=1025，D128，BF16，带偏置 / 32 | 11.98 → 9.57 | 21.16 → 19.08 | 130.00 |
+| B1，32/8 头，S=2049，D128，BF16 / 32 | 23.38 → 17.55 | **42.19 → 45.48** | 43.01 |
+| B1，32/4 头，S=16385，D128，FP16 / 128 | 219.40 → 159.16 | 227.93 → 172.99 | **152.58** |
+
+The middle row reverses direction when KV storage rotates. In the separate synchronized, rotating-input host test it also regressed (53.91 → 58.06 µs). In the S=257 hot test R=4 lost even without rotating (5.39 → 6.92 µs). Thus a hot-only winner should not become a universal default. The ring panel distinguishes same Q/K/V, independent Q with shared KV, and independent Q/K/V. The latter has unique KV storage totalling at least three times the reported L2 capacity; **this is allocated address footprint, not measured DRAM traffic or a guarantee of cache misses**. CUDA Graph numbers exclude graph construction, qualification and value scans.
+
+[Raw timings, address footprints and FP64 gates](../reports/grouped-decode-gb10.json) · [Compute Sanitizer](../reports/grouped-decode-sanitizer-gb10.txt). Reproduce: `python tools/grouped_decode_panel.py --output /tmp/grouped-decode.json`.

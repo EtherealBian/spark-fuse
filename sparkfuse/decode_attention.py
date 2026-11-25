@@ -113,6 +113,7 @@ class DecodePlan:
     workspace_bytes: int
     output_stride: tuple
     scale: float
+    head_group: int
 
 
 class QualifiedDecode:
@@ -155,7 +156,9 @@ class QualifiedDecode:
         return self._execute(args)
 
 
-def compile_decode_attention(ep, example, audit, *, tile=32, max_workspace_bytes=32 << 20):
+def compile_decode_attention(
+    ep, example, audit, *, tile=32, head_group=1, max_workspace_bytes=32 << 20
+):
     """Qualify one exported ATen SDPA against two distinct batches on the target GPU."""
     ins, opt = _pattern(ep)
     policy = _policy()
@@ -166,6 +169,8 @@ def compile_decode_attention(ep, example, audit, *, tile=32, max_workspace_bytes
     _require(
         type(tile) is int
         and tile in (32, 64, 128, 256)
+        and type(head_group) is int
+        and head_group in (1, 2, 4)
         and type(max_workspace_bytes) is int
         and max_workspace_bytes >= 0,
         "invalid tile or scratch budget",
@@ -218,7 +223,7 @@ def compile_decode_attention(ep, example, audit, *, tile=32, max_workspace_bytes
         and d in (64, 128)
         and 1 <= b <= 32
         and 1 <= g <= h <= 256
-        and h % g == 0
+        and h % (g * head_group) == 0
         and (h == g or opt["enable_gqa"])
         and 1 <= s <= 32768,
         "unsupported single-token decode geometry",
@@ -270,7 +275,7 @@ def compile_decode_attention(ep, example, audit, *, tile=32, max_workspace_bytes
         stride = y.stride()
         refs.append(y)
     dt = "bf16" if q.dtype == torch.bfloat16 else "f16"
-    a, m = emit(b, h, g, s, d, dt, tile, scale, mask_b)
+    a, m = emit(b, h, g, s, d, dt, tile, scale, mask_b, head_group=head_group)
     p1 = IndexProgram(
         [tuple(x.shape) for x in xs],
         [scratch if m else tuple(q.shape)],
@@ -289,7 +294,7 @@ def compile_decode_attention(ep, example, audit, *, tile=32, max_workspace_bytes
     first = native_dispatch(p1)
     second = native_dispatch(p2) if p2 else None
     result = QualifiedDecode(
-        DecodePlan(b, h, g, s, d, tile, chunks, size, stride, scale),
+        DecodePlan(b, h, g, s, d, tile, chunks, size, stride, scale, head_group),
         first,
         second,
         policy,

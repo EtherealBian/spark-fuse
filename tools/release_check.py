@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "grouped_decode_kv_reuse",
+            [
+                sys.executable,
+                str(ROOT / "tools/grouped_decode_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-grouped-decode.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "qualified_static_decode_sdpa",
             [
                 sys.executable,

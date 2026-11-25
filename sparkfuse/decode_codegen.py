@@ -1,15 +1,17 @@
 """Static split-KV decode kernels. No dense score tensor or repeated KV head allocation."""
 
 import math
+from .grouped_decode_codegen import grouped_partial
 
 
-def emit(b, h, g, s, d, dtype, tile, scale, mask_batch=0):
+def emit(b, h, g, s, d, dtype, tile, scale, mask_batch=0, *, head_group=1):
     if not (
-        all(type(i) is int for i in (b, h, g, s, d, tile, mask_batch))
+        all(type(i) is int for i in (b, h, g, s, d, tile, mask_batch, head_group))
         and type(scale) in (int, float)
         and 1 <= b <= 32
         and 1 <= g <= h <= 256
-        and h % g == 0
+        and head_group in (1, 2, 4)
+        and h % (g * head_group) == 0
         and 1 <= s <= 32768
         and d in (64, 128)
         and tile in (32, 64, 128, 256)
@@ -42,9 +44,12 @@ __device__ __forceinline__ float sumwarp(float x){{
 """
     mask = "" if not mask_batch else f"+bias[{'b*S+' if mask_batch > 1 else ''}key]"
     # Each warp computes one query-key dot, then value lanes read adjacent features.
-    a = (
-        defines
-        + f"""__global__ void decode_partial(const T* q,const T* k,const T* v,const float* bias,void* dst){{
+    if head_group != 1:
+        a = grouped_partial(defines, b, head_group, scale, mask_batch, mask)
+    else:
+        a = (
+            defines
+            + f"""__global__ void decode_partial(const T* q,const T* k,const T* v,const float* bias,void* dst){{
  const int i=threadIdx.x,l=i&31,w=i>>5,h=blockIdx.y,b=blockIdx.z,chunk=blockIdx.x;
  const int begin=chunk*Tile, count=min(Tile,S-begin),kv=((b*G+h/(H/G))*S)*D,qi=(b*H+h)*D;
  __shared__ float scores[Tile],rowmax,mass;
@@ -74,7 +79,7 @@ __device__ __forceinline__ float sumwarp(float x){{
 }}
 extern "C" int launch(void** p,int,void* stream){{decode_partial<<<dim3(C,H,{b}),NT,0,(cudaStream_t)stream>>>((T*)p[0],(T*)p[1],(T*)p[2],{("(float*)p[3]" if mask_batch else "nullptr")},p[{4 if mask_batch else 3}]);return int(cudaGetLastError());}}
 """
-    )
+        )
     if chunks == 1:
         return a, None
     m = (
