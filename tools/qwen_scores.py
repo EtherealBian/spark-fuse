@@ -10,7 +10,7 @@ from sparkfuse.measure import compare, device_time, host_time
 
 
 @torch.inference_mode()
-def run(batch, seq, include_inductor):
+def fixture(batch, seq):
     cfg = Qwen2Config(
         hidden_size=1536,
         intermediate_size=8960,
@@ -35,6 +35,13 @@ def run(batch, seq, include_inductor):
         mask[1::2, :, 1:, 0] = float("-inf")
         return x, (cos, sin), mask
 
+    return mod, inputs
+
+
+@torch.inference_mode()
+def run(batch, seq, include_inductor):
+    dt = torch.bfloat16
+    mod, inputs = fixture(batch, seq)
     a = inputs(64)
     ep = torch.export.export(mod, a)
     gm, d = partition_export(ep, host_backend="native")
