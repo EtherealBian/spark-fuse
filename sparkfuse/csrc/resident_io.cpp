@@ -13,6 +13,7 @@
 namespace py = pybind11;
 namespace {
 using Shape = std::vector<int64_t>;
+using SlotLaunch = int (*)(void**, int, void*);
 struct BadStorage : std::runtime_error { using std::runtime_error::runtime_error; };
 struct BadLayout : std::runtime_error { using std::runtime_error::runtime_error; };
 
@@ -30,9 +31,13 @@ Span span(const at::Tensor& t) {
 class ResidentIO {
  public:
   ResidentIO(py::tuple staged, py::tuple outputs, py::object replay,
-             std::vector<Shape> strides, py::object plain, py::object parameter, py::tuple protected_tensors)
+             std::vector<Shape> strides, py::object plain, py::object parameter, py::tuple protected_tensors,
+             py::object slot_lib, uintptr_t slot_entry)
       : replay_(std::move(replay)), plain_(std::move(plain)), parameter_(std::move(parameter)),
+        slot_lib_(std::move(slot_lib)), slot_launch_(reinterpret_cast<SlotLaunch>(slot_entry)),
         strides_(std::move(strides)) {
+    if (bool(slot_launch_) == slot_lib_.is_none() || (slot_launch_ && outputs.size() > 32))
+      throw py::value_error("invalid slot-copy binding");
     if (!staged.size() || !outputs.size() || strides_.size() != staged.size() ||
         !PyCallable_Check(replay_.ptr())) throw py::value_error("invalid resident bindings");
     for (auto x : staged) inputs_.push_back(binding(x));
@@ -92,6 +97,20 @@ class ResidentIO {
       forbidden.push_back(current);
     }
     stage_and_replay(args, stream);
+    if (slot_launch_) {
+      // The generated schedule was specialized to these private outputs' byte counts.
+      // Only caller addresses vary; all destination spans were validated before staging.
+      void* ptr[64];
+      for (size_t i = 0; i < outputs_.size(); ++i) {
+        const auto& t = THPVariable_Unpack(destinations[i].ptr());
+        c10::cuda::CUDACachingAllocator::recordStream(t.storage().data_ptr(), stream);
+        ptr[i] = t.data_ptr(); ptr[outputs_.size() + i] = outputs_[i].data_ptr();
+      }
+      C10_CUDA_CHECK(static_cast<cudaError_t>(slot_launch_(ptr, int(outputs_.size()), stream.stream())));
+      // ATen copy_ does this implicitly; raw byte stores must invalidate regular tensor versions too.
+      for (auto h : destinations) THPVariable_Unpack(h.ptr()).unsafeGetTensorImpl()->bump_version();
+      return;
+    }
     for (size_t i = 0; i < outputs_.size(); ++i) {
       const auto& t = THPVariable_Unpack(destinations[i].ptr());
       c10::cuda::CUDACachingAllocator::recordStream(t.storage().data_ptr(), stream);
@@ -140,7 +159,8 @@ class ResidentIO {
       throw py::value_error("invalid resident owner tensor");
     return t;
   }
-  py::object replay_, plain_, parameter_;
+  py::object replay_, plain_, parameter_, slot_lib_;
+  SlotLaunch slot_launch_;
   std::vector<Shape> strides_;
   std::vector<at::Tensor> inputs_, outputs_;
   std::vector<c10::weak_intrusive_ptr<c10::StorageImpl>> protected_;
@@ -153,7 +173,7 @@ void bind_resident_io(py::module_& m) {
   py::register_exception<BadStorage>(m,"_ResidentBadStorage");
   py::register_exception<BadLayout>(m,"_ResidentBadLayout");
   py::class_<ResidentIO>(m,"_ResidentIO")
-    .def(py::init<py::tuple,py::tuple,py::object,std::vector<Shape>,py::object,py::object,py::tuple>())
+    .def(py::init<py::tuple,py::tuple,py::object,std::vector<Shape>,py::object,py::object,py::tuple,py::object,uintptr_t>())
     .def("run", &ResidentIO::run)
     .def("run_into", &ResidentIO::run_into);
 }

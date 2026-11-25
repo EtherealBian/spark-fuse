@@ -985,3 +985,20 @@ The same graph runs three compute kernels in both modes. At 21 outputs, the per-
 Across two random-weight seeds, three lengths and eight held-out requests per case, both the final hidden states and attention probabilities matched **quantized eager** byte for byte. Each Q/K/V narrow result was checked using independent CPU INT32 accumulation. Quantization itself changes the original BF16 model: case-wise maximum hidden-state differences ranged from 0.03125 to 0.0390625. Both default and cast-aware Inductor missed the byte gate and are excluded from equivalent-precision timings. Batch size was one, dropout was off, and no mask or pretrained weights were used.
 
 [Raw timing windows and per-output checks](../reports/bert-w8a8-gb10.json) · [Compute Sanitizer](../reports/bert-w8a8-sanitizer-gb10.txt). To reproduce, source `tools/env.sh`, then run `python tools/bert_w8a8_panel.py --output /tmp/bert-w8a8.json` in a CUDA PyTorch environment with Transformers 4.51.3; run `bash tools/sanitize_shared_quant.sh` for the focused kernel checks.
+
+<a id="fused-slot-copy"></a>
+### 一次写回 21 个结果 / One launch for caller-owned outputs
+
+同一个带中间结果的投影已经只用 3 个计算 kernel，诊断接口却要返回 21 个张量。使用 `capture_export(..., request_backend="native", slot_copy_backend="cuda")`，编译器根据每个结果的字节数分配 4 KiB 的块，并生成一个[专用拷贝 kernel](../examples/generated/slot-copy/diagnostic_21.cu)。`run_into` 在每次请求中只传实际地址：能对齐时按 16 字节搬运，其余地址和尾部按字节处理。结果仍是服务方提供的各个张量。普通 `run(*inputs)` 继续返回独占结果，默认配置也继续使用 ATen 拷贝。
+
+| 预分配同一组缓冲区，默认 stream，第一组种子 | 完整同步请求：逐张量拷贝 → 一个 CUDA kernel（µs） | 8 请求排队，摊到每请求（µs） |
+|---|---:|---:|
+| 17 行，3 个结果 | 34.69 → 31.60 | 27.05 → 21.82 |
+| 33 行，21 个结果 | 89.21 → 36.55 | 85.96 → 24.63 |
+| 129 行，3 个结果 | 54.45 → 50.65 | 44.35 → 39.74 |
+
+在第二组种子上，21 个结果的同步延迟为 89.49 → 36.61 µs。在显式 stream 上用同一组输入比较，直接在原生代码中发起 21 个 `cudaMemcpyAsync`、或合为一次 `cudaMemcpyBatchAsync` 调用，同步延迟分别为 76.13 和 75.63 µs，生成的 kernel 为 36.48 µs。profiler 解释了区别：批处理减少了 API 调用，但设备端仍记录 23 次拷贝（含 2 个输入）；生成路径只留下 2 次输入拷贝，另用一个 kernel 写回所有结果。要搬运的字节并没有变少。
+
+The API accepts up to 32 independent, full-storage output tensors. It checks all destinations before staging, records allocator stream use and increments regular tensors' version counters. Both transports made zero new CUDA allocations across eight queued requests after the ring was created. The two seeds, three projection shapes and two stream types matched the archived quantized eager outputs byte for byte. The [timing report](../reports/fused-slot-gb10.json) includes all seven shuffled windows per case, setup costs, and direct CUDA controls. In a single-output ReLU control with a roughly 16 MiB result, queued latency moved from 397.53 to 399.01 µs on one seed, and from 405.27 to 388.34 µs on the other. These results support opting in for multi-output workloads; they do not establish a universal improvement for a single large copy.
+
+After `source tools/env.sh`, run `python tools/fused_slot_panel.py --output /tmp/fused-slot.json`. The explicit-stream driver control uses CUDA 13's batch API; `--smoke` checks the two product paths without that control. Run `bash tools/sanitize_fused_slots.sh` for the [sanitizer checks](../reports/fused-slot-sanitizer-gb10.txt), including unaligned pointers, protected bytes around the destinations, tile boundaries and the 32-output limit.

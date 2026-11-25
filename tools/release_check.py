@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "fused_slot_copy_transport",
+            [
+                sys.executable,
+                str(ROOT / "tools/fused_slot_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-fused-slot.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "installed_wheel",
             [
                 sys.executable,
