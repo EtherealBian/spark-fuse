@@ -1,7 +1,5 @@
 """Paired GPU panel: can a fused residual/RMSNorm legally feed both sides of a projection?"""
 
-from collections import Counter
-from tempfile import TemporaryDirectory
 import argparse
 import json
 import random
@@ -13,6 +11,7 @@ import transformers
 from transformers import Qwen2Config
 from transformers.models.qwen2.modeling_qwen2 import Qwen2DecoderLayer, Qwen2RotaryEmbedding
 
+from kernel_trace import kernel_census
 from provenance import capture
 from sparkfuse.measure import compare, device_time, host_time
 from sparkfuse.partition import ordered_collectives, partition_export
@@ -118,25 +117,6 @@ def rotary_witness(aten, mixed, rec, args):
             expected_stride=list(ref.stride()),
         )
     return observed
-
-
-def kernel_census(fn):
-    """Count GPU kernel intervals in ONE regular call, outside either timing loop."""
-    fn()
-    torch.cuda.synchronize()
-    with TemporaryDirectory() as tmp:
-        path = Path(tmp) / "kineto.json"
-        with torch.profiler.profile(
-            activities=[torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA]
-        ) as prof:
-            fn()
-            torch.cuda.synchronize()
-        prof.export_chrome_trace(str(path))
-        events = json.loads(path.read_text())["traceEvents"]
-    counts = Counter(e["name"] for e in events if e.get("ph") == "X" and e.get("cat") == "kernel")
-    if not counts:
-        raise RuntimeError("No Kineto GPU kernel intervals; check CUPTI availability")
-    return dict(count=counts.total(), kernel_names=dict(sorted(counts.items())), calls=1)
 
 
 @torch.inference_mode()

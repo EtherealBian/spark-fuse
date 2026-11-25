@@ -8,14 +8,12 @@ from dataclasses import dataclass
 from hashlib import sha256
 from math import prod
 import operator
-from types import SimpleNamespace
 
 import torch
-from torch import fx, nn
-from torch.utils import _pytree as tree
+from torch import fx
 
-from .ir import DT, Val, Unsupported
-from .runtime import DenseKernelCall, build
+from .ir import DT
+from .index_program import IndexProgram, IndexRegion
 
 A = torch.ops.aten
 
@@ -153,7 +151,7 @@ extern "C" int launch(void** p,int,void* stream) {{
 """
 
 
-class _Call(DenseKernelCall):
+class _Call(IndexProgram):
     def __init__(self, q, k, device):
         v = [_tensor(n) for n in (q.x, k.x, q.c, q.s)]
         shapes = [
@@ -161,37 +159,10 @@ class _Call(DenseKernelCall):
             for x, swap in zip(v, (q.bshd, k.bshd, False, False), strict=True)
         ]
         dt = DT[v[0].dtype]
-        vals = [
-            Val("input" if i < 4 else "rotary", shape, dt)
-            for i, shape in enumerate(shapes + shapes[:2])
-        ]
-        self.plan = SimpleNamespace(inputs=[0, 1, 2, 3], outputs=[4, 5], vals=vals, rows=1)
-        ins = tree.tree_flatten(((0, 1, 2, 3), {}))[1]
-        outs = tree.tree_flatten((0, 1))[1]
-        self.ep = SimpleNamespace(call_spec=SimpleNamespace(in_spec=ins, out_spec=outs))
-        self.bind = [None] * 4
-        dev = torch.device(device)
-        if dev.type != "cuda":
-            raise Unsupported("CUDA device required")
-        self.device = torch.device(
-            "cuda", torch.cuda.current_device() if dev.index is None else dev.index
-        )
-        self.source = emit(
+        source = emit(
             tuple(v[0].shape), tuple(v[1].shape), v[2].shape[0] == 1, (q.bshd, k.bshd), dt
         )
-        self.lib, self.path = build(self.source, self.device)
-
-
-class _Pair(nn.Module):
-    def __init__(self, compiled, host_backend):
-        super().__init__()
-        from .native import native_dispatch
-
-        self.program = compiled
-        self.dispatch = native_dispatch(compiled) if host_backend == "native" else compiled
-
-    def forward(self, *args):
-        return self.dispatch(*args)
+        super().__init__(shapes, shapes[:2], dt, device, source)
 
 
 def fuse_pairs(gm, device, host_backend):
@@ -221,7 +192,7 @@ def fuse_pairs(gm, device, host_backend):
                 continue
             label = f"_sparkfuse_rotary_pair_{len(records)}"
             program = _Call(q, k, device)
-            gm.add_module(label, _Pair(program, host_backend))
+            gm.add_module(label, IndexRegion(program, host_backend))
             with gm.graph.inserting_before(anchor):
                 args = []
                 for br in (q, k):

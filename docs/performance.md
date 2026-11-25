@@ -307,3 +307,20 @@ Inductor 在本实验 21 组输入的隐藏态上没有通过原精度约定，�
 [整层原始记录](../reports/qwen-decoder-rotary-gb10.json)含七个乱序计时窗口。BF16、batch 2、12 个 Q 头和 2 个 KV 头；三个长度各七组输入。Q/K 的值与步幅、可见残差、归一化结果及两个公开层输出均与 eager 对照。完整图 Inductor 的隐藏态未通过原容差，因此未计时。这是没有 KV cache 的单个随机权重解码层；计时包含所有投影及旋转应用，不含位置表生成。
 
 The [isolated Q/K panel](../reports/paired-rotary-panel-gb10.json) also varies layout, input offsets and precision. For BF16 at length 97 in token-major physical storage, aligned device replay fell from 24.101 µs eager to 2.203 µs fused; with offset inputs it fell from 24.097 to 2.342 µs. In the small aligned FP32 case, eager / Inductor / SparkFuse took 12.581 / 1.574 / 1.062 µs. Inductor failed the unchanged tolerance on the four lower-precision cases, so their reports omit its timing. The paired pass is opt-in; an isolated speedup does not predict layer latency at other shapes or on other GPUs.
+
+### 带 KV 缓存的两步解码 / Two cached Qwen2 decode steps
+
+用一个真实的 Qwen2 解码层预填历史 K/V，各后端独立运行第一步并将自己的输出缓存交给第二步。编译器可用 `paired_appends=True` 将导出图里的两次长度轴拼接编译为一个 CUDA kernel，K、V 仍是分别分配的新张量。预填输出是物理 token-major，第一步拼接后是 head-major；按实际步幅导出两份静态图。下表的基线已经启用残差细分及 Q/K 旋转融合；两条 SparkFuse 路径只差缓存拼接。
+
+| 预填长度 | 解码步 | eager 设备 µs | SparkFuse 设备 µs，关 → 开 | 同步主机 µs，关 → 开 |
+|---:|---:|---:|---:|---:|
+| 31 | 1 | 509.859 | 483.091 → 480.645 | 589.012 → 582.516 |
+| 31 | 2 | 507.752 | 480.843 → 479.733 | 611.092 → 605.844 |
+| 255 | 1 | 535.355 | 502.643 → 499.192 | 620.740 → 619.284 |
+| 255 | 2 | 536.040 | 514.312 → 514.219 | 628.548 → 621.524 |
+| 1023 | 1 | 609.821 | 593.595 → 586.509 | 683.845 → 672.661 |
+| 1023 | 2 | 605.360 | 581.283 → 581.445 | 668.596 → 662.532 |
+
+[逐次原始数据、FX 图与 profiler](../reports/qwen-decode-cache-gb10.json)。六次普通调用均从 19 次 GPU 发射变为 18 次；少一次发射不能保证每次设备延迟都下降。长度 1023 的第二步中位数略有回退，七个配对窗口仅四个有利。每个长度用五条轨迹核对隐藏态、注意力概率、缓存及其前缀；SparkFuse 所有输出与框架逐位相同，步幅也一致。完整图 Inductor 的隐藏态和 K/V 在这组输入上未通过既有容差，没有为它计时。
+
+**Why choose copy width at launch?** In the [initial isolated panel](../reports/cache-append-initial-gb10.json), one thread owned a fixed-width packet. An unaligned address forced individual lane-strided scalar copies; copying the offset 1023-token prefill cache took 22.304 µs vs 16.017 µs eager. The new launcher checks all six addresses and chooses the widest legal element group before issuing a single kernel. Adjacent lanes copy adjacent elements when the safe width is one. In the [new same-run four-way comparison](../reports/cache-append-panel-gb10.json), that case measured **22.243 / 6.190 / 16.013 / 15.193 µs** (fixed fallback / adaptive / eager / Inductor). With aligned addresses the same order was **3.214 / 3.153 / 16.012 / 3.572 µs**. All isolated backends passed bitwise checks, including across input offsets. Profiler names confirm 8-, 1-, 2- and 4-element specializations for BF16 buffers offset by 0, 1, 2 and 4 elements. These are hot-address data-movement timings, not DRAM bandwidth or token throughput.

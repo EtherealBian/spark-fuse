@@ -213,6 +213,7 @@ def partition_export(
     schedule_policy=None,
     split_barriers=True,
     rotary_pairs=False,
+    paired_appends=False,
 ):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
     if host_backend not in ("python", "native"):
@@ -229,6 +230,10 @@ def partition_export(
         from .rotary import fuse_pairs
 
         records.extend(fuse_pairs(gm, device, host_backend))
+    if paired_appends:
+        from .cache_append import fuse_appends
+
+        records.extend(fuse_appends(gm, device, host_backend))
     nodes = list(gm.graph.nodes)
     pos = {n: i for i, n in enumerate(nodes)}
     pot = {n for n in nodes if eligible(n)}

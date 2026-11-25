@@ -125,6 +125,22 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "qwen_decode_cache_carry",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_cached_decode.py"),
+                    "--past",
+                    "63",
+                    "--verify-only",
+                    "--seed-offset",
+                    "12049",
+                    "--output",
+                    str(report.with_name(report.stem + "-cache.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (

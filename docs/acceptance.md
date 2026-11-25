@@ -102,3 +102,15 @@ bash tools/sanitize_rotary.sh  # acquires the GPU lock internally
 ```
 
 [Offline evidence checks](../tests/test_rotary_evidence.py) recalculate the reported medians, reconcile profiler counts and hash the generated CUDA. The [release run](../reports/paired-rotary-stage-acceptance.json) also verifies the layer on a separate weight/input seed family. [Sanitizer log](../reports/paired-rotary-sanitizer.txt).
+
+### Two-step decode and observable KV caches
+
+`tools/qwen_cached_decode.py` wraps the Hugging Face `Qwen2DecoderLayer` and `DynamicCache` at the export boundary: six tensor inputs, four tensor outputs. Its reference instead keeps one stateful framework cache across a real prefill and both single-token forwards. It checks that append returns independent storage and preserves all prior bits without mutating its inputs. The second step consumes each backend's own first-step cache. Changing only masked historical V must leave hidden/probabilities unchanged; zeroing all historical V must change hidden while leaving the scores unchanged. Every backend uses the same verified, immutable step inputs when timed. Position-table generation and prefill are not timed. This experiment does not implement paged storage, a dynamic length export, or a full autoregressive model.
+
+```bash
+flock .runtime/gpu-execution.lock python tools/qwen_cached_decode.py --past 31 255 1023 --seed-offset 21503 --profile --output /tmp/qwen-cache.json
+flock .runtime/gpu-execution.lock python tools/cache_append_panel.py --output /tmp/cache-panel.json
+bash tools/sanitize_append.sh  # acquires the GPU lock internally
+```
+
+The optional append pass matches two independent four-dimensional ATen concatenations along the time axis. It accepts dense physical BHSD/BSHD inputs and requires matching shapes, types, placement and a legal insertion point. Other layouts and mutations do not enter this kernel. [`tests/test_cache_append.py`](../tests/test_cache_append.py) covers input aliases, observable output views, chained appends, offset pointers, raw NaN payloads, signed zero, stream use and bad runtime descriptors on both host paths. The [offline evidence audit](../tests/test_cache_append_evidence.py) rechecks per-seed outcomes, emitted CUDA digests, observed width specializations, launch counts and medians. [Independent release run](../reports/cache-carry-stage-acceptance.json) · [Compute Sanitizer](../reports/cache-append-sanitizer.txt).
