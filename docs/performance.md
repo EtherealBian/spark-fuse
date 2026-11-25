@@ -889,3 +889,18 @@ Run `python tools/quant_state_panel.py --output /tmp/frozen-rhs.json` and `bash 
 两个种子的 profiler 均为：只看尾部 **3 → 1** 次发射，计入共享量化和三个原样的框架 GEMM 后是 **7 → 5**。表内是热设备回放，不是完整注意力层加速。九个可见输出与 eager 逐字节相同，三个整数累加器各用独立的 CPU 整数乘法复核。
 
 The [matched experiment](../reports/grouped-epilogue-gb10.json) compares separate versus grouped tails and includes both Inductor modes subject to the same output gate. Both paths receive identical, already column-major weights. Inspect the [generated CUDA](../examples/generated/token-quant/group_17x128_64_64.cu) or reproduce with `python tools/group_epilogue_panel.py --output /tmp/grouped.json` and `bash tools/sanitize_group_epilogue.sh` after sourcing the environment. These are three random-weight projections, not a pretrained attention layer.
+
+<a id="packed-projection"></a>
+### 冻结的多路整数投影 / Packing frozen signed projections
+
+对同一份逐 token INT8 编码，`capture_export(..., int8_rhs_layout="packed_fanout", partition_options={"token_quant": True, "group_epilogues": True, "host_backend": "native"})` 可把 2–4 份独立权重一次复制到列主序矩阵。请求路径只做一次 PyTorch 整数矩阵乘法。随后生成的 CUDA kernel 按列段取数，分别写出图中仍要使用的 INT32 累加器、FP32 转换值或缩放值。返回给调用方的累加器仍有独立的紧致存储。仅接受固定形状、冻结权重和同一份编码；共享权重或提前读取累加器的图会被拒绝。
+
+三路对照的原始权重**已经是列主序**。两条路径都返回九个张量：残差、编码、逐 token 尺度，以及三对累加器和反量化结果。下表使用第一组随机种子，数值为七个打乱顺序的测量窗口的中位数，单位 µs。箭头左侧使用三个整数 GEMM 与一个共享尾部，右侧使用一次整数 GEMM 与分段尾部。
+
+| M × K → 分支宽度 | 整段设备时间 | 轮换请求同步延迟（含拷贝） | 连续八请求，每请求 |
+|---|---:|---:|---:|
+| 17 × 1536 → 128/64/64 | 25.35 → 11.70 | 68.07 → 66.84 | 65.88 → 66.32 |
+| 33 × 1536 → 512/256/256 | 27.58 → 13.07 | 70.38 → 67.21 | 66.41 → 66.26 |
+| 129 × 3072 → 1536/256/256 | 53.74 → 30.22 | 117.08 → 92.87 | 113.73 → 91.61 |
+
+The [six-case report](../reports/packed-projection-gb10.json) records the three widths and two independent seeds, including the small queued workload with no benefit. Profiled device launches fall from five to three: residual/token quantization, a framework integer GEMM, and the [generated segmented epilogue](../examples/generated/token-quant/packed_17x128_64_64.cu). Every case compared all nine outputs byte for byte across eight held-out requests and checked each signed accumulator against CPU INT32 multiplication. The two Inductor modes missed the byte-level gate and are excluded from same-precision timings. These results cover static, random-weight projections; they do not measure complete attention or model quality. Reproduce with `python tools/packed_projection_panel.py --output /tmp/packed.json` and `bash tools/sanitize_packed_projection.sh`.

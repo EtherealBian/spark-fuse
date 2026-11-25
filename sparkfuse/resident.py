@@ -117,7 +117,7 @@ def _get(root, path):
     return root
 
 
-def _snapshot(gm, dev, args, max_bytes, shared, rhs_layout):
+def _snapshot(gm, dev, args, max_bytes, shared, rhs_layout, adopted=None):
     # Create a separate module hierarchy. Rebinding/mutating the caller's Parameters
     # after setup cannot free or overwrite cuBLAS/CUDA addresses captured here.
     root = nn.Module()
@@ -180,7 +180,16 @@ def _snapshot(gm, dev, args, max_bytes, shared, rhs_layout):
                 used += t.untyped_storage().nbytes()
                 if used > max_bytes:
                     raise ValueError("request staging + weight snapshot exceeds byte limit")
-                if shared is None:
+                if adopted is not None and n.target in adopted:
+                    # Only the final allocation minted by prepare() is adoptable.
+                    if (
+                        t is not adopted[n.target]
+                        or packed != (1, t.shape[0])
+                        or t._base is not None
+                    ):
+                        raise Unsupported("invalid internally packed weight")
+                    copied[key] = t
+                elif shared is None:
                     # Allocate a single private RHS in its final physical order; no retained source clone.
                     copied[key] = (
                         t.detach().clone()
@@ -378,7 +387,8 @@ def capture_export(
     staging inputs and copied model state, not graph-private intermediates, external workspace or outputs.
     Caller provides stream dependencies for inputs, and excludes concurrent process-wide capture/setup.
     int8_rhs_layout="preserve" or "column_major" admits a signed W8A8 projection with direct,
-    frozen full-storage RHS buffers. It never packs mutable request arguments or rewrites the GEMM.
+    frozen full-storage RHS buffers without changing the GEMM. "packed_fanout" instead
+    combines 2–4 frozen weights into one library GEMM and materializes live compact branch outputs.
     """
     return _capture_export(
         ep,
@@ -408,10 +418,20 @@ def _capture_export(
         raise ValueError("choose aten without partition options, or mixed")
     if type(max_static_bytes) is not int or max_static_bytes < 1:
         raise ValueError("positive byte limit required")
-    if int8_rhs_layout not in (None, "preserve", "column_major") or (
+    if int8_rhs_layout not in (None, "preserve", "column_major", "packed_fanout") or (
         shared is not None and int8_rhs_layout is not None
     ):
-        raise ValueError("choose a single-export W8A8 snapshot layout: preserve or column_major")
+        raise ValueError(
+            "choose a single-export W8A8 snapshot layout: preserve, column_major, or packed_fanout"
+        )
+    fanout = int8_rhs_layout == "packed_fanout"
+    if fanout and (
+        backend != "mixed"
+        or not all(
+            (partition_options or {}).get(k) is True for k in ("token_quant", "group_epilogues")
+        )
+    ):
+        raise ValueError("packed_fanout requires mixed token_quant and group_epilogues")
     quantized = int8_rhs_layout is not None
     _validate_export(ep, quantized=quantized)
     if (
@@ -440,7 +460,11 @@ def _capture_export(
         ):
             raise ValueError("a content-distinct audit request is required")
         raw = ep.module()
-        if quantized:
+        if fanout:
+            from .packed_projection import preflight, prepare
+
+            source_keys, _, source_size = preflight(raw, dev, example, audit, max_static_bytes)
+        elif quantized:
             # Reject malformed or aliased source state before even the reference BLAS call.
             # Check again on the partitioned/snapshotted graph, whose users may differ.
             from .quant_state import frozen_weights
@@ -452,9 +476,24 @@ def _capture_export(
             if backend == "mixed"
             else (raw, [])
         )
+        adopted = None
+        if fanout:
+            gm, recs, adopted, keys, size = prepare(gm, recs, dev, example, audit, max_static_bytes)
+            if keys != source_keys or size != source_size:
+                raise Unsupported("mixed packed fanout changed live model state")
         fn, original_state, private_state, used, inventory = _snapshot(
-            gm, dev, example, max_static_bytes, shared, int8_rhs_layout
+            gm,
+            dev,
+            example,
+            max_static_bytes,
+            shared,
+            "column_major" if fanout else int8_rhs_layout,
+            adopted,
         )
+        if fanout:
+            original_state |= source_keys
+            if used != source_size:
+                raise Unsupported("packed snapshot changed staging and state accounting")
         if any(_store(x) in original_state for x in audit):
             raise Unsupported("audit request aliases model state")
         static = tuple(x.clone() for x in example)

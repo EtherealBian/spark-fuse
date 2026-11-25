@@ -73,6 +73,18 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "packed_frozen_projection_fanout",
+            [
+                sys.executable,
+                str(ROOT / "tools/packed_projection_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-packed-projection.json")),
+            ],
+        )
+    )
     opt = os.environ.get("SPARKFUSE_QWEN_PY")
     qreport = report.with_name(report.stem + "-qwen.json")
     if opt:
