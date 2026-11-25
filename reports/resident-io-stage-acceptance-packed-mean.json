@@ -1,0 +1,1052 @@
+{
+ "protocol": "Fresh ordinary callable for every calibration and fresh comparator. Three shuffled CUDA Graph windows to select the fastest of six tree plus four cohort schedules vs all divisible tile vectors x three CTAs, independently for each alignment. Three unseen requests must all be bitwise exact on all visible outputs; only passing paths timed on the third. Median of seven shuffled CUDA Graph and synchronized-host windows; separately report persistent-output SparkFuse-only replay. Repetitions freeze both schedule IDs from the source report. Bitwise admission is intentionally stricter than ordinary tolerance.",
+ "device": "NVIDIA GB10",
+ "torch": "2.13.0+cu130",
+ "cuda": "13.0",
+ "verify_only": true,
+ "seed_offset": 60317,
+ "selection_sha256": null,
+ "case_indices": [
+  1,
+  5
+ ],
+ "provenance": {
+  "git_head_at_capture": "729f4e9bcc9c3c5efb884e7dc526f9814237e520",
+  "source_tree_sha256": "0b7e825d2d7cec1818a4a1bf9bbbf194ec18f3cc9e408eca6e072102099af955",
+  "archive": "sources/0b7e825d2d7cec1818a4a1bf9bbbf194ec18f3cc9e408eca6e072102099af955.tar.gz"
+ },
+ "cases": [
+  {
+   "id": "31x1024-bf16-final",
+   "shape": [
+    31,
+    1024
+   ],
+   "dtype": "bf16",
+   "visible": false,
+   "export_sha256": "448110e496331cd669d60420df4b66b1c9403c840d0ade31af47f0e2753b5fe6",
+   "export_seed": 163106,
+   "default": "mean_cohort-t256-v4-c1",
+   "kernels": {
+    "mean_cohort-t256-v4-c1": {
+     "schedule": {
+      "threads": 256,
+      "layout": "mean_cohort",
+      "cache": true,
+      "vec": 4
+     },
+     "cuda_sha256": "d76b33fe05901f055c38ae5ee8dad88828f95aa0514bafae218405759559ab73",
+     "binary_sha256": "58c395a387fefeba40d746989727fc1c0bc13e2dcd32175262cfb22f10d85393",
+     "cache_id": "23d5287aa77c23203b1b2004161f2bc5f897abf7485f4ee8b96afcaff867eba9"
+    },
+    "mean_packed_tile-t128-v2-c1": {
+     "schedule": {
+      "threads": 128,
+      "layout": "mean_packed_tile",
+      "cache": true,
+      "vec": 2
+     },
+     "cuda_sha256": "affda0834d07eb37d980a9b8e84e491fd304cf787c0517e1e10871f328e14fd5",
+     "binary_sha256": "a67469f95b9d13a6ecea6c1d9b7545ec7c96177f7ebd1ae3c7db0ef188235095",
+     "cache_id": "a1b32a357692c095b08ed42f581afe70fae3b9b79e239701642cf172946e7e26"
+    }
+   },
+   "alignments": [
+    {
+     "offsets": [
+      0,
+      0,
+      0
+     ],
+     "calibration_seed": null,
+     "calibration_checks": {},
+     "calibration_windows": [],
+     "calibration_medians": {},
+     "selected": {
+      "previous_best": "mean_cohort-t256-v4-c1",
+      "packed_best": "mean_packed_tile-t128-v2-c1"
+     },
+     "holdout": [
+      {
+       "seed": 255426,
+       "input_sha256": [
+        "a09bde6f9e04daca33a4ad59f0703a6f22c37d0ee11429311573ea0f94c4b295",
+        "3bb9a274a671177e15a040517d6cbb26b8f93d74b164e92f81416d63d4d31584",
+        "529cc0fe82c28a230a5c7a1a33af7058b75090e18cb6bc929a97cadaee5341c7"
+       ],
+       "output_sha256": [
+        "822e7f3be8eb0cadd9e699f6ed99293e7621b237bd512bd91b65b1d51cf131a4"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 10749,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ]
+       }
+      },
+      {
+       "seed": 279432,
+       "input_sha256": [
+        "ea50ea763eca9efd938e3614e118b75ac9a15fc6b82e36a9bc986ebd1c7ecf6e",
+        "0c6af834c4d42ffdbf9506f62920e7b1f1f9d78232d9f73fbf0700b3fe2ee7f0",
+        "bd2f09f3dcad4cee18e9568dde27183a7db8f128940a0445cfeb7c5b1d8e0916"
+       ],
+       "output_sha256": [
+        "81abcf9918a1b1ae05fa91290767e91d9d6925fd8c986a20de77c7b4d5b8e837"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 10903,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ]
+       }
+      },
+      {
+       "seed": 308432,
+       "input_sha256": [
+        "0b39803356c7fb3427674ebefbdb43569414d83bb963257469434663dee041e3",
+        "2d3745653f0895e64197b922cce0f84b08095b5c289d7f2be4947bed53cf7f8d",
+        "541a1df0aa6e5c9aaba8cfe24a994ab0a231b9ec67b28e01137c261dbb5abdc7"
+       ],
+       "output_sha256": [
+        "c6b79ecfe6c060c522c4e3bf992300c63a5cccafbce3b150c3d7a430e52efb2c"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 10773,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 8,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ]
+       }
+      }
+     ],
+     "admitted": [
+      "eager",
+      "default",
+      "previous_best",
+      "packed_best"
+     ],
+     "timing_seed": 314732,
+     "fresh": null,
+     "prepared_windows": null,
+     "prepared_medians": {}
+    },
+    {
+     "offsets": [
+      1,
+      2,
+      3
+     ],
+     "calibration_seed": null,
+     "calibration_checks": {},
+     "calibration_windows": [],
+     "calibration_medians": {},
+     "selected": {
+      "previous_best": "mean_cohort-t256-v4-c1",
+      "packed_best": "mean_packed_tile-t128-v2-c1"
+     },
+     "holdout": [
+      {
+       "seed": 255427,
+       "input_sha256": [
+        "743ad65d9f75cc5eb7a19e9bdfa13f9210b9f6e575870c1a3982d4056c8f598d",
+        "d13b64fda0d229436c9fcf79d7a36e8277d0822f16971e7906def1881f365caa",
+        "4191550c7c7fd3dc88149126df9ac580fc021e0093ad48b6057c2e2374fcb6fd"
+       ],
+       "output_sha256": [
+        "a1af1f8a273f4a7508916002c7eb132869fd6b723ac8c30c3852a04b1b68d17e"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 10854,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ]
+       }
+      },
+      {
+       "seed": 279433,
+       "input_sha256": [
+        "11c22f9e014994263ab26c606020c1b69e33dbe2afaa3c04e109c1f389991f76",
+        "c3dab4c49b045f0b0b6c0e1ac5eb1cee561ab632b1a8dbf01da1e47f8472b6c8",
+        "ebad386d3b2aa0224e13bf259ee17985d4ea66c758add6bf8af41bfc64c46820"
+       ],
+       "output_sha256": [
+        "f9297597ac11af0e84aab1a0650714198e5063ee95a1ec0498b2b2ab4b1bfae5"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 10795,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ]
+       }
+      },
+      {
+       "seed": 308433,
+       "input_sha256": [
+        "3f0459d129cfba9414b1838321c03714b5bcc461be1830dc365c3860991e8753",
+        "7db859f0b02fb0b9f5249d1463184fbcf973777c055c7f948f783267b7afc2c7",
+        "21b08c48fc13cb457720a63e854006ad8797fb3af015db4a7c657bf139aeb76c"
+       ],
+       "output_sha256": [
+        "7407b5d0b16b8d5f8685a92dc9827e4303519e2f4162c5a2db4a9834b45f0b9b"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 10805,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 31744
+         }
+        ]
+       }
+      }
+     ],
+     "admitted": [
+      "eager",
+      "inductor_casts",
+      "default",
+      "previous_best",
+      "packed_best"
+     ],
+     "timing_seed": 314881,
+     "fresh": null,
+     "prepared_windows": null,
+     "prepared_medians": {}
+    }
+   ]
+  },
+  {
+   "id": "17x4100-f16-visible",
+   "shape": [
+    17,
+    4100
+   ],
+   "dtype": "f16",
+   "visible": true,
+   "export_sha256": "13759cd24123a8b7b50b4d08f7807c5d4065063e63dfe4e5c9be2f4f7f0528a5",
+   "export_seed": 167094,
+   "default": "mean_cohort-t256-v4-c1",
+   "kernels": {
+    "mean_cohort-t256-v4-c1": {
+     "schedule": {
+      "threads": 256,
+      "layout": "mean_cohort",
+      "cache": true,
+      "vec": 4
+     },
+     "cuda_sha256": "fe2f59f7709f973849c3b605e48e36f3d71ef4a8053a72f4fa54ce4c961c1f5e",
+     "binary_sha256": "55100bc6c996af9e1b38808a5eff3d3ac164d52c4c52a5f7a51b71a79dd0f123",
+     "cache_id": "af28d6fdf635d4450a81a666351b259db1c3a55cdf96ea220c3eb39c1a7e5d44"
+    },
+    "mean_packed_tile-t128-v2-c1": {
+     "schedule": {
+      "threads": 128,
+      "layout": "mean_packed_tile",
+      "cache": true,
+      "vec": 2
+     },
+     "cuda_sha256": "17098bd3669327ba3940a5bd1889c3db601da4aeca84644757f333b997a5ca81",
+     "binary_sha256": "f44458f1dc4d03cc7c29cb4a6fcd9a21b1b2f5f30ef22b722c0aedb6b90da3ff",
+     "cache_id": "25c438e80718a53c9413c82d75bbbca6342127377cc04bd7c2bec87b4ce30b52"
+    }
+   },
+   "alignments": [
+    {
+     "offsets": [
+      0,
+      0,
+      0
+     ],
+     "calibration_seed": null,
+     "calibration_checks": {},
+     "calibration_windows": [],
+     "calibration_medians": {},
+     "selected": {
+      "previous_best": "mean_cohort-t256-v4-c1",
+      "packed_best": "mean_packed_tile-t128-v2-c1"
+     },
+     "holdout": [
+      {
+       "seed": 259414,
+       "input_sha256": [
+        "601d441d990b35921a92e3032797670a854c2391982a77bb942e7ee1da827f72",
+        "3b432dbc51a0c7dc9efc7e0fd6c632351c0d911b95c452eec65233817c716c67",
+        "acae047d9fe4562ac51fe764342ad76712ea4b2158bf0ba62d09120a91f187da"
+       ],
+       "output_sha256": [
+        "f1408601a0d1f6634c69662bd58dcfb7a8c0d7b148ac3e9b1e46ea15e5de72c8",
+        "43c0805a3cbcd988488bcf0b4b7d475bc252329b6bc2a4a38ce0ab3e21db0137"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 18175,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 2,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ]
+       }
+      },
+      {
+       "seed": 283420,
+       "input_sha256": [
+        "e0c53f5fbbdda43219a20070c6ecb59f096864399ad2d6e98f9fc6cad52c0572",
+        "c2e9e29fbf4904d3e2f5a8982904a714764fe4efafabde7df4162e124364c150",
+        "2dc8858ba9565172190b27e9065c595066b48aac15df885e76ff4b1b3efd29db"
+       ],
+       "output_sha256": [
+        "2fc19161be28b39d8a850b5addd4d2dc4c154978aedc21e783c1caccb05ab8c6",
+        "d024463290bce0d24a8eb5a072a64c568c1c384f979f5eaaf9cdad32eb46b83f"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 18257,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ]
+       }
+      },
+      {
+       "seed": 312420,
+       "input_sha256": [
+        "cb4d04ce3379a0086dabc0ff89bf503c11250f2be7f768c3f58ac9e1a2d52174",
+        "f4528c1f099318fbb0311d5758fb72b1e46e74aa7895c6c2b70fa74d1bf91c05",
+        "c77dd3781cb12fe5f1521b0bb387b170ed70ca60baf0d97a87cfa34ec70d0330"
+       ],
+       "output_sha256": [
+        "93520b58543ca5ca122a7ee1c0af9c2eb6e13ab24a3ad81fe437a9f27d71af54",
+        "fa4b1ff142d4c6af44440450e5aaa45624323d24522454f388c3ec6c905e5ae9"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 18142,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ]
+       }
+      }
+     ],
+     "admitted": [
+      "eager",
+      "default",
+      "previous_best",
+      "packed_best"
+     ],
+     "timing_seed": 318720,
+     "fresh": null,
+     "prepared_windows": null,
+     "prepared_medians": {}
+    },
+    {
+     "offsets": [
+      1,
+      2,
+      3
+     ],
+     "calibration_seed": null,
+     "calibration_checks": {},
+     "calibration_windows": [],
+     "calibration_medians": {},
+     "selected": {
+      "previous_best": "mean_cohort-t256-v4-c1",
+      "packed_best": "mean_packed_tile-t128-v2-c1"
+     },
+     "holdout": [
+      {
+       "seed": 259415,
+       "input_sha256": [
+        "a06c9974d7f6ba5f37959d7b9c0373e7f76a79fa2e587ba112b7c6f9b3179687",
+        "06668cf92895c1bf6bdc76c0acbd094752fff73c538ec0eef30ba13f87a6b839",
+        "6b317841805c3473655e97a7a8a157ce1cd26cd46e3c27c1dfec9a9d8bdcaca0"
+       ],
+       "output_sha256": [
+        "ac2f9b7705399d3f6e0cc6d1f115705d1bbc2bab7982ac6c1d598e69add39dd2",
+        "af63575bf2cc1064be09c0a69bb2f1d7b9c3e416f5df509c3ebd47a5f92b5cd3"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 18232,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ]
+       }
+      },
+      {
+       "seed": 283421,
+       "input_sha256": [
+        "e4042630ec12eb1ec46a6d88e137c27ea8a78aeda126445c60aa7601b3ab7ec8",
+        "58a19cbf347bccc9ab75e6251d52d666c58c8291630d24f0a8ca8199fd68f8dd",
+        "b9954420d38a9c684b704f3a803ac5ebd4d42363abeb223eb185f3c15c089c5c"
+       ],
+       "output_sha256": [
+        "dd1018177d1f86d0751abf44c959fb1d5b80025b022e10a5c0df48c7360eb925",
+        "e65740940082e0fb77e62eb162caa36bbe3472e2801b4ccc7778d91168a01523"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 17888,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ]
+       }
+      },
+      {
+       "seed": 312421,
+       "input_sha256": [
+        "2358998761fbd18f90caa3a6e4eeb87d720f77d451f87b729c4343770b7271f2",
+        "d95d2e50488e25e400bf9c5a3dbc2e400c58d159dd0a8f66e500672d5c3275c7",
+        "5b0e33146bec660d655029ec55fd668152c4486561606970d937033411c56855"
+       ],
+       "output_sha256": [
+        "fc3b64ce4c00043f43a68eca28dbf15e19d71116331783a0229637bb9fd8b27e",
+        "3f1e1efcdf95032fbc35f560b80afbfae78b07a5c72f4f5b05a8f9e9f09dd28e"
+       ],
+       "checks": {
+        "eager": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 18188,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "inductor_casts": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "default": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "previous_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ],
+        "packed_best": [
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         },
+         {
+          "bit_mismatches": 0,
+          "outside_tolerance": 0,
+          "elements": 69700
+         }
+        ]
+       }
+      }
+     ],
+     "admitted": [
+      "eager",
+      "inductor_casts",
+      "default",
+      "previous_best",
+      "packed_best"
+     ],
+     "timing_seed": 318869,
+     "fresh": null,
+     "prepared_windows": null,
+     "prepared_medians": {}
+    }
+   ]
+  }
+ ]
+}

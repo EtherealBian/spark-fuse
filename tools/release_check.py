@@ -85,6 +85,18 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "native_resident_request_io",
+            [
+                sys.executable,
+                str(ROOT / "tools/resident_io_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-resident-io.json")),
+            ],
+        )
+    )
     opt = os.environ.get("SPARKFUSE_QWEN_PY")
     qreport = report.with_name(report.stem + "-qwen.json")
     if opt:

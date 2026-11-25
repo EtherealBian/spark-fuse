@@ -294,6 +294,22 @@ class ResidentExecutable:
         self._layout = layout
         self.metadata = metadata
         self._failed = False
+        self._native_io = None
+        if metadata["request_backend"] == "native":
+            # Flat fresh outputs only. Never reuse the caller's output storage across requests.
+            from .native import _extension
+
+            host = _extension()
+            self._bad_storage = host._ResidentBadStorage
+            self._bad_layout = host._ResidentBadLayout
+            self._native_io = host._ResidentIO(
+                static,
+                tuple(self._outputs),
+                graph.replay,
+                [g[2] for g in layout],
+                torch.Tensor,
+                nn.Parameter,
+            ).run
 
     def _guard(self):
         if threading.current_thread() is not self._thread:
@@ -311,7 +327,20 @@ class ResidentExecutable:
         self._guard()
         if self._graph is None or self._failed:
             raise RuntimeError("closed or failed resident executable")
-        if torch.is_autocast_enabled("cuda") or _request(args, self._dev) != self._layout:
+        if torch.is_autocast_enabled("cuda"):
+            raise ValueError("resident request layout or precision mode changed")
+        if self._native_io is not None:
+            try:
+                out = self._native_io(*args)
+                return out[0] if self._spec.is_leaf() else out
+            except self._bad_storage as e:
+                raise Unsupported(str(e)) from e
+            except self._bad_layout as e:
+                raise ValueError(str(e)) from e
+            except Exception:
+                self._failed = True
+                raise
+        if _request(args, self._dev) != self._layout:
             raise ValueError("resident request layout or precision mode changed")
         try:
             for src, dst in zip(args, self._static, strict=True):
@@ -357,6 +386,7 @@ class ResidentExecutable:
         self._guard()
         if self._graph is not None:
             self._owner.synchronize()
+            self._native_io = None
             self._graph.reset()
             self._graph = None
             self._outputs = []
@@ -380,6 +410,7 @@ def capture_export(
     partition_options=None,
     max_static_bytes=1024**3,
     int8_rhs_layout=None,
+    request_backend="python",
 ):
     """Capture a deterministic ATen export or its SparkFuse partition, with a private weight snapshot.
 
@@ -389,6 +420,8 @@ def capture_export(
     int8_rhs_layout="preserve" or "column_major" admits a signed W8A8 projection with direct,
     frozen full-storage RHS buffers without changing the GEMM. "packed_fanout" instead
     combines 2–4 frozen weights into one library GEMM and materializes live compact branch outputs.
+    request_backend="native" stages and clones a flat tuple of fresh outputs (or one tensor)
+    in a single host call. Other output contracts remain supported by the default Python path.
     """
     return _capture_export(
         ep,
@@ -399,6 +432,7 @@ def capture_export(
         max_static_bytes,
         None,
         int8_rhs_layout=int8_rhs_layout,
+        request_backend=request_backend,
     )
 
 
@@ -413,7 +447,10 @@ def _capture_export(
     shared,
     *,
     int8_rhs_layout=None,
+    request_backend="python",
 ):
+    if request_backend not in ("python", "native"):
+        raise ValueError("choose python or native request backend")
     if backend not in ("aten", "mixed") or (backend == "aten" and partition_options):
         raise ValueError("choose aten without partition options, or mixed")
     if type(max_static_bytes) is not int or max_static_bytes < 1:
@@ -509,6 +546,21 @@ def _capture_export(
         for t in tree.tree_leaves(warm):
             t.record_stream(owner)
         recipe = _recipe(example, reference, original_state, int8=quantized)
+        if request_backend == "native":
+            spec, bindings = recipe
+            flat = spec.is_leaf() or (
+                spec.type is tuple
+                and all(
+                    c.is_leaf()
+                    for c in (spec.children() if hasattr(spec, "children") else spec.children_specs)
+                )
+            )
+            if not flat or not all(
+                b.source == "copy" and b.base == i for i, b in enumerate(bindings)
+            ):
+                raise Unsupported(
+                    "native request IO requires a tensor or flat tuple of fresh outputs"
+                )
         if not any(b.source == "copy" for b in recipe[1]):
             raise Unsupported("alias-only outputs have no resident CUDA work to serve")
         _exact(warm, reference, "warm result")
@@ -534,6 +586,7 @@ def _capture_export(
             layout,
             dict(
                 backend=backend,
+                request_backend=request_backend,
                 staging_and_state_bytes=used,
                 int8_rhs_layout=int8_rhs_layout,
                 frozen_int8_weights=inventory,

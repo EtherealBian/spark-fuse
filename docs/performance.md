@@ -904,3 +904,18 @@ The [matched experiment](../reports/grouped-epilogue-gb10.json) compares separat
 | 129 × 3072 → 1536/256/256 | 53.74 → 30.22 | 117.08 → 92.87 | 113.73 → 91.61 |
 
 The [six-case report](../reports/packed-projection-gb10.json) records the three widths and two independent seeds, including the small queued workload with no benefit. Profiled device launches fall from five to three: residual/token quantization, a framework integer GEMM, and the [generated segmented epilogue](../examples/generated/token-quant/packed_17x128_64_64.cu). Every case compared all nine outputs byte for byte across eight held-out requests and checked each signed accumulator against CPU INT32 multiplication. The two Inductor modes missed the byte-level gate and are excluded from same-precision timings. These results cover static, random-weight projections; they do not measure complete attention or model quality. Reproduce with `python tools/packed_projection_panel.py --output /tmp/packed.json` and `bash tools/sanitize_packed_projection.sh`.
+
+<a id="resident-request-io"></a>
+### 同一张图，两种请求提交路径 / Resident request I/O
+
+`capture_export(ep, example, audit, request_backend="native", ...)` 把输入检查、复制到暂存区、CUDA Graph 回放和结果复制合在一次 C++ 调用里。它不改图里的 kernel。此选项要求返回单个独占张量，或由独占张量组成的一层 tuple；需要保留视图、重复引用或嵌套结构时，使用默认的 `request_backend="python"`。两种路径都允许下一次请求换地址，之前返回的结果仍属于调用方。`partition_options["host_backend"]` 控制图内算子的启动器，是另一个选项。
+
+| GB10，八组轮换输入（种子 1481849） | eager 同步 µs | Python → C++ 同步 µs | Python → C++，每批 8 个请求、摊到每请求 µs |
+|---|---:|---:|---:|
+| 三路投影，17 行，九个输出 | 127.46 | 68.48 → 61.26 | 67.36 → 58.41 |
+| 三路投影，129 行，九个输出 | 148.66 | 91.31 → 88.31 | 92.00 → 91.53 |
+| 单输出 ATen 对照 | 13.78 | 28.91 → 23.33 | 26.51 → 20.43 |
+
+The table measures whole requests, not device replay. The short projection also improved on a second seed (67.21 → 59.47 µs synchronized). For the 129-row case, queued cost moved from 91.45 to 92.08 µs on that seed; there is no consistent throughput gain there. Eager was fastest on the single-output control. Matched graph profiles have the same device launch counts; the change is in request handling. Both backends passed fresh-output, geometry and byte-level checks on eight held-out requests; integer accumulators were also checked against CPU INT32 matrix multiplication.
+
+[Raw randomized windows, setup costs and checks](../reports/resident-io-gb10.json) · [Compute Sanitizer results](../reports/resident-io-sanitizer-gb10.txt). After `source tools/env.sh`, run `python tools/resident_io_panel.py --output /tmp/resident-io.json` and `bash tools/sanitize_resident_io.sh`.
