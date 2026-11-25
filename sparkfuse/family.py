@@ -51,13 +51,22 @@ class ShapeFamily:
 
 @torch.inference_mode()
 def capture_family(
-    model, requests, *, backend="mixed", partition_options=None, max_static_bytes=1024**3
+    model,
+    requests,
+    *,
+    backend="mixed",
+    partition_options=None,
+    max_static_bytes=1024**3,
+    int8_rhs_layout=None,
+    request_backend="python",
 ):
     """Prepare a bounded, explicit list of (example, audit) pairs on one owning stream.
 
     Each pair is an independent fixed-shape export of the same model. Inputs must be positional
     tuples and both requests must differ in contents. The aggregate cap covers single-copy state
     and every shape's input staging, not independent graph pools, outputs or CUDA workspaces.
+    With packed_fanout, pack the checked int8 RHS bands once; later shapes verify and reuse
+    the private packed buffer without rewriting it. Each shape has its own graph and staging.
     An admission failure closes already captured handles. No partial family is returned.
     """
     if not isinstance(model, torch.nn.Module) or any(m.training for m in model.modules()):
@@ -66,6 +75,8 @@ def capture_family(
         raise ValueError("provide between 1 and 16 explicit request pairs")
     if type(max_static_bytes) is not int or max_static_bytes < 1:
         raise ValueError("positive aggregate byte limit required")
+    if int8_rhs_layout not in (None, "packed_fanout"):
+        raise ValueError("shape family supports default state or packed_fanout")
     keys = set()
     device = None
     stage = 0
@@ -94,6 +105,7 @@ def capture_family(
     members = []
     shared = None
     state_bytes = None
+    descriptor = None
     with ExitStack() as scopes:
         for ex, audit in requests:
             ep = torch.export.export(model, ex)
@@ -101,7 +113,18 @@ def capture_family(
             # allowance is exactly one copy of state plus the current member's input staging.
             cap = max_static_bytes - stage + sum(t.nbytes for t in ex)
             run = scopes.enter_context(
-                _capture_export(ep, ex, audit, backend, partition_options, cap, shared)
+                _capture_export(
+                    ep,
+                    ex,
+                    audit,
+                    backend,
+                    partition_options,
+                    cap,
+                    shared,
+                    int8_rhs_layout=int8_rhs_layout,
+                    request_backend=request_backend,
+                    packed_descriptor=descriptor,
+                )
             )
             handles[_key(ex)] = run
             size = run.metadata["staging_and_state_bytes"] - run.metadata["input_bytes"]
@@ -112,6 +135,13 @@ def capture_family(
                     if n.op == "get_attr"
                 }
                 state_bytes = size
+                if int8_rhs_layout == "packed_fanout":
+                    (cohort,) = (
+                        r
+                        for r in run.metadata["regions"]
+                        if r.get("kind") == "packed_int32_projection"
+                    )
+                    descriptor = (cohort["weight"], cohort["source_weights"])
             elif size != state_bytes:
                 raise Unsupported("different state storage size in shape family")
             members.append(
@@ -124,6 +154,8 @@ def capture_family(
         meta = dict(
             backend=backend,
             shapes=len(members),
+            request_backend=request_backend,
+            int8_rhs_layout=int8_rhs_layout,
             named_state=len(shared),
             weight_snapshot_bytes=state_bytes,
             input_staging_bytes=stage,

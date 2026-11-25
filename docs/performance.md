@@ -919,3 +919,20 @@ The [six-case report](../reports/packed-projection-gb10.json) records the three 
 The table measures whole requests, not device replay. The short projection also improved on a second seed (67.21 → 59.47 µs synchronized). For the 129-row case, queued cost moved from 91.45 to 92.08 µs on that seed; there is no consistent throughput gain there. Eager was fastest on the single-output control. Matched graph profiles have the same device launch counts; the change is in request handling. Both backends passed fresh-output, geometry and byte-level checks on eight held-out requests; integer accumulators were also checked against CPU INT32 matrix multiplication.
 
 [Raw randomized windows, setup costs and checks](../reports/resident-io-gb10.json) · [Compute Sanitizer results](../reports/resident-io-sanitizer-gb10.txt). After `source tools/env.sh`, run `python tools/resident_io_panel.py --output /tmp/resident-io.json` and `bash tools/sanitize_resident_io.sh`.
+
+<a id="packed-family"></a>
+### 三种请求长度，共用一组打包权重 / Shared packed weights across fixed shapes
+
+在 `capture_family(model, pairs, int8_rhs_layout="packed_fanout", ...)` 中，第一张图打包 Q/K/V 权重；后续图先核对每个分支的权重名、形状、步长、列偏移和逐元素 INT8 值，再绑定同一份私有存储，不重新打包。通道尺度也只保留一份。每种输入长度仍有自己的 CUDA Graph、暂存输入和静态内核。没有登记的长度会报错，不会在请求中重新编译。其他选项与单图打包相同；本实验两组都用 `request_backend="native"`。
+
+| DGX Spark，17 / 33 / 129 行，K=1536，Q/K/V 宽 512/256/256 | 三张独立图 | 共享权重的三张图 |
+|---|---:|---:|
+| 私有打包矩阵：份数 / 字节 | 3 / 4,718,592 | 1 / 1,572,864 |
+| 模型状态 + 三套输入暂存（字节） | 5,830,656 | 2,676,736 |
+| 建图后 PyTorch 分配器净增（字节） | 8,126,976 | 4,973,056 |
+| 轮换形状同步请求，两个种子（µs） | 49.10 / 50.79 | 48.83 / 48.96 |
+| 8 个请求排队，每请求，两个种子（µs） | 47.07 / 46.90 | 45.68 / 47.56 |
+
+Each allocator measurement used a separate, symmetrically warmed process; after closing the graphs, allocated bytes returned to baseline. Sharing saved **3,153,920 bytes** of retained allocations; it did not consistently improve queued throughput. Checking the shared state also took extra setup time (111 vs 102 ms; 109 vs 97 ms). Both serving paths use identical per-shape CUDA code and the same request router. Eight interleaved held-out requests per seed passed byte-level checks on all nine outputs, including independent CPU INT32 accumulator checks. Eager synchronized medians were 102.56 and 102.10 µs. Default and cast-aware Inductor failed the byte gate and were not timed as equivalent implementations.
+
+[Physical inventories, isolated allocator readings and raw timings](../reports/packed-family-gb10.json) · [Compute Sanitizer](../reports/packed-family-sanitizer-gb10.txt). Reproduce with `python tools/packed_family_panel.py --output /tmp/packed-family.json` and `bash tools/sanitize_packed_family.sh` after `source tools/env.sh`.

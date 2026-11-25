@@ -111,8 +111,8 @@ def preflight(gm, dev, example, audit, cap):
     return set(stores), inv, bytes_needed
 
 
-def prepare(gm, records, dev, example, audit, cap):
-    """Rewrite a *separate* graph, returning only a newly minted final-layout weight to adopt."""
+def prepare(gm, records, dev, example, audit, cap, *, reuse=None):
+    """Rewrite a *separate* graph, adopting one private final-layout weight, materialized once per family."""
     from .resident import _get
 
     stores, inventory, size = preflight(gm, dev, example, audit, cap)
@@ -208,11 +208,34 @@ def prepare(gm, records, dev, example, audit, cap):
         output_dtypes=types,
     )
     private.add_module(module_name, IndexRegion(kernel, record["host_backend"]))
-    packed = torch.empty_strided((k, columns), (1, k), dtype=torch.int8, device=dev)
+    if reuse is None:
+        packed = torch.empty_strided((k, columns), (1, k), dtype=torch.int8, device=dev)
+    else:
+        previous, packed = reuse
+        # A shape-specialized export can change branch order even when widths and bytes match.
+        # Validate logical source identity and layout BEFORE accepting any shared address.
+        if previous != packed_inv:
+            raise Unsupported("shape family changed packed RHS descriptors or branch order")
+        if (
+            type(packed) is not torch.Tensor
+            or packed.device != dev
+            or packed.dtype != torch.int8
+            or packed.shape != (k, columns)
+            or packed.stride() != (1, k)
+            or packed._base is not None
+            or packed.storage_offset()
+            or packed.untyped_storage().nbytes() != k * columns
+            or (packed.device, packed.untyped_storage().data_ptr()) in stores
+        ):
+            raise Unsupported("invalid private packed RHS for shape family")
     for w, desc in zip(weights, packed_inv, strict=True):
-        packed.narrow(1, desc["packed_column_offset"], desc["shape"][1]).copy_(
-            _get(gm, w.target).detach()
-        )
+        band = packed.narrow(1, desc["packed_column_offset"], desc["shape"][1])
+        source = _get(gm, w.target).detach()
+        if reuse is None:
+            band.copy_(source)
+        elif not torch.equal(band, source):
+            # Never 'refresh' this buffer: preceding graphs retain its device address.
+            raise Unsupported("shape family changed packed RHS contents: " + w.target)
     private.register_buffer(weight_name, packed)
     with graph.inserting_before(grouped):
         rhs = graph.get_attr(weight_name)

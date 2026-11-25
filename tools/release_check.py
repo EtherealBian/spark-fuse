@@ -97,6 +97,18 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "packed_int8_shape_family",
+            [
+                sys.executable,
+                str(ROOT / "tools/packed_family_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-packed-family.json")),
+            ],
+        )
+    )
     opt = os.environ.get("SPARKFUSE_QWEN_PY")
     qreport = report.with_name(report.stem + "-qwen.json")
     if opt:

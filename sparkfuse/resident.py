@@ -181,7 +181,7 @@ def _snapshot(gm, dev, args, max_bytes, shared, rhs_layout, adopted=None):
                 if used > max_bytes:
                     raise ValueError("request staging + weight snapshot exceeds byte limit")
                 if adopted is not None and n.target in adopted:
-                    # Only the final allocation minted by prepare() is adoptable.
+                    # Only the private final allocation validated by prepare() is adoptable.
                     if (
                         t is not adopted[n.target]
                         or packed != (1, t.shape[0])
@@ -208,10 +208,11 @@ def _snapshot(gm, dev, args, max_bytes, shared, rhs_layout, adopted=None):
                         raise Unsupported(
                             "shape family state contents or layout changed: " + n.target
                         )
-                    if _store(candidate) in private_keys:
-                        raise Unsupported("shape family state alias groups changed")
-                    private_keys.add(_store(candidate))
                     copied[key] = candidate
+                if shared is not None:
+                    if _store(copied[key]) in private_keys:
+                        raise Unsupported("shape family state alias groups changed")
+                    private_keys.add(_store(copied[key]))
             if shared is not None and _store(copied[key]) != _store(shared[n.target]):
                 raise Unsupported("shape family state alias groups changed")
             desired = _geometry(t) if packed is None else (t.dtype, tuple(t.shape), packed, 0)
@@ -448,6 +449,7 @@ def _capture_export(
     *,
     int8_rhs_layout=None,
     request_backend="python",
+    packed_descriptor=None,
 ):
     if request_backend not in ("python", "native"):
         raise ValueError("choose python or native request backend")
@@ -456,12 +458,14 @@ def _capture_export(
     if type(max_static_bytes) is not int or max_static_bytes < 1:
         raise ValueError("positive byte limit required")
     if int8_rhs_layout not in (None, "preserve", "column_major", "packed_fanout") or (
-        shared is not None and int8_rhs_layout is not None
+        shared is not None and int8_rhs_layout not in (None, "packed_fanout")
     ):
         raise ValueError(
             "choose a single-export W8A8 snapshot layout: preserve, column_major, or packed_fanout"
         )
     fanout = int8_rhs_layout == "packed_fanout"
+    if (packed_descriptor is not None) != (shared is not None and fanout):
+        raise ValueError("shared packed capture requires the first member descriptor")
     if fanout and (
         backend != "mixed"
         or not all(
@@ -515,7 +519,15 @@ def _capture_export(
         )
         adopted = None
         if fanout:
-            gm, recs, adopted, keys, size = prepare(gm, recs, dev, example, audit, max_static_bytes)
+            reuse = None
+            if packed_descriptor is not None:
+                weight_name, inventory_descriptor = packed_descriptor
+                if weight_name not in shared:
+                    raise Unsupported("missing shared packed RHS")
+                reuse = (inventory_descriptor, shared[weight_name])
+            gm, recs, adopted, keys, size = prepare(
+                gm, recs, dev, example, audit, max_static_bytes, reuse=reuse
+            )
             if keys != source_keys or size != source_size:
                 raise Unsupported("mixed packed fanout changed live model state")
         fn, original_state, private_state, used, inventory = _snapshot(
