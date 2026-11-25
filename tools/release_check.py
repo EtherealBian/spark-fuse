@@ -98,6 +98,18 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "qwen_decoder_layer_residual_barrier",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_decoder.py"),
+                    "--verify-only",
+                    "--output",
+                    str(report.with_name(report.stem + "-qwen-decoder.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (

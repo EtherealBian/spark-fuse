@@ -1,0 +1,111 @@
+{
+  "checks": [
+    {
+      "check": "tests",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "........................................................................ [ 17%]\n........................................................................ [ 34%]\n........................................................................ [ 51%]\n........................................................................ [ 69%]\n........................................................................ [ 86%]\n.........................................................                [100%]\n417 passed in 8.80s\n",
+      "elapsed_s": 10.081403522752225
+    },
+    {
+      "check": "installed_wheel",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 2.828029464930296
+    },
+    {
+      "check": "qwen_modules",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.7447467921301723
+    },
+    {
+      "check": "qwen_modules_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.7146130613982677
+    },
+    {
+      "check": "qwen_attention_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.5800488898530602
+    },
+    {
+      "check": "bert_self_output_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "BertSelfOutput verified\n",
+      "elapsed_s": 2.889633140526712
+    },
+    {
+      "check": "bert_encoder_layer_fixed_order",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "{'eager': (True, None, None), 'unsplit': (False, None, None), 'split': (False, None, None), 'ordered': (True, None, None), 'exported_aten': (True, None, None)}\n",
+      "elapsed_s": 3.185288656502962
+    },
+    {
+      "check": "bert_host_call_equivalence",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "bert 33 [('eager', True, None), ('export', True, None), ('export_fast', True, None), ('mixed', True, None), ('mixed_fast', True, None)]\n{}\n",
+      "elapsed_s": 3.071987261995673
+    },
+    {
+      "check": "qwen_decoder_layer_residual_barrier",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "33 witness True {'eager': (True, None, None), 'exported_aten': (True, None, None), 'prior': (True, None, None), 'split': (True, None, None)}\n",
+      "elapsed_s": 3.5990746933966875
+    },
+    {
+      "check": "t5_gated-gelu",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gated-gelu [('eager', True, None, None), ('exported_aten', True, None, None), ('mixed', True, None, None)]\n",
+      "elapsed_s": 3.044048560783267
+    },
+    {
+      "check": "t5_gated-gelu_pytorch_tanh",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gated-gelu_pytorch_tanh [('eager', True, None, None), ('exported_aten', True, None, None), ('mixed', True, None, None)]\n",
+      "elapsed_s": 3.0313993133604527
+    },
+    {
+      "check": "all_low_precision_activation_encodings",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "torch.float16 1 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.float16 4 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.bfloat16 1 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.bfloat16 4 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\n",
+      "elapsed_s": 2.1500391606241465
+    },
+    {
+      "check": "wide_cached_score_schedules",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "scores 24 8192 float16 31885 pass\nscores 24 8192 float16 39804 pass\nscores 24 8192 float16 47723 pass\nscores 24 8192 float16 55642 pass\nscores2 24 2048 float16 32395 pass\nscores2 24 2048 float16 40314 pass\nscores2 24 2048 float16 48233 pass\nscores2 24 2048 float16 56152 pass\nscores 384 4096 bfloat16 32497 pass\nscores 384 4096 bfloat16 40416 pass\nscores 384 4096 bfloat16 48335 pass\nscores 384 4096 bfloat16 56254 pass\n",
+      "elapsed_s": 2.1621892359107733
+    },
+    {
+      "check": "dynamic_native_shape_matrix",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gate verify only excluded: []\nresnorm2 verify only excluded: []\nmean verify only excluded: []\n",
+      "elapsed_s": 2.3454798879101872
+    },
+    {
+      "check": "offline_campaign_evidence",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "{\"run\": \"gb10-attention\", \"panel\": \"attention\", \"indexed\": 122, \"passed\": 117, \"distinct_sources_verified\": 44, \"missing_source\": 0, \"state\": \"in progress at capture\"}\n{\"run\": \"gb10-overnight\", \"panel\": \"general\", \"indexed\": 230, \"passed\": 224, \"distinct_sources_verified\": 55, \"missing_source\": 87, \"state\": \"in progress at capture\"}\n",
+      "elapsed_s": 0.2530985753983259
+    }
+  ],
+  "passed": true,
+  "completed_epoch": 1795625071.387014
+}

@@ -5,7 +5,6 @@ from collections import deque
 from math import prod
 import operator
 from types import SimpleNamespace
-import torch
 from torch import fx, nn
 from torch.utils import _pytree as tree
 from .ir import Unsupported, lower
@@ -60,6 +59,10 @@ class RegionSpec:
     constants: dict
 
 
+class _InsertionBarrier(Unsupported):
+    """A fallback consumer needs a result before the entire component can execute."""
+
+
 def _region(members, pos):
     active = set(members)
     incoming = sorted(
@@ -71,7 +74,7 @@ def _region(members, pos):
         raise Unsupported("empty boundary")
     anchor = min(consumers, key=pos.get)
     if max(pos[n] for n in incoming) >= pos[anchor]:
-        raise Unsupported("no legal insertion point between live-ins and live-outs")
+        raise _InsertionBarrier("no legal insertion point between live-ins and live-outs")
     if any(
         str(n.target)
         in (
@@ -93,7 +96,10 @@ def _region(members, pos):
     for n in members:
         remap[n] = g.node_copy(n, lambda old: remap[old])
     g.output(tuple(remap[n] for n in outgoing))
-    kind = lambda tag: SimpleNamespace(kind=SimpleNamespace(name=tag))
+
+    def kind(tag):
+        return SimpleNamespace(kind=SimpleNamespace(name=tag))
+
     sig = SimpleNamespace(
         input_specs=[kind("USER_INPUT") for _ in incoming],
         output_specs=[kind("USER_OUTPUT") for _ in outgoing],
@@ -115,10 +121,11 @@ _COLLECTIVES = frozenset(
 )
 
 
-def _costed_slices(group, pos, min_ops):
+def _costed_slices(group, pos, min_ops, allow_single=False):
     """Bounded contiguous topological intervals. This is a structural objective, not a latency model."""
     n = len(group)
-    if n > 48 or sum(str(v.target) in _COLLECTIVES for v in group) < 2:
+    collectives = sum(str(v.target) in _COLLECTIVES for v in group)
+    if n > 48 or collectives < (1 if allow_single else 2):
         return None
 
     def connected(nodes):
@@ -204,6 +211,7 @@ def partition_export(
     host_backend="python",
     split_collectives=True,
     schedule_policy=None,
+    split_barriers=True,
 ):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
     if host_backend not in ("python", "native"):
@@ -241,7 +249,7 @@ def partition_export(
             rec["split"] = parent
         records.append(rec)
         if skip:
-            rec["fallback"] = "not included in a legal multi-collective split"
+            rec["fallback"] = "not included in a legal collective split"
             continue
         if sum(str(n.target) != "aten._assert_tensor_metadata.default" for n in group) < min_ops:
             rec["fallback"] = "below minimum region size"
@@ -262,7 +270,12 @@ def partition_export(
                 )
         except Unsupported as e:
             selection = (
-                _costed_slices(group, positions, min_ops)
+                _costed_slices(
+                    group,
+                    positions,
+                    min_ops,
+                    allow_single=split_barriers and isinstance(e, _InsertionBarrier),
+                )
                 if split_collectives and parent is None
                 else None
             )
@@ -271,6 +284,9 @@ def partition_export(
                 records.pop()
                 info = {
                     "component": ci,
+                    "reason": "fallback_barrier"
+                    if isinstance(e, _InsertionBarrier)
+                    else "rejected_multi_collective",
                     "original_rejection": str(e),
                     "covered_ops": score[0],
                     "planned_regions": -score[1],

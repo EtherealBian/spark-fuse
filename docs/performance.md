@@ -275,3 +275,21 @@ Native had the lower median than each other frontend in 9/9 windows on these wor
 [独立生产回放](../reports/mean-cohort-replay.json.gz)使用新种子 64333 和空数据库，遍历全部十种有序布局，留出复测保留 256 线程缓存默认配置；无额外调参收益。第三种子上 eager / Inductor / SparkFuse 分别为 **21.409 / 3.094 / 4.622 µs**，三者通过同一容差，SparkFuse 与 eager 逐元素一致。
 
 **English.** `mean_cohort` changes which physical threads perform the 128 independent scalar recurrence chains, not the FP32 addition tree. For the formerly slow `17 × 8160` FP16 case the fixed default went from 31.136 to 4.712 µs on aligned inputs. Inductor remained faster on that aligned request. The ten held-out requests cover five shapes and two address layouts, not ten independent value seeds. Reproduce with `python tools/mean_cohort_panel.py --output /tmp/mean-cohort.json`.
+
+### 同一处残差，两个下游使用者 / Splitting at a projection barrier
+
+一个完整的 `Qwen2DecoderLayer` 暴露了旧分区器的盲点。注意力输出与输入相加后，RMSNorm 需要这个残差，MLP 后的跳连也需要它。如果把末端加法一起收进来，前端找不到一个同时满足所有生产者和消费者的插入位置。以前这种只有一个归约的连通块会整个退回 ATen。现在只在确有位置冲突时，对不超过 48 个节点的候选块寻找可独立生成的连续区间；每段分别检查输入可用性、输出用途、别名和可编译性。本例选中的 kernel 覆盖九个计算算子，写出两个结果：原残差保留给末端跳连，归一化并乘权后的张量送入门控和上投影。七个线性投影及 QK/PV 矩阵乘法仍走 PyTorch。
+
+[首轮实测](../reports/qwen-decoder-barrier-gb10.json)使用 Hugging Face 的实际单层、随机非恒等归一化权重、BF16、batch 2、hidden 1536、MLP 8960、12 个查询头 / 2 个 KV 头，两条样本的位置和掩码不同。每个长度有六个验证种子，另用第七组输入计时；与建图输入不重叠。四处观察值（最终隐藏态、注意力概率、注意力后的残差、乘权归一化结果）逐位匹配 eager。遮住的注意力权重均为零。
+
+| 序列长度 | eager 设备 µs | 旧分区 → 新分区：设备 µs | 旧分区 → 新分区：同步主机 µs | 旧 → 新实际 kernel 次数 |
+|---:|---:|---:|---:|---:|
+| 33 | 602.787 | 587.424 → 575.416 | 706.249 → 674.616 | 36 → 28 |
+| 65 | 621.405 | 602.445 → 582.923 | 762.123 → 717.817 | 36 → 28 |
+| 97 | 764.328 | 695.813 → 680.643 | 817.628 → 773.067 | 37 → 29 |
+
+时间是七个交错测量窗口的中位数。两条混合路径共用同样的有序归约和原生调度，只改变一个分区选项。表的最后一列来自[第二次运行](../reports/qwen-decoder-kernel-census-gb10.json)：先重新计时，再分别记录一次普通调用中 Kineto `cat=kernel` 的 GPU 区间；不是 FX 节点数，也没有用 profiler 计算延迟。第二次整层设备时间旧 → 新分别为 589.491 → 580.541、601.280 → 583.789 和 704.541 → 684.133 µs。两次都少了八次发射，但这不等于整个模型有同样比例的加速。
+
+Inductor 在本实验 21 组输入的隐藏态上没有通过原精度约定，因此不报告它的速度；两份 JSON 均保留逐种子的结果。例如长度 33、种子 30211 的隐藏态有 4,990 / 101,376 个元素超出容差，而该请求的注意力概率通过。未加载预训练权重，无 KV 缓存，不是生成吞吐基准。RoPE 表在计时外生成，旋转和所有投影在计时内。
+
+**English.** A topological barrier used to send a whole single-reduction component back to ATen. The partitioner can now retain a legal two-output residual/RMSNorm prefix without moving work across a projection. On one real Qwen2 layer, this removed eight observed GPU kernel launches at each tested length. Four sampled tensors matched eager bitwise. The reports include both paired timing runs and the Inductor parity failures. Reproduce with `python tools/qwen_decoder.py --seq 33 65 97 --profile --output /tmp/qwen-decoder.json`.
