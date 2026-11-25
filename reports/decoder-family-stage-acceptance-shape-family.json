@@ -1,0 +1,1463 @@
+{
+ "protocol": "Single BF16 Qwen2 layer, one fixed model per shape family. Memory experiment: fresh child per weight and topology, same separate-graph warmup, GC+synchronize before baseline and after build/close. PyTorch active allocator bytes only, not physical/driver memory. Unique weight storage census from actual tensor bindings. Serving: fixed mixed schedules, interleaved lengths, four distinct requests per shape, hold all results; numerical/alias/layout failures retained and not timed. Direct paths resolve callable before timers; routed pays shape lookup. Seven shuffled method windows, two full rotations of single synchronized requests and five full queued bursts. No outer graph.",
+ "torch": "2.13.0+cu130",
+ "cuda": "13.0",
+ "device": "NVIDIA GB10",
+ "transformers": "4.51.3",
+ "rms_report_sha256": "1c8d7fab5053faf2db69ab07b854ed705a95c7d76926c5c08bf166f563361fa6",
+ "smoke": true,
+ "provenance": {
+  "git_head_at_capture": "46de3e4bd50860533829a8880e57bda82f375145",
+  "source_tree_sha256": "965c31d5661be6bb8d540a9d031febcfd3ffaa341820b3d00dac496da855177c",
+  "archive": "sources/965c31d5661be6bb8d540a9d031febcfd3ffaa341820b3d00dac496da855177c.tar.gz"
+ },
+ "cases": [
+  {
+   "weight_seed": 899903,
+   "weight_sha256": {
+    "layer.self_attn.q_proj.weight": "155a160a80c636eb9fc046481bc645050724a989563a983546c6e6d547924e5e",
+    "layer.self_attn.q_proj.bias": "68f0b3cb57cff2a9f762a2ae348b3e0ce633a532d52c8addbdde8f96f7c8bf2d",
+    "layer.self_attn.k_proj.weight": "5270996094fbea9c0aaea15d12c4b7aa3639ea55f238a4607d412d3e37b316ff",
+    "layer.self_attn.k_proj.bias": "920db1cbc2aafae69dd4d8f6e1c54a50e8c9ab4d946bd155758806248c4d0829",
+    "layer.self_attn.v_proj.weight": "560b8ad91d24563c46061a01c6aacd36349584756c8bf35dd370e2eb8265e4aa",
+    "layer.self_attn.v_proj.bias": "aa05a89aab609aee99eb47cc2c63671a3c97065c0708640b986e259a996120e0",
+    "layer.self_attn.o_proj.weight": "2d8c88b040fbf9cfbbe22e9ba9b960cac26044dc24a5bcc13152aa4519d265f1",
+    "layer.mlp.gate_proj.weight": "b5ad936deca77031509772120e2ae9813b6f1e96126bacd7d8bb89a677e83b3d",
+    "layer.mlp.up_proj.weight": "eb7c0de437d7b5d40102e6f65a8944f1f23c206d90c3b6853eeff02067614be2",
+    "layer.mlp.down_proj.weight": "032df7027cc2cd1ab8ac6132785df5ed5d490ec1f8be66ba151d6d0485ab3ec9",
+    "layer.input_layernorm.weight": "3a52dac8b0b56f55304f73f499e795c71452486fea944a2c15ed2a81776d69d1",
+    "layer.post_attention_layernorm.weight": "280d29876152bea6ee33cb34887e69f7837c76cf48170b8ec02ba3682e82e740"
+   },
+   "sequences": [
+    33,
+    65
+   ],
+   "request_shapes": [
+    33,
+    65,
+    33,
+    65,
+    33,
+    65,
+    33,
+    65
+   ],
+   "inputs": [
+    [
+     "43b101e7adc7119dd0cd903a7ba87727152adca50175a97abb50fcfb9cdb72af",
+     "d524533290f1bd25c2e1533afff47b1fe5b56f159d02cd5766ad33f82897fe1d",
+     "6852bd142cc47d861cd262cc2f4740c7ceeafe49b3c3c1aa4a04f0a5e8efcec0",
+     "ec6e8cac169be72ce39a247c5f69ea76e39e0b7d044dcefe51b8ac28579de269"
+    ],
+    [
+     "46a41319ea612ba88bfdf3b5e003900e7abf8fcf470704ef2f90b50489acc75a",
+     "dd3c9326978544119f8540d5e229dd104268874eed576d0a393f455e86ef0a00",
+     "d28df6a07011450f4dbad4ce4d636c09dae4a813059ac464946971c6266e23c0",
+     "2d2ace9703f812d21e48f25448149a2337c8cf3ffac9c91303e87063f909d4a6"
+    ],
+    [
+     "b8b38237be4cbace3fb9550d53348e421f13b25fc7469d523e5671364efb07ef",
+     "b1cf7ed14fdb55d4eb3ffaa2eb5d484b8efc2a4dd79d824976f7b769453bafd6",
+     "d8086cf605d97e5e25fb65854ec7c99ba37478b9c60ac43b484c1e1432388f06",
+     "2f632f0445126d13fc7c09d2ab306355e986ddf1c7b4821172bfe28f97eee713"
+    ],
+    [
+     "2f42a76b0184b7071df517f67cd48f523d16da3e045b5ceee855c7acad914c9e",
+     "19f28f70da5ad334d418b0af57cf283c3b20425cba0150f85c45a5a7c1b97b94",
+     "1bfe8fd60bff77217c061c24e227f9d65fba1acbad51e64697490325eb67c7b5",
+     "b21a0b9603fb9ef797211a84afa217931a42446fe289259ab3da6c118a697d36"
+    ],
+    [
+     "47ff0b25d222d9761e6b0d90f4981eb353cfbf95f3881efdef8d0a7a68a639d3",
+     "941c4faf61b860ccbbf4bd5c1ea7d902c808eae6862f92f48a0cfb9514407f38",
+     "ffcebbdc546388e8a04f6b06cda70a1c40097b94891565b0799c23a062647de4",
+     "a75aafc76c0d0a097ca04472d83e6d9eab6487b2224afd546b8d748072f36d90"
+    ],
+    [
+     "d94649db8bbf648f2d8c5597b8a70a18fe1b1153f4a1bcca06d8a1508288a90e",
+     "56340527aa092b6cbb7086ff33fbd885cd5a596d2dc776fa7dbb190063060583",
+     "c539144f4f8132f2da1c99ffb49db0b063dd347d4472b83c2c2bc6056c4018f5",
+     "cfb800bc76fa172436c2eead21cadaff758e5f6ba24e4820f8d88fd80037e375"
+    ],
+    [
+     "35ba0c1ca1b48aae06ef5fade671cbcc2d4785a88271b10968f97f0a53d91c27",
+     "cc7067f99962eb31dbac7a17eafad3f1a9160a9a886264ebdaded512f834590c",
+     "36e7fd0d0bfa29101a9fa48d5b379a2da22de494a2ed1128cf52a8008af30f50",
+     "516c1b400b863bb0033adf561e6cf99226927dec329160ee19134d0e581f1b52"
+    ],
+    [
+     "ec5dce35776465e36ae1c6d1e16ecb46878420d105510ecc1e8e0bd85e2cfa01",
+     "23cad845f85b7921adb76dd67915baaaae9bade9f9d8898d05ec0b97e65c6076",
+     "a597725e587456a364f967dfca308e2f405a99b28a3b57645562402b243f196a",
+     "c78d9d9724e22f98408c945042c2be3d0705e4fef02dc633bcd7ce7dddc5b93e"
+    ]
+   ],
+   "references": [
+    [
+     "15323ad857a7d0da9fb189a9597694de1db933c7919c0b46aed475405dae64f6",
+     "b20d2dfdb3dec48c010acdade19e66ce685bafc9162bef1c74d53d26ab83133e"
+    ],
+    [
+     "17204b5a73c340a37df9f212243939fd292dda8e50132e7164795c7d47d1a2aa",
+     "1e7f560025ec203ac8a86a85893fd4439ae665b22a5475ca8f57645a7d092a20"
+    ],
+    [
+     "2b65fdd44ba8f1f09258468ad493011e91315b8b7a756af534097cd60ee10437",
+     "581bc6f7c40d2ca14efb70a63a7c7105f99210c461f8090c0b6e6673336d934a"
+    ],
+    [
+     "fe689adf5f24b2c34ee4674e5bc70d2f2afb98c0d6a5d4529f86ac4eceb6d491",
+     "36e4515b832dc4c4b3cb5e0000da1e3ae612ee24c2907abe7b1c10532f91c4cc"
+    ],
+    [
+     "c3e87b13d47dfcfe344ae013c8f316d9122b12ec418b55ff832f3286cc16e6da",
+     "13a2ca03201e2d63e474968e9e7fc9df33d9220a6a01d4553e1cb3e34f5290db"
+    ],
+    [
+     "b6809b388a946f0b07ae1a3f08fa4f242b0f73661b8d3e58cfdeade5895245d1",
+     "fb534f8a499becafea6271d95f1a358d9a000f47d087be7dcd24d61c9bf3d229"
+    ],
+    [
+     "f1d7aa989a0c21de8d87b82537e0f06405b423e0a9d373ae574e84d2c427bf44",
+     "88d6c98f97265e8e62d9b1a47721655a287c4faea8bbab501c7012a2939b727d"
+    ],
+    [
+     "ab7436bfd25b6177a67847f8504ae2506dcdf9cca2d2eca18f78918500f4e824",
+     "e9c0e57f76cae6293baf0099e297b4a4984846a122d2bb1b0d067f0e9fa19733"
+    ]
+   ],
+   "inventory": {
+    "separate": {
+     "named_state_per_shape": 12,
+     "unique_weight_stores": 24,
+     "unique_weight_bytes": 187191296,
+     "weight_bytes_counting_each_shape": 187191296,
+     "input_staging_bytes": 723720,
+     "logical_static_bytes": 187915016
+    },
+    "shared": {
+     "named_state_per_shape": 12,
+     "unique_weight_stores": 12,
+     "unique_weight_bytes": 93595648,
+     "weight_bytes_counting_each_shape": 187191296,
+     "input_staging_bytes": 723720,
+     "logical_static_bytes": 94319368
+    }
+   },
+   "gates": {
+    "separate_direct": {
+     "checks": [
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      }
+     ],
+     "distinct_outputs": true,
+     "passed": true
+    },
+    "shared_direct": {
+     "checks": [
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      }
+     ],
+     "distinct_outputs": true,
+     "passed": true
+    },
+    "shared_routed": {
+     "checks": [
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      }
+     ],
+     "distinct_outputs": true,
+     "passed": true
+    },
+    "mixed": {
+     "checks": [
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      }
+     ],
+     "distinct_outputs": true,
+     "passed": true
+    },
+    "eager": {
+     "checks": [
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          33,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          33,
+          33
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      },
+      {
+       "values": {
+        "hidden": {
+         "shape": [
+          2,
+          65,
+          1536
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        },
+        "probabilities": {
+         "shape": [
+          2,
+          12,
+          65,
+          65
+         ],
+         "unequal_bits": 0,
+         "finite": true,
+         "max_abs": 0.0,
+         "tolerance_pass": true
+        }
+       },
+       "masked_nonzero": 0,
+       "max_row_sum_error": 0.001953125,
+       "passed": true,
+       "public_layout": true,
+       "alias_match": true
+      }
+     ],
+     "distinct_outputs": true,
+     "passed": true
+    }
+   },
+   "timing": null,
+   "memory": {}
+  }
+ ]
+}

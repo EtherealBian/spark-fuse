@@ -1,6 +1,6 @@
 """Specialize only symbol-independent regions in an already qualified dynamic decode graph."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import operator
 from collections import deque
 import torch
@@ -20,6 +20,7 @@ class HybridDecode:
     attention: list
     regions: list
     host_calls: list
+    rotary: list = field(default_factory=list)
 
 
 def _static(n):
@@ -107,6 +108,7 @@ def partition_hybrid_decode(
     host_backend="native",
     host_calls=False,
     split_barriers=True,
+    paired_rotary=False,
     tile=32,
     max_workspace_bytes=32 << 20,
 ):
@@ -117,7 +119,7 @@ def partition_hybrid_decode(
     A rejected island remains ATen. No weight freezing or shape specialization on a trace.
     """
     _require(
-        type(host_calls) is bool and type(split_barriers) is bool,
+        type(host_calls) is bool and type(split_barriers) is bool and type(paired_rotary) is bool,
         "explicit Boolean options required",
     )
     p = partition_symbolic_decode(
@@ -134,6 +136,41 @@ def partition_hybrid_decode(
         return HybridDecode(gm, [], [], [])
     batches = tuple(map(tuple, (example, audit)))
     traces, refs = _trace(gm, batches)
+    rotary = []
+    if paired_rotary:
+        from .rotary import fuse_pairs
+
+        def qualify(region, q, k):
+            for env in traces:
+                if any(n not in env for n in (q.x, k.x, q.c, q.s, q.out, k.out)):
+                    return False
+                qs, ks = env[q.x], env[k.x]
+                args = (
+                    qs.transpose(1, 2) if q.bshd else qs,
+                    ks.transpose(1, 2) if k.bshd else ks,
+                    env[q.c],
+                    env[q.s],
+                )
+                out = region(*args)
+                got = tuple(
+                    y.transpose(1, 2) if b.bshd else y for y, b in zip(out, (q, k), strict=True)
+                )
+                ref = (env[q.out], env[k.out])
+                if _signature(got, args) != _signature(ref, args) or any(
+                    (a._base is None) != (b._base is None) or not _bits(a, b)
+                    for a, b in zip(got, ref, strict=True)
+                ):
+                    return False
+            return True
+
+        rotary = fuse_pairs(
+            gm,
+            example[0].device,
+            "native" if host_backend == "native" else "python",
+            qualify=qualify,
+        )
+        if any("module" in r for r in rotary):
+            traces, _ = _trace(gm, batches)
     records = []
     proposals = []
     pos = {n: i for i, n in enumerate(gm.graph.nodes)}
@@ -212,4 +249,4 @@ def partition_hybrid_decode(
             ),
             "composition changed a public attention-only result",
         )
-    return HybridDecode(gm, p.sites, records, special)
+    return HybridDecode(gm, p.sites, records, special, rotary)

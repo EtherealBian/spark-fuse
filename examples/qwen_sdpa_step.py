@@ -48,8 +48,10 @@ def trajectory(m, rope, past, masked, seed, *, steps=2):
     state = DynamicCache()
     stages = []
 
+    width = m.layer.input_layernorm.weight.numel()
+
     def hidden(n):
-        return torch.randn(2, n, 512, device="cuda", dtype=torch.bfloat16, generator=rng)
+        return torch.randn(2, n, width, device="cuda", dtype=torch.bfloat16, generator=rng)
 
     x = hidden(past)
     pos = offset + torch.arange(past, device="cuda")

@@ -175,7 +175,7 @@ class _Call(IndexProgram):
         super().__init__(shapes, shapes[:2], dt, device, source)
 
 
-def fuse_pairs(gm, device, host_backend):
+def fuse_pairs(gm, device, host_backend, *, qualify=None):
     records = []
     branches = [m for n in gm.graph.nodes if (m := _branch(n)) is not None]
     used = set()
@@ -202,7 +202,17 @@ def fuse_pairs(gm, device, host_backend):
                 continue
             label = f"_sparkfuse_rotary_pair_{len(records)}"
             program = _Call(q, k, device)
-            gm.add_module(label, IndexRegion(program, host_backend))
+            region = IndexRegion(program, host_backend)
+            if qualify is not None and not qualify(region, q, k):
+                records.append(
+                    dict(
+                        kind="rotary_pair",
+                        live_outs=[q.out.name, k.out.name],
+                        fallback="byte or ownership mismatch on qualification trace",
+                    )
+                )
+                continue
+            gm.add_module(label, region)
             with gm.graph.inserting_before(anchor):
                 args = []
                 for br in (q, k):

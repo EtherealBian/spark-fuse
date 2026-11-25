@@ -1,0 +1,4200 @@
+{
+ "protocol": "Distinct random BF16 BertLayers, batch 1, no dropout or mask. Each Q/K/V uses per-token signed W8A8; FFN and attention stay in PyTorch. Public results are the hidden and attention probabilities after EVERY layer. Two admission inputs plus eight held-out independent requests. CPU INT32 oracle for each Q/K/V on the first and last held-out activations per layer. Rotating full-request latency and queue8 use seven shuffled windows, separate from graph-replay and synchronized ordinary forward. Layerwise calls use the same packed policy separately, including first-layer residual inside capture; not an ordinary-forward arm. Setup excludes export/compile of the source FX graph. No timing of byte-ineligible backends.",
+ "smoke": true,
+ "device": "NVIDIA GB10",
+ "torch": "2.13.0+cu130",
+ "cuda": "13.0",
+ "transformers": "4.51.3",
+ "provenance": {
+  "git_head_at_capture": "46de3e4bd50860533829a8880e57bda82f375145",
+  "source_tree_sha256": "965c31d5661be6bb8d540a9d031febcfd3ffaa341820b3d00dac496da855177c",
+  "archive": "sources/965c31d5661be6bb8d540a9d031febcfd3ffaa341820b3d00dac496da855177c.tar.gz"
+ },
+ "cases": [
+  {
+   "depth": 2,
+   "m": 33,
+   "residual": true,
+   "seed": 2001731,
+   "original_fx": "graph():\n    %p_layers_0_block_attention_output_dense_weight : [num_users=1] = placeholder[target=p_layers_0_block_attention_output_dense_weight]\n    %p_layers_0_block_attention_output_dense_bias : [num_users=1] = placeholder[target=p_layers_0_block_attention_output_dense_bias]\n    %p_layers_0_block_attention_output_layernorm_weight : [num_users=1] = placeholder[target=p_layers_0_block_attention_output_layernorm_weight]\n    %p_layers_0_block_attention_output_layernorm_bias : [num_users=1] = placeholder[target=p_layers_0_block_attention_output_layernorm_bias]\n    %p_layers_0_block_intermediate_dense_weight : [num_users=1] = placeholder[target=p_layers_0_block_intermediate_dense_weight]\n    %p_layers_0_block_intermediate_dense_bias : [num_users=1] = placeholder[target=p_layers_0_block_intermediate_dense_bias]\n    %p_layers_0_block_output_dense_weight : [num_users=1] = placeholder[target=p_layers_0_block_output_dense_weight]\n    %p_layers_0_block_output_dense_bias : [num_users=1] = placeholder[target=p_layers_0_block_output_dense_bias]\n    %p_layers_0_block_output_layernorm_weight : [num_users=1] = placeholder[target=p_layers_0_block_output_layernorm_weight]\n    %p_layers_0_block_output_layernorm_bias : [num_users=1] = placeholder[target=p_layers_0_block_output_layernorm_bias]\n    %p_layers_1_block_attention_output_dense_weight : [num_users=1] = placeholder[target=p_layers_1_block_attention_output_dense_weight]\n    %p_layers_1_block_attention_output_dense_bias : [num_users=1] = placeholder[target=p_layers_1_block_attention_output_dense_bias]\n    %p_layers_1_block_attention_output_layernorm_weight : [num_users=1] = placeholder[target=p_layers_1_block_attention_output_layernorm_weight]\n    %p_layers_1_block_attention_output_layernorm_bias : [num_users=1] = placeholder[target=p_layers_1_block_attention_output_layernorm_bias]\n    %p_layers_1_block_intermediate_dense_weight : [num_users=1] = placeholder[target=p_layers_1_block_intermediate_dense_weight]\n    %p_layers_1_block_intermediate_dense_bias : [num_users=1] = placeholder[target=p_layers_1_block_intermediate_dense_bias]\n    %p_layers_1_block_output_dense_weight : [num_users=1] = placeholder[target=p_layers_1_block_output_dense_weight]\n    %p_layers_1_block_output_dense_bias : [num_users=1] = placeholder[target=p_layers_1_block_output_dense_bias]\n    %p_layers_1_block_output_layernorm_weight : [num_users=1] = placeholder[target=p_layers_1_block_output_layernorm_weight]\n    %p_layers_1_block_output_layernorm_bias : [num_users=1] = placeholder[target=p_layers_1_block_output_layernorm_bias]\n    %b_layers_0_block_attention_self_query_rhs : [num_users=1] = placeholder[target=b_layers_0_block_attention_self_query_rhs]\n    %b_layers_0_block_attention_self_query_channel : [num_users=1] = placeholder[target=b_layers_0_block_attention_self_query_channel]\n    %b_layers_0_block_attention_self_query_bias : [num_users=1] = placeholder[target=b_layers_0_block_attention_self_query_bias]\n    %b_layers_0_block_attention_self_key_rhs : [num_users=1] = placeholder[target=b_layers_0_block_attention_self_key_rhs]\n    %b_layers_0_block_attention_self_key_channel : [num_users=1] = placeholder[target=b_layers_0_block_attention_self_key_channel]\n    %b_layers_0_block_attention_self_key_bias : [num_users=1] = placeholder[target=b_layers_0_block_attention_self_key_bias]\n    %b_layers_0_block_attention_self_value_rhs : [num_users=1] = placeholder[target=b_layers_0_block_attention_self_value_rhs]\n    %b_layers_0_block_attention_self_value_channel : [num_users=1] = placeholder[target=b_layers_0_block_attention_self_value_channel]\n    %b_layers_0_block_attention_self_value_bias : [num_users=1] = placeholder[target=b_layers_0_block_attention_self_value_bias]\n    %b_layers_1_block_attention_self_query_rhs : [num_users=1] = placeholder[target=b_layers_1_block_attention_self_query_rhs]\n    %b_layers_1_block_attention_self_query_channel : [num_users=1] = placeholder[target=b_layers_1_block_attention_self_query_channel]\n    %b_layers_1_block_attention_self_query_bias : [num_users=1] = placeholder[target=b_layers_1_block_attention_self_query_bias]\n    %b_layers_1_block_attention_self_key_rhs : [num_users=1] = placeholder[target=b_layers_1_block_attention_self_key_rhs]\n    %b_layers_1_block_attention_self_key_channel : [num_users=1] = placeholder[target=b_layers_1_block_attention_self_key_channel]\n    %b_layers_1_block_attention_self_key_bias : [num_users=1] = placeholder[target=b_layers_1_block_attention_self_key_bias]\n    %b_layers_1_block_attention_self_value_rhs : [num_users=1] = placeholder[target=b_layers_1_block_attention_self_value_rhs]\n    %b_layers_1_block_attention_self_value_channel : [num_users=1] = placeholder[target=b_layers_1_block_attention_self_value_channel]\n    %b_layers_1_block_attention_self_value_bias : [num_users=1] = placeholder[target=b_layers_1_block_attention_self_value_bias]\n    %x : [num_users=1] = placeholder[target=x]\n    %residual : [num_users=1] = placeholder[target=residual]\n    %add : [num_users=7] = call_function[target=torch.ops.aten.add.Tensor](args = (%x, %residual), kwargs = {})\n    %_assert_tensor_metadata_default : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%add,), kwargs = {dtype: torch.bfloat16, device: cuda:0, layout: torch.strided})\n    %to : [num_users=2] = call_function[target=torch.ops.aten.to.dtype](args = (%add, torch.float32), kwargs = {})\n    %abs_1 : [num_users=1] = call_function[target=torch.ops.aten.abs.default](args = (%to,), kwargs = {})\n    %amax : [num_users=1] = call_function[target=torch.ops.aten.amax.default](args = (%abs_1, [-1], True), kwargs = {})\n    %clamp_min : [num_users=1] = call_function[target=torch.ops.aten.clamp_min.default](args = (%amax, 1e-05), kwargs = {})\n    %div : [num_users=2] = call_function[target=torch.ops.aten.div.Tensor](args = (%clamp_min, 127.0), kwargs = {})\n    %div_1 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%to, %div), kwargs = {})\n    %round_1 : [num_users=1] = call_function[target=torch.ops.aten.round.default](args = (%div_1,), kwargs = {})\n    %clamp : [num_users=2] = call_function[target=torch.ops.aten.clamp.default](args = (%round_1, -127, 127), kwargs = {})\n    %_assert_tensor_metadata_default_1 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%clamp,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_1 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%clamp, torch.int8), kwargs = {})\n    %reshape : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_1, [-1, 768]), kwargs = {})\n    %_int_mm : [num_users=2] = call_function[target=torch.ops.aten._int_mm.default](args = (%reshape, %b_layers_0_block_attention_self_query_rhs), kwargs = {})\n    %_assert_tensor_metadata_default_2 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%_int_mm,), kwargs = {dtype: torch.int32, device: cuda:0, layout: torch.strided})\n    %to_2 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%_int_mm, torch.float32), kwargs = {})\n    %reshape_1 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%div, [-1, 1]), kwargs = {})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%to_2, %reshape_1), kwargs = {})\n    %mul_1 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%mul, %b_layers_0_block_attention_self_query_channel), kwargs = {})\n    %add_1 : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_1, %b_layers_0_block_attention_self_query_bias), kwargs = {})\n    %_assert_tensor_metadata_default_3 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%add_1,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_3 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%add_1, torch.bfloat16), kwargs = {})\n    %reshape_2 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_3, [1, 33, 768]), kwargs = {})\n    %_assert_tensor_metadata_default_4 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%add,), kwargs = {dtype: torch.bfloat16, device: cuda:0, layout: torch.strided})\n    %to_4 : [num_users=2] = call_function[target=torch.ops.aten.to.dtype](args = (%add, torch.float32), kwargs = {})\n    %abs_2 : [num_users=1] = call_function[target=torch.ops.aten.abs.default](args = (%to_4,), kwargs = {})\n    %amax_1 : [num_users=1] = call_function[target=torch.ops.aten.amax.default](args = (%abs_2, [-1], True), kwargs = {})\n    %clamp_min_1 : [num_users=1] = call_function[target=torch.ops.aten.clamp_min.default](args = (%amax_1, 1e-05), kwargs = {})\n    %div_2 : [num_users=2] = call_function[target=torch.ops.aten.div.Tensor](args = (%clamp_min_1, 127.0), kwargs = {})\n    %div_3 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%to_4, %div_2), kwargs = {})\n    %round_2 : [num_users=1] = call_function[target=torch.ops.aten.round.default](args = (%div_3,), kwargs = {})\n    %clamp_1 : [num_users=2] = call_function[target=torch.ops.aten.clamp.default](args = (%round_2, -127, 127), kwargs = {})\n    %_assert_tensor_metadata_default_5 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%clamp_1,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_5 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%clamp_1, torch.int8), kwargs = {})\n    %reshape_3 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_5, [-1, 768]), kwargs = {})\n    %_int_mm_1 : [num_users=2] = call_function[target=torch.ops.aten._int_mm.default](args = (%reshape_3, %b_layers_0_block_attention_self_key_rhs), kwargs = {})\n    %_assert_tensor_metadata_default_6 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%_int_mm_1,), kwargs = {dtype: torch.int32, device: cuda:0, layout: torch.strided})\n    %to_6 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%_int_mm_1, torch.float32), kwargs = {})\n    %reshape_4 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%div_2, [-1, 1]), kwargs = {})\n    %mul_2 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%to_6, %reshape_4), kwargs = {})\n    %mul_3 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%mul_2, %b_layers_0_block_attention_self_key_channel), kwargs = {})\n    %add_2 : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_3, %b_layers_0_block_attention_self_key_bias), kwargs = {})\n    %_assert_tensor_metadata_default_7 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%add_2,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_7 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%add_2, torch.bfloat16), kwargs = {})\n    %reshape_5 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_7, [1, 33, 768]), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%reshape_5, [1, 33, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %_assert_tensor_metadata_default_8 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%add,), kwargs = {dtype: torch.bfloat16, device: cuda:0, layout: torch.strided})\n    %to_8 : [num_users=2] = call_function[target=torch.ops.aten.to.dtype](args = (%add, torch.float32), kwargs = {})\n    %abs_3 : [num_users=1] = call_function[target=torch.ops.aten.abs.default](args = (%to_8,), kwargs = {})\n    %amax_2 : [num_users=1] = call_function[target=torch.ops.aten.amax.default](args = (%abs_3, [-1], True), kwargs = {})\n    %clamp_min_2 : [num_users=1] = call_function[target=torch.ops.aten.clamp_min.default](args = (%amax_2, 1e-05), kwargs = {})\n    %div_4 : [num_users=2] = call_function[target=torch.ops.aten.div.Tensor](args = (%clamp_min_2, 127.0), kwargs = {})\n    %div_5 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%to_8, %div_4), kwargs = {})\n    %round_3 : [num_users=1] = call_function[target=torch.ops.aten.round.default](args = (%div_5,), kwargs = {})\n    %clamp_2 : [num_users=2] = call_function[target=torch.ops.aten.clamp.default](args = (%round_3, -127, 127), kwargs = {})\n    %_assert_tensor_metadata_default_9 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%clamp_2,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_9 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%clamp_2, torch.int8), kwargs = {})\n    %reshape_6 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_9, [-1, 768]), kwargs = {})\n    %_int_mm_2 : [num_users=2] = call_function[target=torch.ops.aten._int_mm.default](args = (%reshape_6, %b_layers_0_block_attention_self_value_rhs), kwargs = {})\n    %_assert_tensor_metadata_default_10 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%_int_mm_2,), kwargs = {dtype: torch.int32, device: cuda:0, layout: torch.strided})\n    %to_10 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%_int_mm_2, torch.float32), kwargs = {})\n    %reshape_7 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%div_4, [-1, 1]), kwargs = {})\n    %mul_4 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%to_10, %reshape_7), kwargs = {})\n    %mul_5 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%mul_4, %b_layers_0_block_attention_self_value_channel), kwargs = {})\n    %add_3 : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_5, %b_layers_0_block_attention_self_value_bias), kwargs = {})\n    %_assert_tensor_metadata_default_11 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%add_3,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_11 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%add_3, torch.bfloat16), kwargs = {})\n    %reshape_8 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_11, [1, 33, 768]), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%reshape_8, [1, 33, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%reshape_2, [1, 33, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %div_6 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%matmul, 8.0), kwargs = {})\n    %softmax : [num_users=1] = call_function[target=torch.ops.aten.softmax.int](args = (%div_6, -1), kwargs = {})\n    %dropout : [num_users=2] = call_function[target=torch.ops.aten.dropout.default](args = (%softmax, 0.0, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 33, 768]), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %p_layers_0_block_attention_output_dense_weight, %p_layers_0_block_attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear, 0.0, False), kwargs = {})\n    %add_4 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_1, %add), kwargs = {})\n    %layer_norm : [num_users=2] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add_4, [768], %p_layers_0_block_attention_output_layernorm_weight, %p_layers_0_block_attention_output_layernorm_bias, 1e-12, False), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%layer_norm, %p_layers_0_block_intermediate_dense_weight, %p_layers_0_block_intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_1,), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %p_layers_0_block_output_dense_weight, %p_layers_0_block_output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_2, 0.0, False), kwargs = {})\n    %add_5 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_2, %layer_norm), kwargs = {})\n    %layer_norm_1 : [num_users=8] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add_5, [768], %p_layers_0_block_output_layernorm_weight, %p_layers_0_block_output_layernorm_bias, 1e-12, False), kwargs = {})\n    %_assert_tensor_metadata_default_12 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%layer_norm_1,), kwargs = {dtype: torch.bfloat16, device: cuda:0, layout: torch.strided})\n    %to_12 : [num_users=2] = call_function[target=torch.ops.aten.to.dtype](args = (%layer_norm_1, torch.float32), kwargs = {})\n    %abs_4 : [num_users=1] = call_function[target=torch.ops.aten.abs.default](args = (%to_12,), kwargs = {})\n    %amax_3 : [num_users=1] = call_function[target=torch.ops.aten.amax.default](args = (%abs_4, [-1], True), kwargs = {})\n    %clamp_min_3 : [num_users=1] = call_function[target=torch.ops.aten.clamp_min.default](args = (%amax_3, 1e-05), kwargs = {})\n    %div_7 : [num_users=2] = call_function[target=torch.ops.aten.div.Tensor](args = (%clamp_min_3, 127.0), kwargs = {})\n    %div_8 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%to_12, %div_7), kwargs = {})\n    %round_4 : [num_users=1] = call_function[target=torch.ops.aten.round.default](args = (%div_8,), kwargs = {})\n    %clamp_3 : [num_users=2] = call_function[target=torch.ops.aten.clamp.default](args = (%round_4, -127, 127), kwargs = {})\n    %_assert_tensor_metadata_default_13 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%clamp_3,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_13 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%clamp_3, torch.int8), kwargs = {})\n    %reshape_9 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_13, [-1, 768]), kwargs = {})\n    %_int_mm_3 : [num_users=2] = call_function[target=torch.ops.aten._int_mm.default](args = (%reshape_9, %b_layers_1_block_attention_self_query_rhs), kwargs = {})\n    %_assert_tensor_metadata_default_14 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%_int_mm_3,), kwargs = {dtype: torch.int32, device: cuda:0, layout: torch.strided})\n    %to_14 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%_int_mm_3, torch.float32), kwargs = {})\n    %reshape_10 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%div_7, [-1, 1]), kwargs = {})\n    %mul_6 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%to_14, %reshape_10), kwargs = {})\n    %mul_7 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%mul_6, %b_layers_1_block_attention_self_query_channel), kwargs = {})\n    %add_6 : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_7, %b_layers_1_block_attention_self_query_bias), kwargs = {})\n    %_assert_tensor_metadata_default_15 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%add_6,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_15 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%add_6, torch.bfloat16), kwargs = {})\n    %reshape_11 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_15, [1, 33, 768]), kwargs = {})\n    %_assert_tensor_metadata_default_16 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%layer_norm_1,), kwargs = {dtype: torch.bfloat16, device: cuda:0, layout: torch.strided})\n    %to_16 : [num_users=2] = call_function[target=torch.ops.aten.to.dtype](args = (%layer_norm_1, torch.float32), kwargs = {})\n    %abs_5 : [num_users=1] = call_function[target=torch.ops.aten.abs.default](args = (%to_16,), kwargs = {})\n    %amax_4 : [num_users=1] = call_function[target=torch.ops.aten.amax.default](args = (%abs_5, [-1], True), kwargs = {})\n    %clamp_min_4 : [num_users=1] = call_function[target=torch.ops.aten.clamp_min.default](args = (%amax_4, 1e-05), kwargs = {})\n    %div_9 : [num_users=2] = call_function[target=torch.ops.aten.div.Tensor](args = (%clamp_min_4, 127.0), kwargs = {})\n    %div_10 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%to_16, %div_9), kwargs = {})\n    %round_5 : [num_users=1] = call_function[target=torch.ops.aten.round.default](args = (%div_10,), kwargs = {})\n    %clamp_4 : [num_users=2] = call_function[target=torch.ops.aten.clamp.default](args = (%round_5, -127, 127), kwargs = {})\n    %_assert_tensor_metadata_default_17 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%clamp_4,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_17 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%clamp_4, torch.int8), kwargs = {})\n    %reshape_12 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_17, [-1, 768]), kwargs = {})\n    %_int_mm_4 : [num_users=2] = call_function[target=torch.ops.aten._int_mm.default](args = (%reshape_12, %b_layers_1_block_attention_self_key_rhs), kwargs = {})\n    %_assert_tensor_metadata_default_18 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%_int_mm_4,), kwargs = {dtype: torch.int32, device: cuda:0, layout: torch.strided})\n    %to_18 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%_int_mm_4, torch.float32), kwargs = {})\n    %reshape_13 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%div_9, [-1, 1]), kwargs = {})\n    %mul_8 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%to_18, %reshape_13), kwargs = {})\n    %mul_9 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%mul_8, %b_layers_1_block_attention_self_key_channel), kwargs = {})\n    %add_7 : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_9, %b_layers_1_block_attention_self_key_bias), kwargs = {})\n    %_assert_tensor_metadata_default_19 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%add_7,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_19 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%add_7, torch.bfloat16), kwargs = {})\n    %reshape_14 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_19, [1, 33, 768]), kwargs = {})\n    %view_4 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%reshape_14, [1, 33, 12, 64]), kwargs = {})\n    %permute_4 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_4, [0, 2, 1, 3]), kwargs = {})\n    %_assert_tensor_metadata_default_20 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%layer_norm_1,), kwargs = {dtype: torch.bfloat16, device: cuda:0, layout: torch.strided})\n    %to_20 : [num_users=2] = call_function[target=torch.ops.aten.to.dtype](args = (%layer_norm_1, torch.float32), kwargs = {})\n    %abs_6 : [num_users=1] = call_function[target=torch.ops.aten.abs.default](args = (%to_20,), kwargs = {})\n    %amax_5 : [num_users=1] = call_function[target=torch.ops.aten.amax.default](args = (%abs_6, [-1], True), kwargs = {})\n    %clamp_min_5 : [num_users=1] = call_function[target=torch.ops.aten.clamp_min.default](args = (%amax_5, 1e-05), kwargs = {})\n    %div_11 : [num_users=2] = call_function[target=torch.ops.aten.div.Tensor](args = (%clamp_min_5, 127.0), kwargs = {})\n    %div_12 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%to_20, %div_11), kwargs = {})\n    %round_6 : [num_users=1] = call_function[target=torch.ops.aten.round.default](args = (%div_12,), kwargs = {})\n    %clamp_5 : [num_users=2] = call_function[target=torch.ops.aten.clamp.default](args = (%round_6, -127, 127), kwargs = {})\n    %_assert_tensor_metadata_default_21 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%clamp_5,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_21 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%clamp_5, torch.int8), kwargs = {})\n    %reshape_15 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_21, [-1, 768]), kwargs = {})\n    %_int_mm_5 : [num_users=2] = call_function[target=torch.ops.aten._int_mm.default](args = (%reshape_15, %b_layers_1_block_attention_self_value_rhs), kwargs = {})\n    %_assert_tensor_metadata_default_22 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%_int_mm_5,), kwargs = {dtype: torch.int32, device: cuda:0, layout: torch.strided})\n    %to_22 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%_int_mm_5, torch.float32), kwargs = {})\n    %reshape_16 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%div_11, [-1, 1]), kwargs = {})\n    %mul_10 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%to_22, %reshape_16), kwargs = {})\n    %mul_11 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%mul_10, %b_layers_1_block_attention_self_value_channel), kwargs = {})\n    %add_8 : [num_users=2] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_11, %b_layers_1_block_attention_self_value_bias), kwargs = {})\n    %_assert_tensor_metadata_default_23 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%add_8,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_23 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%add_8, torch.bfloat16), kwargs = {})\n    %reshape_17 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%to_23, [1, 33, 768]), kwargs = {})\n    %view_5 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%reshape_17, [1, 33, 12, 64]), kwargs = {})\n    %permute_5 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_5, [0, 2, 1, 3]), kwargs = {})\n    %view_6 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%reshape_11, [1, 33, 12, 64]), kwargs = {})\n    %permute_6 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_6, [0, 2, 1, 3]), kwargs = {})\n    %transpose_1 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute_4, -1, -2), kwargs = {})\n    %matmul_2 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_6, %transpose_1), kwargs = {})\n    %div_13 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%matmul_2, 8.0), kwargs = {})\n    %softmax_1 : [num_users=1] = call_function[target=torch.ops.aten.softmax.int](args = (%div_13, -1), kwargs = {})\n    %dropout_3 : [num_users=2] = call_function[target=torch.ops.aten.dropout.default](args = (%softmax_1, 0.0, False), kwargs = {})\n    %matmul_3 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout_3, %permute_5), kwargs = {})\n    %permute_7 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_3, [0, 2, 1, 3]), kwargs = {})\n    %contiguous_1 : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_7,), kwargs = {})\n    %view_7 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous_1, [1, 33, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_7, %p_layers_1_block_attention_output_dense_weight, %p_layers_1_block_attention_output_dense_bias), kwargs = {})\n    %dropout_4 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.0, False), kwargs = {})\n    %add_9 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_4, %layer_norm_1), kwargs = {})\n    %layer_norm_2 : [num_users=2] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add_9, [768], %p_layers_1_block_attention_output_layernorm_weight, %p_layers_1_block_attention_output_layernorm_bias, 1e-12, False), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%layer_norm_2, %p_layers_1_block_intermediate_dense_weight, %p_layers_1_block_intermediate_dense_bias), kwargs = {})\n    %gelu_1 : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu_1, %p_layers_1_block_output_dense_weight, %p_layers_1_block_output_dense_bias), kwargs = {})\n    %dropout_5 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.0, False), kwargs = {})\n    %add_10 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_5, %layer_norm_2), kwargs = {})\n    %layer_norm_3 : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add_10, [768], %p_layers_1_block_output_layernorm_weight, %p_layers_1_block_output_layernorm_bias, 1e-12, False), kwargs = {})\n    return (layer_norm_1, dropout, layer_norm_3, dropout_3)",
+   "source_state_sha256": {
+    "layers.0.block.attention.self.query.rhs": "176fb86f4e774c45966c46698acd6abaa92fb478dd31f4c9771c7013ece80b35",
+    "layers.0.block.attention.self.query.channel": "3135f010dd1560c90ed4a90188143fcb15c223da0166d02a8ecc08115c569f7e",
+    "layers.0.block.attention.self.query.bias": "d1b0cd5ecf6a72840cdeb72141681a5af2dfcb9cfff3d22f7a65363c999d9593",
+    "layers.0.block.attention.self.key.rhs": "8ec35e97917ad97aaae75aaac59576d471873f050b01e9c930b2a1f91108d2e3",
+    "layers.0.block.attention.self.key.channel": "4290b8e486ea233039331c3021fa672fabef34ea26efc7fcafbe5a56fd85443c",
+    "layers.0.block.attention.self.key.bias": "57e59c834a1548bc30a08232a4f2f4719003f458bf7c3f5a378ff4396fdf5d30",
+    "layers.0.block.attention.self.value.rhs": "3c8efa3c955b31a33dfd45c3254ce0728c027c1e066d2506ce9536dd9c750d2f",
+    "layers.0.block.attention.self.value.channel": "2b098c8e6552b0a4682d00238ab22df12422127439a31dbe5541079f8334c693",
+    "layers.0.block.attention.self.value.bias": "f6470c6dc5a8eb2fe1a5d65b2d601e804e7ea015754f4d0516a3aaf8310043ca",
+    "layers.0.block.attention.output.dense.weight": "499960b467991a68805224d4527d37acab2ca3c1d301a9d666de633b1c6e4170",
+    "layers.0.block.attention.output.dense.bias": "0536f1e55de7164efb881ec27d83424a2508ec48f4e115f54755625a8b7358bb",
+    "layers.0.block.attention.output.LayerNorm.weight": "37c7a1c476a057bfadcdd4923b65ff1cee8f0fc6e747adfaa1ed228e21e07e2b",
+    "layers.0.block.attention.output.LayerNorm.bias": "80422bc3d307b4a25bdafcc84ac7fb01cb55a09810e8b0f37bb12e0edb5c48ca",
+    "layers.0.block.intermediate.dense.weight": "6188b0488a58d02ffbbdc04ee56a941646dcbc89bfff677557532252d45d7ed7",
+    "layers.0.block.intermediate.dense.bias": "87a1b9e205d92c0f2d4944271fc8578b284f033142d1184bc42e0c4716971255",
+    "layers.0.block.output.dense.weight": "cf598b6a5b49bc3ef4029a165361ce49f70b193b14e5969046610e8dd46cac5a",
+    "layers.0.block.output.dense.bias": "f3699b2a6e15042f44e5d4efcc223a9ebb847522203676cb0e037dda93acfded",
+    "layers.0.block.output.LayerNorm.weight": "37c7a1c476a057bfadcdd4923b65ff1cee8f0fc6e747adfaa1ed228e21e07e2b",
+    "layers.0.block.output.LayerNorm.bias": "80422bc3d307b4a25bdafcc84ac7fb01cb55a09810e8b0f37bb12e0edb5c48ca",
+    "layers.1.block.attention.self.query.rhs": "02aba81e1c347f1fd1aee673472cc47a293fd4359d56b6e64fd07e72a65bf247",
+    "layers.1.block.attention.self.query.channel": "95c9be924738ddd4b8e897f1863ebc7854786b50f470c806a3155541eb77f0a1",
+    "layers.1.block.attention.self.query.bias": "d0bf75cb9f8d5b4c732ef2edfb782bc45033fdbffee50377005fe77a228689cc",
+    "layers.1.block.attention.self.key.rhs": "eb1713f133c4a6abb52038cbf8b713d45a4df49ff5a025870d8f07665616316c",
+    "layers.1.block.attention.self.key.channel": "2c958886f2dff344ae54a9595fe9729ebdb3243f3cd91fc7dd559414cba111dd",
+    "layers.1.block.attention.self.key.bias": "d8ac2a3e2008db44fa30c41c9059888ad5782ab6dfd681098f20b71294736ab0",
+    "layers.1.block.attention.self.value.rhs": "df407b723116f716346b8c4b562391d9bce4ddc74c3bac94702bf837311e660c",
+    "layers.1.block.attention.self.value.channel": "d1c3238a91770fe98a57382fad138a4991020f2429d831d61388dcaeb9a20369",
+    "layers.1.block.attention.self.value.bias": "7803bf2736fddeffa45ceca9892341f614f0e9dae38a2d2de7486c22f9604188",
+    "layers.1.block.attention.output.dense.weight": "c0525e48834a351910e4fbcbaf15311b0e123126300ad9f85fd3281f61db38b5",
+    "layers.1.block.attention.output.dense.bias": "29a4039292e82ab54cc16cd1314e8e8bd7705e619f731192d8998c82fe1e47b8",
+    "layers.1.block.attention.output.LayerNorm.weight": "37c7a1c476a057bfadcdd4923b65ff1cee8f0fc6e747adfaa1ed228e21e07e2b",
+    "layers.1.block.attention.output.LayerNorm.bias": "80422bc3d307b4a25bdafcc84ac7fb01cb55a09810e8b0f37bb12e0edb5c48ca",
+    "layers.1.block.intermediate.dense.weight": "1317ad2cdfb5c89a100480a87598acc28a7a2b4a5071971e24c4c45d7a4e0d91",
+    "layers.1.block.intermediate.dense.bias": "c1ad74cebba3cea88383d9b9a196c3bef73711b5c741b39ecb18872532cbe04e",
+    "layers.1.block.output.dense.weight": "508f7e2b688023a5302bc033a6f12412f8f0598fbd44a151db61582d5e64e6c6",
+    "layers.1.block.output.dense.bias": "d8061d11577e1a70e05ba9e4dda0d16533c90369ba9e8cd4ca950cf8e03ea9fe",
+    "layers.1.block.output.LayerNorm.weight": "37c7a1c476a057bfadcdd4923b65ff1cee8f0fc6e747adfaa1ed228e21e07e2b",
+    "layers.1.block.output.LayerNorm.bias": "80422bc3d307b4a25bdafcc84ac7fb01cb55a09810e8b0f37bb12e0edb5c48ca"
+   },
+   "input_sha256": [
+    [
+     "d8601942d9dc5b209359bd59a7e2bb37aa211dfcb6a21c64be96de23cbf2d649",
+     "4aa583fb5b02d15fbaa052ff6110545671ff0221107cae07fcfd52e0f5f6541d"
+    ],
+    [
+     "a89349cad3074cd6614a5f9c12bc115e818e6aa0fa3361c2be57b5d737dc8b76",
+     "c5c368a31fb292e38a2eaabd0fbf30f4844cc881e9c04f5aa32328877b5bfe1c"
+    ],
+    [
+     "608ef14c311c630e590e8b85cc1c54d8dc120ffd797d68b1eca3a362062948ec",
+     "106b5aea1ab43ab1a7e0436bbf539c927c1c3030bc55154dba2920661c6dda51"
+    ],
+    [
+     "9f2b97513c2d84d4021b93c0f4cc0768bcf3b15e0e7d015b2cfc6d2e234f726e",
+     "081e59f9adccd6860cc2eda16a5d2c4de3fcf47c7e5a1f3f6a8f3751cdfd9bfa"
+    ],
+    [
+     "73f2c8690dadc78be5269077fd2517d2c1f723fcacfe271ca24c89840f516f68",
+     "b503071337fe1c8d84c2072d75baf9688f9c7598da3fb3d5cc979b7d89a5d3c6"
+    ],
+    [
+     "f4ed081fe2561c2f37dd4bbc4e9b1ad008a014aa9a6c4dbafa2b83cccdc8a8c7",
+     "2af635e5955ac052b4ee34902d5b7d2828af11165f76eccd45be6765c436e25e"
+    ],
+    [
+     "3a657301bb640ecce4920dbfef5130b23b0aa23a27f3964b47e2be8729c0eb22",
+     "c7e130df1c90e10928f85b9142a158a103ae3207b97fb9b7077fcd4914da03b0"
+    ],
+    [
+     "5c9088e89609d64a55cc7b31cb119671b3aba55988eb659dd02a6653d6fad4ff",
+     "4e449c530d71fd67812d55c8c546ebf7c2c61098d51bb6a4aaa709f3a6034a5e"
+    ],
+    [
+     "15e987983caa6c7628327f8337af0f446a7fe7c7205a5566659326e6429a5ec2",
+     "3c3d06cb54d1fd98ca3781debca03f93d5e5730acb7de9433f750c785758b294"
+    ],
+    [
+     "57250331cb3bb910cfe6ddc6cd6582d10c8139c86bbf63727d6dcf12e4314edd",
+     "9d48ce9b51f8bba769f1d009024daeff30e75c2a8e9784922eecde8fcf3f3c80"
+    ]
+   ],
+   "ref_sha256": [
+    [
+     "07d89b6ec8b8a3b72b137d17075187536f2077c71e667c65c4765d5c7fbc49d8",
+     "a0bf6288f43e425099148423f8ed65c905aec1f5d83b7c6e172a09738d4b3389",
+     "80748e6512efe6ace40ca10b24e8f54afc8a2abe507896852ec65ddbfabd4f49",
+     "e0be1d1da293ccbbefbf16346c5b9046f84bdb2136d3a8da642f638b60f3173c"
+    ],
+    [
+     "c27fcb01411bb8f2e0b2aa729b1c3ce9544428bdc843c1aaea3c4cdbb7ee1697",
+     "d864e150c169c9758f4a54820f19f267c6e2ebcf1988bc7eef3426318eae7f48",
+     "03d964c9f3de44e36f79622957904dfc9185f1b198a14e5188e8a5e575c7f226",
+     "6a8d6ef323b92410b0752dd6e5f9c753bb8bc8f9e0924668916feee19360ef18"
+    ],
+    [
+     "20d1300336acbbedeaef141eb224f99d36a2f4e80b38e8ece98daa225eb083a4",
+     "70cc57b876a9f482521a3a9e8d5da3093813669dad7a71c66925cea8778765f8",
+     "3983b4e4ef382303379f8d34ef5ea898f33a5655ed17d87a560af99e85ea59d2",
+     "393d92ecda386e659ba1632f3c51950b61ca4631029c9cf919a3516b248f3866"
+    ],
+    [
+     "f84e9ffd9bc1335cda8499045c59f972ce342a232dd432060d9ca3a300b4054a",
+     "9438a63006aa7130e12cd108b06086a3ab534cc3a4cb771828bd14d6ad82b474",
+     "47e9aec2c4a80c74262f804dcb570e38e919c53f6a734c345744f84f19e3eed1",
+     "fe28d4ff26ca07512702ac2bf6b0f2523f9526423357fbf3d89e1b02a657fcef"
+    ],
+    [
+     "da5a1cf246972544286aed4e3b3cb9b3d83b9e1f76e77b6b7d7cfd34e8bc6063",
+     "eae87cbd9ef26af8f9d03b37ef45ce8fa6757063b483d281ac59b91fcd3d9e81",
+     "9eb94290f9e8b1ef0e9621e5e398dfa5ae923b94b546b384b4d9b793e38d653c",
+     "ad72d340409b068b742c5462c76c6c0c4c53b4ad2df26c1bc609f84a0fcfc0ab"
+    ],
+    [
+     "c442ed4aeb0c611ef0f726e7887c1effc75066c6ba6d60e403f97e93619d9fd5",
+     "3761a1d10dc76441a54a9778b4c9c57faf23dd613fb96484869d43335abda6e7",
+     "f2134ac6fd111771199332baf6946c358d086b41e5d05287fd23bd360ea0e75e",
+     "c7cd79dd6b62c2279576010c41fe0b8815b0e5cda00ba7f072d310ac7a368371"
+    ],
+    [
+     "a194318ac9af5a09f1c5da6d11c7ba8cd3afc98ce2b656c32f5652a4b60331b0",
+     "680a516f6793464032c90d92f88c378e7966659a650ce0fef7ed8c0e2ac360af",
+     "054ceec38631d382caf49f01e5f368fe6e4a3128ee4affe0a397f64a73bcb0aa",
+     "22a9c87fad3467b37a8bbf8305a7f2e43bd19b053fea9174ab5b233c7f04c406"
+    ],
+    [
+     "00853562e625992045f484bdb5cc1eeabba371dafe6b5adecb7528667a4ad12f",
+     "52dafbd4a126f1cd19b3f44700beacdbe37a793445ed5742a7967bc36df9bc1e",
+     "8c1eabd373448b37d5f4f4c8ba516c71eb6bee6867be4b78dc11cd9316a1a090",
+     "f8a32427a7331e2187e087b1b4bfb20e24199e2e8bb84bc5736df6507e730ee1"
+    ]
+   ],
+   "oracle_request_indices": [
+    0,
+    7
+   ],
+   "qkv_cpu_oracle_by_layer": [
+    [
+     {
+      "activation": "a6f3a05a32b96c41029ffed1a6b0074a6946eb40db887208ebf186b75b850a2f",
+      "codes": "b4bc5b5c3b3bdc85fb62e93e78d2620a8b1cd785f56a067aa22b643ef026065c",
+      "scale": "32e07b7ade4b16dba43f6c0c01f2eda25d3c8ce4f502c01a28dd245d4d0fe497",
+      "branches": [
+       {
+        "cpu_int32": "53f0be34de9cc74c590c99d0598bbc7aff14babfa5a84ba4701d5bc17c17b186",
+        "narrow": "799d3cd3bd439093d1329df256fb3bacf804473bd98b23fc16c874150ae6bf1a"
+       },
+       {
+        "cpu_int32": "19713e398359845f840b3809781e82ac8405c9f60b79c31c0d7482abdedb11a1",
+        "narrow": "3c2853ac6bb48398084a69aa28fb26b47633208513d21e013151106f6dbf045b"
+       },
+       {
+        "cpu_int32": "077e139f7cfcd1d2255d9585137d433b24bad66567cf44a15dc46d465137c3d3",
+        "narrow": "341521268a38a119763b35e18e3353be119a9a0791fd1a7834b33491003361d4"
+       }
+      ]
+     },
+     {
+      "activation": "156678dafc72610c8f983df7c041119817025587a5e1a21e1ad472db640850e0",
+      "codes": "87a7cc91ccac3a9f3ba2c77b6d6cebb4911f19eca4a849f1995eec0d3966789c",
+      "scale": "35ae008e16561834f4c385e47f46b0db948b40c9cfc9c50df09e0f093e6a4495",
+      "branches": [
+       {
+        "cpu_int32": "6c57b174149d0a156fde4e58d5b4f3cb8c2e6eb17887164ba76c7f8f6cdced62",
+        "narrow": "7b058615bb3b6878164841ec90173d909115f1945a60019d011aaeaf21457edb"
+       },
+       {
+        "cpu_int32": "8ed89e23c5946775ca69bbcc1c8a855a9730c45c49dc1b467ee6943f290c1638",
+        "narrow": "12d607c479b507648edbec36587a3132ad1eafb2bd55c0f1de3c9f687ca446e8"
+       },
+       {
+        "cpu_int32": "afed8da20e81a171b11ae06cf65ce6133ea9de84a2aee08f59e195357d96aace",
+        "narrow": "8cc1b3f8c2d0c20b92de886cdfd3e67f710a292f221d5f0dc6b38c668ca1b43d"
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "activation": "07d89b6ec8b8a3b72b137d17075187536f2077c71e667c65c4765d5c7fbc49d8",
+      "codes": "cdafacf208871a02a03a1aaec9b308006a2e9fa7a0f125274e9074199b610856",
+      "scale": "dea7cfe159f7d6400510da356a579ffb5cc59dc943b0e58de73503fc5bda852b",
+      "branches": [
+       {
+        "cpu_int32": "2546ea86fc5a244b937ef59c225887c352990545cc3480781b3ac5b09c231c0c",
+        "narrow": "8e0bbaa5d327cec2ddff87abc9071e10e885b76ba7c2f5fdda3f91f3196f75b5"
+       },
+       {
+        "cpu_int32": "484d330318229282d4c7f9260a1daa0cf03898e62fffc0d2996ddca6a2c33979",
+        "narrow": "df4b3c8ed063192d14c06058c31e8c395e7f0628dda3ed2f3a07513718467d80"
+       },
+       {
+        "cpu_int32": "bacc33b63a6abd6b2ff2f9153c00ae16fcfae06291cdbed44f000c0585a02c96",
+        "narrow": "2aeaed83c01fec33b7dc774eadcb65e4c25b0faebbc4ac9298ecc0bf376ee72e"
+       }
+      ]
+     },
+     {
+      "activation": "00853562e625992045f484bdb5cc1eeabba371dafe6b5adecb7528667a4ad12f",
+      "codes": "a0adb65d235433455ca079d04cea4d897bbf6c74b4ab99b86e4ca01fe28eca04",
+      "scale": "a7c26753c6ca54f9d87483d1dd58ac93d23e2e14120fd402bb636ab22b951509",
+      "branches": [
+       {
+        "cpu_int32": "ffef9b513f0830fc0c0e0f746309688bf44da97a4b1236115fcba0c3b6f4ad2a",
+        "narrow": "bb59087f632505921a845f8af00cb87b89b17962ee80098d7d176954401d81c6"
+       },
+       {
+        "cpu_int32": "87581528cdd9b655bb03b4d1ee4d5222cc22c51ef3fb86e97480fdc1dc6a755b",
+        "narrow": "f7d43798c0119af36714fd23ea4be56e209218ca4bfd63c66067046846071278"
+       },
+       {
+        "cpu_int32": "ee748328c39c6f9808769f764f0f92568656ca266c463e97703dc6cfc7103b3a",
+        "narrow": "1b58dddd3d052139b4330db368cb06d148745f94515742214bbd545a95ed5e5b"
+       }
+      ]
+     }
+    ]
+   ],
+   "legacy_refusal": "packed fanout requires two to four distinct, untied frozen RHS matrices",
+   "build_failures": {},
+   "metadata": {
+    "independent": {
+     "backend": "mixed",
+     "request_backend": "native",
+     "slot_copy_backend": "aten",
+     "fresh_copy_backend": "aten",
+     "staging_and_state_bytes": 24941568,
+     "int8_rhs_layout": "column_major",
+     "frozen_int8_weights": [
+      {
+       "name": "layers.0.block.attention.self.query.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 0,
+       "bytes": 589824
+      },
+      {
+       "name": "layers.0.block.attention.self.key.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 1,
+       "bytes": 589824
+      },
+      {
+       "name": "layers.0.block.attention.self.value.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 2,
+       "bytes": 589824
+      },
+      {
+       "name": "layers.1.block.attention.self.query.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 3,
+       "bytes": 589824
+      },
+      {
+       "name": "layers.1.block.attention.self.key.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 4,
+       "bytes": 589824
+      },
+      {
+       "name": "layers.1.block.attention.self.value.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 5,
+       "bytes": 589824
+      }
+     ],
+     "input_bytes": 101376,
+     "fresh_output_bytes": 153648,
+     "output_bindings": [
+      {
+       "source": "copy",
+       "base": 0,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "stride": [
+        25344,
+        768,
+        1
+       ],
+       "offset": 0
+      },
+      {
+       "source": "copy",
+       "base": 1,
+       "shape": [
+        1,
+        12,
+        33,
+        33
+       ],
+       "stride": [
+        13068,
+        1089,
+        33,
+        1
+       ],
+       "offset": 0
+      },
+      {
+       "source": "copy",
+       "base": 2,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "stride": [
+        25344,
+        768,
+        1
+       ],
+       "offset": 0
+      },
+      {
+       "source": "copy",
+       "base": 3,
+       "shape": [
+        1,
+        12,
+        33,
+        33
+       ],
+       "stride": [
+        13068,
+        1089,
+        33,
+        1
+       ],
+       "offset": 0
+      }
+     ],
+     "regions": [
+      {
+       "kind": "residual_token_quant",
+       "module": "_sparkfuse_token_quant_0",
+       "live_ins": [
+        "x",
+        "residual"
+       ],
+       "live_outs": [
+        "add",
+        "to_1",
+        "div"
+       ],
+       "output_roles": [
+        "residual",
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "add",
+        "to",
+        "abs_1",
+        "amax",
+        "clamp_min",
+        "div",
+        "div_1",
+        "round_1",
+        "clamp",
+        "to_1"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "dee68dedf5313b70f21a9f90b2f8b0b608b75bfa3ca767ab84ea9515526614d3"
+      },
+      {
+       "kind": "activation_token_quant",
+       "module": "_sparkfuse_token_quant_1",
+       "live_ins": [
+        "getitem"
+       ],
+       "live_outs": [
+        "to_5",
+        "div_2"
+       ],
+       "output_roles": [
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "to_4",
+        "abs_2",
+        "amax_1",
+        "clamp_min_1",
+        "div_2",
+        "div_3",
+        "round_2",
+        "clamp_1",
+        "to_5"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "819290d5c66efc9598676f7a5218a407f3d8f59647b7d1cc16ed7add9a5b1e98"
+      },
+      {
+       "kind": "activation_token_quant",
+       "module": "_sparkfuse_token_quant_2",
+       "live_ins": [
+        "getitem"
+       ],
+       "live_outs": [
+        "to_9",
+        "div_4"
+       ],
+       "output_roles": [
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "to_8",
+        "abs_3",
+        "amax_2",
+        "clamp_min_2",
+        "div_4",
+        "div_5",
+        "round_3",
+        "clamp_2",
+        "to_9"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "819290d5c66efc9598676f7a5218a407f3d8f59647b7d1cc16ed7add9a5b1e98"
+      },
+      {
+       "kind": "activation_token_quant",
+       "module": "_sparkfuse_token_quant_3",
+       "live_ins": [
+        "layer_norm_1"
+       ],
+       "live_outs": [
+        "to_13",
+        "div_7"
+       ],
+       "output_roles": [
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "to_12",
+        "abs_4",
+        "amax_3",
+        "clamp_min_3",
+        "div_7",
+        "div_8",
+        "round_4",
+        "clamp_3",
+        "to_13"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "819290d5c66efc9598676f7a5218a407f3d8f59647b7d1cc16ed7add9a5b1e98"
+      },
+      {
+       "kind": "activation_token_quant",
+       "module": "_sparkfuse_token_quant_4",
+       "live_ins": [
+        "layer_norm_1"
+       ],
+       "live_outs": [
+        "to_17",
+        "div_9"
+       ],
+       "output_roles": [
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "to_16",
+        "abs_5",
+        "amax_4",
+        "clamp_min_4",
+        "div_9",
+        "div_10",
+        "round_5",
+        "clamp_4",
+        "to_17"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "819290d5c66efc9598676f7a5218a407f3d8f59647b7d1cc16ed7add9a5b1e98"
+      },
+      {
+       "kind": "activation_token_quant",
+       "module": "_sparkfuse_token_quant_5",
+       "live_ins": [
+        "layer_norm_1"
+       ],
+       "live_outs": [
+        "to_21",
+        "div_11"
+       ],
+       "output_roles": [
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "to_20",
+        "abs_6",
+        "amax_5",
+        "clamp_min_5",
+        "div_11",
+        "div_12",
+        "round_6",
+        "clamp_5",
+        "to_21"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "819290d5c66efc9598676f7a5218a407f3d8f59647b7d1cc16ed7add9a5b1e98"
+      },
+      {
+       "kind": "grouped_int32_affine",
+       "module": "_sparkfuse_affine_projection_0",
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "ops": [
+        "to_2",
+        "mul",
+        "mul_1",
+        "add_1",
+        "_assert_tensor_metadata_default_3",
+        "to_3"
+       ],
+       "live_ins": [
+        "reshape_1",
+        "_int_mm",
+        "layers_0_block_attention_self_query_channel",
+        "layers_0_block_attention_self_query_bias"
+       ],
+       "live_outs": [
+        "to_3"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "7b5492bf9b78ba600ce4d493bf66e604cdc93246b8e3d37160aae23b129dcc52",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "kind": "grouped_int32_affine",
+       "module": "_sparkfuse_affine_projection_1",
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "ops": [
+        "to_6",
+        "mul_2",
+        "mul_3",
+        "add_2",
+        "_assert_tensor_metadata_default_7",
+        "to_7"
+       ],
+       "live_ins": [
+        "reshape_4",
+        "_int_mm_1",
+        "layers_0_block_attention_self_key_channel",
+        "layers_0_block_attention_self_key_bias"
+       ],
+       "live_outs": [
+        "to_7"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "7b5492bf9b78ba600ce4d493bf66e604cdc93246b8e3d37160aae23b129dcc52",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "kind": "grouped_int32_affine",
+       "module": "_sparkfuse_affine_projection_2",
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "ops": [
+        "to_10",
+        "mul_4",
+        "mul_5",
+        "add_3",
+        "_assert_tensor_metadata_default_11",
+        "to_11"
+       ],
+       "live_ins": [
+        "reshape_7",
+        "_int_mm_2",
+        "layers_0_block_attention_self_value_channel",
+        "layers_0_block_attention_self_value_bias"
+       ],
+       "live_outs": [
+        "to_11"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "7b5492bf9b78ba600ce4d493bf66e604cdc93246b8e3d37160aae23b129dcc52",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "kind": "grouped_int32_affine",
+       "module": "_sparkfuse_affine_projection_3",
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "ops": [
+        "to_14",
+        "mul_6",
+        "mul_7",
+        "add_6",
+        "_assert_tensor_metadata_default_15",
+        "to_15"
+       ],
+       "live_ins": [
+        "reshape_10",
+        "_int_mm_3",
+        "layers_1_block_attention_self_query_channel",
+        "layers_1_block_attention_self_query_bias"
+       ],
+       "live_outs": [
+        "to_15"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "7b5492bf9b78ba600ce4d493bf66e604cdc93246b8e3d37160aae23b129dcc52",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "kind": "grouped_int32_affine",
+       "module": "_sparkfuse_affine_projection_4",
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "ops": [
+        "to_18",
+        "mul_8",
+        "mul_9",
+        "add_7",
+        "_assert_tensor_metadata_default_19",
+        "to_19"
+       ],
+       "live_ins": [
+        "reshape_13",
+        "_int_mm_4",
+        "layers_1_block_attention_self_key_channel",
+        "layers_1_block_attention_self_key_bias"
+       ],
+       "live_outs": [
+        "to_19"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "7b5492bf9b78ba600ce4d493bf66e604cdc93246b8e3d37160aae23b129dcc52",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "kind": "grouped_int32_affine",
+       "module": "_sparkfuse_affine_projection_5",
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "ops": [
+        "to_22",
+        "mul_10",
+        "mul_11",
+        "add_8",
+        "_assert_tensor_metadata_default_23",
+        "to_23"
+       ],
+       "live_ins": [
+        "reshape_16",
+        "_int_mm_5",
+        "layers_1_block_attention_self_value_channel",
+        "layers_1_block_attention_self_value_bias"
+       ],
+       "live_outs": [
+        "to_23"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "7b5492bf9b78ba600ce4d493bf66e604cdc93246b8e3d37160aae23b129dcc52",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_2"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_6"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_10"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "div_6",
+        "softmax"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "add_4",
+        "layer_norm",
+        "add_5",
+        "layer_norm_1",
+        "_assert_tensor_metadata_default_12",
+        "_assert_tensor_metadata_default_16",
+        "_assert_tensor_metadata_default_20",
+        "add_9",
+        "layer_norm_2",
+        "add_10",
+        "layer_norm_3"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "gelu"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_14"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_18"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_22"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "div_13",
+        "softmax_1"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "gelu_1"
+       ],
+       "fallback": "below minimum region size"
+      }
+     ]
+    },
+    "shared": {
+     "backend": "mixed",
+     "request_backend": "native",
+     "slot_copy_backend": "aten",
+     "fresh_copy_backend": "aten",
+     "staging_and_state_bytes": 24941568,
+     "int8_rhs_layout": "column_major",
+     "frozen_int8_weights": [
+      {
+       "name": "layers.0.block.attention.self.query.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 0,
+       "bytes": 589824
+      },
+      {
+       "name": "layers.0.block.attention.self.key.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 1,
+       "bytes": 589824
+      },
+      {
+       "name": "layers.0.block.attention.self.value.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 2,
+       "bytes": 589824
+      },
+      {
+       "name": "layers.1.block.attention.self.query.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 3,
+       "bytes": 589824
+      },
+      {
+       "name": "layers.1.block.attention.self.key.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 4,
+       "bytes": 589824
+      },
+      {
+       "name": "layers.1.block.attention.self.value.rhs",
+       "shape": [
+        768,
+        768
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 5,
+       "bytes": 589824
+      }
+     ],
+     "input_bytes": 101376,
+     "fresh_output_bytes": 153648,
+     "output_bindings": [
+      {
+       "source": "copy",
+       "base": 0,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "stride": [
+        25344,
+        768,
+        1
+       ],
+       "offset": 0
+      },
+      {
+       "source": "copy",
+       "base": 1,
+       "shape": [
+        1,
+        12,
+        33,
+        33
+       ],
+       "stride": [
+        13068,
+        1089,
+        33,
+        1
+       ],
+       "offset": 0
+      },
+      {
+       "source": "copy",
+       "base": 2,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "stride": [
+        25344,
+        768,
+        1
+       ],
+       "offset": 0
+      },
+      {
+       "source": "copy",
+       "base": 3,
+       "shape": [
+        1,
+        12,
+        33,
+        33
+       ],
+       "stride": [
+        13068,
+        1089,
+        33,
+        1
+       ],
+       "offset": 0
+      }
+     ],
+     "regions": [
+      {
+       "kind": "shared_hidden_token_quantizers",
+       "activation": "add",
+       "branches": 3,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "gemms": [
+        "_int_mm",
+        "_int_mm_1",
+        "_int_mm_2"
+       ],
+       "eliminated": 2
+      },
+      {
+       "kind": "shared_hidden_token_quantizers",
+       "activation": "layer_norm_1",
+       "branches": 3,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "gemms": [
+        "_int_mm_3",
+        "_int_mm_4",
+        "_int_mm_5"
+       ],
+       "eliminated": 2
+      },
+      {
+       "kind": "residual_token_quant",
+       "module": "_sparkfuse_token_quant_0",
+       "live_ins": [
+        "x",
+        "residual"
+       ],
+       "live_outs": [
+        "add",
+        "to_1",
+        "div"
+       ],
+       "output_roles": [
+        "residual",
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "add",
+        "to",
+        "abs_1",
+        "amax",
+        "clamp_min",
+        "div",
+        "div_1",
+        "round_1",
+        "clamp",
+        "to_1"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "dee68dedf5313b70f21a9f90b2f8b0b608b75bfa3ca767ab84ea9515526614d3"
+      },
+      {
+       "kind": "activation_token_quant",
+       "module": "_sparkfuse_token_quant_1",
+       "live_ins": [
+        "layer_norm_1"
+       ],
+       "live_outs": [
+        "to_13",
+        "div_7"
+       ],
+       "output_roles": [
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "to_12",
+        "abs_4",
+        "amax_3",
+        "clamp_min_3",
+        "div_7",
+        "div_8",
+        "round_4",
+        "clamp_3",
+        "to_13"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "819290d5c66efc9598676f7a5218a407f3d8f59647b7d1cc16ed7add9a5b1e98"
+      },
+      {
+       "kind": "grouped_int32_affine",
+       "module": "_sparkfuse_affine_projection_0",
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "ops": [
+        "to_2",
+        "mul",
+        "mul_1",
+        "add_1",
+        "_assert_tensor_metadata_default_3",
+        "to_3",
+        "to_6",
+        "mul_2",
+        "mul_3",
+        "add_2",
+        "_assert_tensor_metadata_default_7",
+        "to_7",
+        "to_10",
+        "mul_4",
+        "mul_5",
+        "add_3",
+        "_assert_tensor_metadata_default_11",
+        "to_11"
+       ],
+       "live_ins": [
+        "reshape_1",
+        "_int_mm",
+        "layers_0_block_attention_self_query_channel",
+        "layers_0_block_attention_self_query_bias",
+        "_int_mm_1",
+        "layers_0_block_attention_self_key_channel",
+        "layers_0_block_attention_self_key_bias",
+        "_int_mm_2",
+        "layers_0_block_attention_self_value_channel",
+        "layers_0_block_attention_self_value_bias"
+       ],
+       "live_outs": [
+        "to_3",
+        "to_7",
+        "to_11"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "01f184895e124491192bbe5073ec579857b2b7af2d879a55ce0e5508e92c6e85",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "kind": "grouped_int32_affine",
+       "module": "_sparkfuse_affine_projection_1",
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "ops": [
+        "to_14",
+        "mul_6",
+        "mul_7",
+        "add_6",
+        "_assert_tensor_metadata_default_15",
+        "to_15",
+        "to_18",
+        "mul_8",
+        "mul_9",
+        "add_7",
+        "_assert_tensor_metadata_default_19",
+        "to_19",
+        "to_22",
+        "mul_10",
+        "mul_11",
+        "add_8",
+        "_assert_tensor_metadata_default_23",
+        "to_23"
+       ],
+       "live_ins": [
+        "reshape_10",
+        "_int_mm_3",
+        "layers_1_block_attention_self_query_channel",
+        "layers_1_block_attention_self_query_bias",
+        "_int_mm_4",
+        "layers_1_block_attention_self_key_channel",
+        "layers_1_block_attention_self_key_bias",
+        "_int_mm_5",
+        "layers_1_block_attention_self_value_channel",
+        "layers_1_block_attention_self_value_bias"
+       ],
+       "live_outs": [
+        "to_15",
+        "to_19",
+        "to_23"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "01f184895e124491192bbe5073ec579857b2b7af2d879a55ce0e5508e92c6e85",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_2"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_6"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_10"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "div_6",
+        "softmax"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "add_4",
+        "layer_norm",
+        "add_5",
+        "layer_norm_1",
+        "_assert_tensor_metadata_default_12",
+        "_assert_tensor_metadata_default_16",
+        "_assert_tensor_metadata_default_20",
+        "add_9",
+        "layer_norm_2",
+        "add_10",
+        "layer_norm_3"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "gelu"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_14"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_18"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_22"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "div_13",
+        "softmax_1"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "gelu_1"
+       ],
+       "fallback": "below minimum region size"
+      }
+     ]
+    },
+    "packed_groups": {
+     "backend": "mixed",
+     "request_backend": "native",
+     "slot_copy_backend": "aten",
+     "fresh_copy_backend": "aten",
+     "staging_and_state_bytes": 24941568,
+     "int8_rhs_layout": "packed_groups",
+     "frozen_int8_weights": [
+      {
+       "name": "_sparkfuse_packed_rhs_0",
+       "shape": [
+        768,
+        2304
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 0,
+       "bytes": 1769472
+      },
+      {
+       "name": "_sparkfuse_packed_rhs_1",
+       "shape": [
+        768,
+        2304
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 1,
+       "bytes": 1769472
+      }
+     ],
+     "input_bytes": 101376,
+     "fresh_output_bytes": 153648,
+     "output_bindings": [
+      {
+       "source": "copy",
+       "base": 0,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "stride": [
+        25344,
+        768,
+        1
+       ],
+       "offset": 0
+      },
+      {
+       "source": "copy",
+       "base": 1,
+       "shape": [
+        1,
+        12,
+        33,
+        33
+       ],
+       "stride": [
+        13068,
+        1089,
+        33,
+        1
+       ],
+       "offset": 0
+      },
+      {
+       "source": "copy",
+       "base": 2,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "stride": [
+        25344,
+        768,
+        1
+       ],
+       "offset": 0
+      },
+      {
+       "source": "copy",
+       "base": 3,
+       "shape": [
+        1,
+        12,
+        33,
+        33
+       ],
+       "stride": [
+        13068,
+        1089,
+        33,
+        1
+       ],
+       "offset": 0
+      }
+     ],
+     "regions": [
+      {
+       "kind": "shared_hidden_token_quantizers",
+       "activation": "add",
+       "branches": 3,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "gemms": [
+        "_int_mm",
+        "_int_mm_1",
+        "_int_mm_2"
+       ],
+       "eliminated": 2
+      },
+      {
+       "kind": "shared_hidden_token_quantizers",
+       "activation": "layer_norm_1",
+       "branches": 3,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "gemms": [
+        "_int_mm_3",
+        "_int_mm_4",
+        "_int_mm_5"
+       ],
+       "eliminated": 2
+      },
+      {
+       "kind": "residual_token_quant",
+       "module": "_sparkfuse_token_quant_0",
+       "live_ins": [
+        "x",
+        "residual"
+       ],
+       "live_outs": [
+        "add",
+        "to_1",
+        "div"
+       ],
+       "output_roles": [
+        "residual",
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "add",
+        "to",
+        "abs_1",
+        "amax",
+        "clamp_min",
+        "div",
+        "div_1",
+        "round_1",
+        "clamp",
+        "to_1"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "dee68dedf5313b70f21a9f90b2f8b0b608b75bfa3ca767ab84ea9515526614d3"
+      },
+      {
+       "kind": "activation_token_quant",
+       "module": "_sparkfuse_token_quant_1",
+       "live_ins": [
+        "layer_norm_1"
+       ],
+       "live_outs": [
+        "to_13",
+        "div_7"
+       ],
+       "output_roles": [
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "to_12",
+        "abs_4",
+        "amax_3",
+        "clamp_min_3",
+        "div_7",
+        "div_8",
+        "round_4",
+        "clamp_3",
+        "to_13"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "819290d5c66efc9598676f7a5218a407f3d8f59647b7d1cc16ed7add9a5b1e98"
+      },
+      {
+       "kind": "packed_int32_projection",
+       "module": "_sparkfuse_packed_projection_0",
+       "weight": "_sparkfuse_packed_rhs_0",
+       "gemm": "aten._int_mm.default",
+       "shape": [
+        33,
+        768,
+        2304
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "source_weights": [
+        {
+         "name": "layers.0.block.attention.self.query.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 0,
+         "bytes": 589824,
+         "packed_column_offset": 0
+        },
+        {
+         "name": "layers.0.block.attention.self.key.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 1,
+         "bytes": 589824,
+         "packed_column_offset": 768
+        },
+        {
+         "name": "layers.0.block.attention.self.value.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 2,
+         "bytes": 589824,
+         "packed_column_offset": 1536
+        }
+       ],
+       "ops": [
+        "_int_mm",
+        "_int_mm_1",
+        "_int_mm_2",
+        "to_2",
+        "mul",
+        "mul_1",
+        "add_1",
+        "_assert_tensor_metadata_default_3",
+        "to_3",
+        "to_6",
+        "mul_2",
+        "mul_3",
+        "add_2",
+        "_assert_tensor_metadata_default_7",
+        "to_7",
+        "to_10",
+        "mul_4",
+        "mul_5",
+        "add_3",
+        "_assert_tensor_metadata_default_11",
+        "to_11"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "413805d2fa78d01a89d86ffe8a6673dd661af24f5a5a3eadc3c7c5b808480dc5",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "kind": "packed_int32_projection",
+       "module": "_sparkfuse_packed_projection_1",
+       "weight": "_sparkfuse_packed_rhs_1",
+       "gemm": "aten._int_mm.default",
+       "shape": [
+        33,
+        768,
+        2304
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "source_weights": [
+        {
+         "name": "layers.1.block.attention.self.query.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 3,
+         "bytes": 589824,
+         "packed_column_offset": 0
+        },
+        {
+         "name": "layers.1.block.attention.self.key.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 4,
+         "bytes": 589824,
+         "packed_column_offset": 768
+        },
+        {
+         "name": "layers.1.block.attention.self.value.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 5,
+         "bytes": 589824,
+         "packed_column_offset": 1536
+        }
+       ],
+       "ops": [
+        "_int_mm_3",
+        "_int_mm_4",
+        "_int_mm_5",
+        "to_14",
+        "mul_6",
+        "mul_7",
+        "add_6",
+        "_assert_tensor_metadata_default_15",
+        "to_15",
+        "to_18",
+        "mul_8",
+        "mul_9",
+        "add_7",
+        "_assert_tensor_metadata_default_19",
+        "to_19",
+        "to_22",
+        "mul_10",
+        "mul_11",
+        "add_8",
+        "_assert_tensor_metadata_default_23",
+        "to_23"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "413805d2fa78d01a89d86ffe8a6673dd661af24f5a5a3eadc3c7c5b808480dc5",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_2"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_6"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_10"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "div_6",
+        "softmax"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "add_4",
+        "layer_norm",
+        "add_5",
+        "layer_norm_1",
+        "_assert_tensor_metadata_default_12",
+        "_assert_tensor_metadata_default_16",
+        "_assert_tensor_metadata_default_20",
+        "add_9",
+        "layer_norm_2",
+        "add_10",
+        "layer_norm_3"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "gelu"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_14"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_18"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_22"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "div_13",
+        "softmax_1"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "gelu_1"
+       ],
+       "fallback": "below minimum region size"
+      }
+     ]
+    }
+   },
+   "layerwise_metadata": [
+    {
+     "backend": "mixed",
+     "request_backend": "native",
+     "slot_copy_backend": "aten",
+     "fresh_copy_backend": "aten",
+     "staging_and_state_bytes": 12521472,
+     "int8_rhs_layout": "packed_fanout",
+     "frozen_int8_weights": [
+      {
+       "name": "_sparkfuse_packed_rhs",
+       "shape": [
+        768,
+        2304
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 0,
+       "bytes": 1769472
+      }
+     ],
+     "input_bytes": 101376,
+     "fresh_output_bytes": 76824,
+     "output_bindings": [
+      {
+       "source": "copy",
+       "base": 0,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "stride": [
+        25344,
+        768,
+        1
+       ],
+       "offset": 0
+      },
+      {
+       "source": "copy",
+       "base": 1,
+       "shape": [
+        1,
+        12,
+        33,
+        33
+       ],
+       "stride": [
+        13068,
+        1089,
+        33,
+        1
+       ],
+       "offset": 0
+      }
+     ],
+     "regions": [
+      {
+       "kind": "shared_hidden_token_quantizers",
+       "activation": "add",
+       "branches": 3,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "gemms": [
+        "_int_mm",
+        "_int_mm_1",
+        "_int_mm_2"
+       ],
+       "eliminated": 2
+      },
+      {
+       "kind": "residual_token_quant",
+       "module": "_sparkfuse_token_quant_0",
+       "live_ins": [
+        "x",
+        "residual"
+       ],
+       "live_outs": [
+        "add",
+        "to_1",
+        "div"
+       ],
+       "output_roles": [
+        "residual",
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "add",
+        "to",
+        "abs_1",
+        "amax",
+        "clamp_min",
+        "div",
+        "div_1",
+        "round_1",
+        "clamp",
+        "to_1"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "dee68dedf5313b70f21a9f90b2f8b0b608b75bfa3ca767ab84ea9515526614d3"
+      },
+      {
+       "kind": "packed_int32_projection",
+       "module": "_sparkfuse_packed_projection",
+       "weight": "_sparkfuse_packed_rhs",
+       "gemm": "aten._int_mm.default",
+       "shape": [
+        33,
+        768,
+        2304
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "source_weights": [
+        {
+         "name": "block.attention.self.query.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 0,
+         "bytes": 589824,
+         "packed_column_offset": 0
+        },
+        {
+         "name": "block.attention.self.key.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 1,
+         "bytes": 589824,
+         "packed_column_offset": 768
+        },
+        {
+         "name": "block.attention.self.value.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 2,
+         "bytes": 589824,
+         "packed_column_offset": 1536
+        }
+       ],
+       "ops": [
+        "_int_mm",
+        "_int_mm_1",
+        "_int_mm_2",
+        "to_2",
+        "mul",
+        "mul_1",
+        "add_1",
+        "_assert_tensor_metadata_default_3",
+        "to_3",
+        "to_6",
+        "mul_2",
+        "mul_3",
+        "add_2",
+        "_assert_tensor_metadata_default_7",
+        "to_7",
+        "to_10",
+        "mul_4",
+        "mul_5",
+        "add_3",
+        "_assert_tensor_metadata_default_11",
+        "to_11"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "413805d2fa78d01a89d86ffe8a6673dd661af24f5a5a3eadc3c7c5b808480dc5",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_2"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_6"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_10"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "div_6",
+        "softmax"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "add_4",
+        "layer_norm",
+        "add_5",
+        "layer_norm_1"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "gelu"
+       ],
+       "fallback": "below minimum region size"
+      }
+     ]
+    },
+    {
+     "backend": "mixed",
+     "request_backend": "native",
+     "slot_copy_backend": "aten",
+     "fresh_copy_backend": "aten",
+     "staging_and_state_bytes": 12470784,
+     "int8_rhs_layout": "packed_fanout",
+     "frozen_int8_weights": [
+      {
+       "name": "_sparkfuse_packed_rhs",
+       "shape": [
+        768,
+        2304
+       ],
+       "source_stride": [
+        1,
+        768
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "storage_group": 0,
+       "bytes": 1769472
+      }
+     ],
+     "input_bytes": 50688,
+     "fresh_output_bytes": 76824,
+     "output_bindings": [
+      {
+       "source": "copy",
+       "base": 0,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "stride": [
+        25344,
+        768,
+        1
+       ],
+       "offset": 0
+      },
+      {
+       "source": "copy",
+       "base": 1,
+       "shape": [
+        1,
+        12,
+        33,
+        33
+       ],
+       "stride": [
+        13068,
+        1089,
+        33,
+        1
+       ],
+       "offset": 0
+      }
+     ],
+     "regions": [
+      {
+       "kind": "shared_hidden_token_quantizers",
+       "activation": "x",
+       "branches": 3,
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "gemms": [
+        "_int_mm",
+        "_int_mm_1",
+        "_int_mm_2"
+       ],
+       "eliminated": 2
+      },
+      {
+       "kind": "activation_token_quant",
+       "module": "_sparkfuse_token_quant_0",
+       "live_ins": [
+        "x"
+       ],
+       "live_outs": [
+        "to_1",
+        "div"
+       ],
+       "output_roles": [
+        "codes",
+        "scale"
+       ],
+       "ops": [
+        "to",
+        "abs_1",
+        "amax",
+        "clamp_min",
+        "div",
+        "div_1",
+        "round_1",
+        "clamp",
+        "to_1"
+       ],
+       "dtype": "bf16",
+       "shape": [
+        1,
+        33,
+        768
+       ],
+       "host_backend": "native",
+       "scale_floor": 1e-05,
+       "divisor": 127,
+       "schedule": {
+        "threads": 128,
+        "rows_per_block": 1
+       },
+       "cuda_sha256": "819290d5c66efc9598676f7a5218a407f3d8f59647b7d1cc16ed7add9a5b1e98"
+      },
+      {
+       "kind": "packed_int32_projection",
+       "module": "_sparkfuse_packed_projection",
+       "weight": "_sparkfuse_packed_rhs",
+       "gemm": "aten._int_mm.default",
+       "shape": [
+        33,
+        768,
+        2304
+       ],
+       "snapshot_stride": [
+        1,
+        768
+       ],
+       "branches": [
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        },
+        {
+         "shape": [
+          33,
+          768
+         ],
+         "output_roles": [
+          "narrow"
+         ],
+         "narrow_dtype": "bf16"
+        }
+       ],
+       "source_weights": [
+        {
+         "name": "block.attention.self.query.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 0,
+         "bytes": 589824,
+         "packed_column_offset": 0
+        },
+        {
+         "name": "block.attention.self.key.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 1,
+         "bytes": 589824,
+         "packed_column_offset": 768
+        },
+        {
+         "name": "block.attention.self.value.rhs",
+         "shape": [
+          768,
+          768
+         ],
+         "source_stride": [
+          1,
+          768
+         ],
+         "snapshot_stride": [
+          1,
+          768
+         ],
+         "storage_group": 2,
+         "bytes": 589824,
+         "packed_column_offset": 1536
+        }
+       ],
+       "ops": [
+        "_int_mm",
+        "_int_mm_1",
+        "_int_mm_2",
+        "to_2",
+        "mul",
+        "mul_1",
+        "add",
+        "_assert_tensor_metadata_default_3",
+        "to_3",
+        "to_6",
+        "mul_2",
+        "mul_3",
+        "add_1",
+        "_assert_tensor_metadata_default_7",
+        "to_7",
+        "to_10",
+        "mul_4",
+        "mul_5",
+        "add_2",
+        "_assert_tensor_metadata_default_11",
+        "to_11"
+       ],
+       "host_backend": "native",
+       "cuda_sha256": "413805d2fa78d01a89d86ffe8a6673dd661af24f5a5a3eadc3c7c5b808480dc5",
+       "schedule": {
+        "threads": 128
+       }
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_2"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_4"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_6"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_8"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "_assert_tensor_metadata_default_10"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "div_6",
+        "softmax"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "add_3",
+        "layer_norm",
+        "add_4",
+        "layer_norm_1"
+       ],
+       "fallback": "below minimum region size"
+      },
+      {
+       "ops": [
+        "gelu"
+       ],
+       "fallback": "below minimum region size"
+      }
+     ]
+    }
+   ],
+   "setup": {
+    "independent": {
+     "wall_ms": 108.68139,
+     "retained_allocator_delta_bytes": 58651648,
+     "peak_allocator_increase_bytes": 59521024
+    },
+    "shared": {
+     "wall_ms": 70.560353,
+     "retained_allocator_delta_bytes": 60486656,
+     "peak_allocator_increase_bytes": 61356032
+    },
+    "packed_groups": {
+     "wall_ms": 98.555736,
+     "retained_allocator_delta_bytes": 58979328,
+     "peak_allocator_increase_bytes": 59848704
+    },
+    "layerwise_stages": [
+     {
+      "wall_ms": 39.381981,
+      "retained_allocator_delta_bytes": 47989248,
+      "peak_allocator_increase_bytes": 48626688
+     },
+     {
+      "wall_ms": 41.128214,
+      "retained_allocator_delta_bytes": 46103552,
+      "peak_allocator_increase_bytes": 46740992
+     }
+    ]
+   },
+   "gates": {
+    "eager": {
+     "request": {
+      "fresh": true,
+      "container": true,
+      "outputs": [
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ]
+      ],
+      "admitted": true
+     },
+     "ordinary": null,
+     "admitted": true
+    },
+    "independent": {
+     "request": {
+      "fresh": true,
+      "container": true,
+      "outputs": [
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ]
+      ],
+      "admitted": true
+     },
+     "ordinary": {
+      "fresh": true,
+      "container": true,
+      "outputs": [
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ]
+      ],
+      "admitted": true
+     },
+     "admitted": true
+    },
+    "shared": {
+     "request": {
+      "fresh": true,
+      "container": true,
+      "outputs": [
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ]
+      ],
+      "admitted": true
+     },
+     "ordinary": {
+      "fresh": true,
+      "container": true,
+      "outputs": [
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ]
+      ],
+      "admitted": true
+     },
+     "admitted": true
+    },
+    "packed_groups": {
+     "request": {
+      "fresh": true,
+      "container": true,
+      "outputs": [
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ]
+      ],
+      "admitted": true
+     },
+     "ordinary": {
+      "fresh": true,
+      "container": true,
+      "outputs": [
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ]
+      ],
+      "admitted": true
+     },
+     "admitted": true
+    },
+    "layerwise_packed": {
+     "request": {
+      "fresh": true,
+      "container": true,
+      "outputs": [
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ],
+       [
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        },
+        {
+         "dtype": "torch.bfloat16",
+         "geometry_match": true,
+         "different_bytes": 0
+        }
+       ]
+      ],
+      "admitted": true
+     },
+     "ordinary": null,
+     "admitted": true
+    }
+   },
+   "ordinary": null,
+   "serving": null
+  }
+ ]
+}

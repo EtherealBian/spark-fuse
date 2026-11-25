@@ -210,6 +210,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "decoder_family_rotary",
+                [
+                    opt,
+                    str(ROOT / "tools/decoder_family_panel.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-decoder-family.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "hybrid_qwen_decode",
                 [
                     opt,
@@ -735,7 +747,9 @@ def check(until, report):
                     "check": name,
                     "status": "pass" if r.returncode == 0 else "fail",
                     "returncode": r.returncode,
-                    "tail": r.stdout[-3500:],
+                    "tail": r.stdout.replace(sys.prefix + "/", "$VENV/")
+                    .replace(str(ROOT) + "/", "$PROJECT/")
+                    .replace(str(Path.home()) + "/", "$HOME/")[-3500:],
                     "elapsed_s": time.monotonic() - t,
                 }
             )

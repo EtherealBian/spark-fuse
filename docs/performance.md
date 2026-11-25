@@ -1205,3 +1205,20 @@ KV 长度是符号，单 token 的隐藏维度却是静态的。`partition_hybri
 Across two weight seeds and both mask modes, six escaping static outputs per step were byte-identical to the attention-only path on all 128 held-out steps; every SparkFuse variant also returned the exact HF K/V caches. Dynamic Inductor passed the numerical and prefix contract but not exact new-cache bytes. The last optimization specializes 14 literal ATen host call sites; it does **not** reduce the launch count again. At initial length 2 the fastest SparkFuse variant still lost on device (159.92 vs 144.21 µs for Inductor). Each timing is for four autoregressive cache updates with fresh outputs, not for a whole model or a single token.
 
 [Static-island pass](../sparkfuse/hybrid_decode.py) · [raw ablations, boundary bytes and clocks](../reports/hybrid-qwen-gb10.json) · [negative and public-residual tests](../tests/test_hybrid_decode.py) · [sanitizers](../reports/hybrid-qwen-sanitizer-gb10.txt). Reproduce: `python tools/hybrid_qwen_panel.py --output /tmp/hybrid-qwen.json`.
+
+<a id="decoder-families"></a>
+## Decoder families: fuse Q/K rotary updates across three real HF layers
+
+A shared FX pass replaces the 14-node Q/K rotary pair with one CUDA call. Before rewriting, it checks shape, stride, aliases and bytes on two independent executions. If an intermediate escapes, a later rewrite invalidated a live-in, or the second execution disagrees, the original ATen nodes stay. The dynamic attention program, GEMMs, five static fusion islands, public residual semantics and cache contracts are unchanged in the ablation.
+
+**What was tested.** Real Transformers 4.51.3 `Qwen2DecoderLayer` (8:2 heads, D64), `LlamaDecoderLayer` (8:4, D64) and `MistralDecoderLayer` (6:2, D128), random weights, batch 2, BF16, one layer. Mistral uses full context (`sliding_window=None`). Each model has two weight seeds and masked/unmasked graphs. The exporter sees past 17; a second trace at 65 qualifies each site. At eight other initial lengths (2–2045), four successive calls feed back their own fresh caches. All 384 SparkFuse steps passed the hidden-state tolerance and preserved both HF caches byte for byte; all 768 rotary tensors matched original ATen bytes and strides. The attention boundary has an independent CPU FP64 comparison. Dynamic Inductor met the numerical/geometry/prefix gate in all 12 workloads but was not byte-exact for every appended cache token.
+
+Masked first seed (3734911), **µs per four-step request**, not per token. Short/long are CUDA Graph device replays; rotating is ordinary synchronized wall time over eight different contexts. Columns are HF eager / SparkFuse before rotary pairing / SparkFuse after pairing / dynamic Inductor:
+
+| Layer | Short (past 2) | Long (past 2045) | Rotating sync | Queued 8, per request |
+|---|---|---|---|---|
+| Qwen2 | 279.47 / 160.27 / 134.50 / 144.05 | 810.51 / 232.97 / 207.02 / 682.94 | 1254.82 / 850.00 / 693.18 / 714.36 | 1246.76 / 837.95 / 685.17 / 709.02 |
+| Llama | 284.18 / 159.58 / 133.16 / 141.57 | 894.05 / 307.22 / 282.02 / 731.50 | 1249.85 / 830.98 / 683.43 / 693.74 | 1237.10 / 828.75 / 671.62 / 691.26 |
+| Mistral | 328.46 / 196.27 / 169.13 / 181.26 | 1214.89 / 427.18 / 402.92 / 1091.07 | 1269.52 / 845.04 / 691.57 / 731.15 | 1256.08 / 839.99 / 685.65 / 727.57 |
+
+Paired rotary reduced the short four-step launch count from 80 to 60 for all three models; these masked eager/Inductor baselines used 176/72. The paired variant had lower rotating-sync medians than both its pre-pair ablation and dynamic Inductor in all 12 measured workloads. The smallest margins should not be generalized to other devices, batches, serving conditions, full checkpoints, or model quality. [Full report and individual timing windows](../reports/decoder-family-gb10.json) · [sanitizer](../reports/decoder-family-sanitizer-gb10.txt) · [regression gates](../reports/decoder-family-stage-acceptance.json).
