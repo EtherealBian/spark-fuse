@@ -82,6 +82,11 @@ def _pattern(ep):
         and ep.call_spec.out_spec.is_leaf(),
         "expected positional tensor inputs and a single tensor result",
     )
+    return ins, _sdpa_options(op, ins)
+
+
+def _sdpa_options(op, ins):
+    n = len(ins)
     # Bind the operator schema, including explicitly supplied default arguments.
     schema = op.target._schema.arguments
     options = {x.name: x.default_value for x in schema}
@@ -98,7 +103,7 @@ def _pattern(ep):
         and type(options["enable_gqa"]) is bool,
         "causal, dynamic options and dropout are unsupported",
     )
-    return ins, options
+    return options
 
 
 @dataclass(frozen=True)

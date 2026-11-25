@@ -1140,3 +1140,20 @@ All entries are **whole-layer CUDA Graph device replay µs**, not throughput. Bo
 Time is CUDA Graph device replay in µs **for both steps together**, without qualification or capture. At history 1024 the six paths launch 88/88/82/80/78/36 kernels. Fusing removed launches but lost to paired append in **all six** seed/length cells. On rotating inputs, synchronized request medians at 1024 were 625.30/782.39/729.83/719.68/707.98/363.36 µs. The fused path does not give a material peak-allocation saving when both new caches must remain visible. These are different clocks and different storage lifetimes; launch count alone does not select a winner.
 
 Eight held-out trajectories per cell, two independently initialized layers. The three CUDA paths agree byte-for-byte on all six final tensors, and checks at both attention sites cover FP32 partials and a CPU FP64 reference. Inductor meets the numerical gates but does not produce byte-identical full caches. [Raw results, allocation peaks and timing windows](../reports/segmented-qwen-gb10.json) · [sanitizer transcripts](../reports/segmented-qwen-sanitizer-gb10.txt). Reproduce: `python tools/segmented_qwen_panel.py --output /tmp/segmented-qwen.json` in the optional Transformers environment.
+
+<a id="symbolic-kv"></a>
+### 一个导出图适配不同的 KV 长度 / A bounded symbolic KV axis
+
+`compile_length_decode` 直接读取 `torch.export.Dim` 的上下界。Q 固定为一个 token；K、V 和可选同精度 additive mask 共用长度符号。导出图必须显式把输出 `clone(memory_format=torch.contiguous_format)`，以约定新存储及单例维度的步幅。编译器将长度传给同一份 CUDA 代码：长度 ≤ tile 时只发射一次，较长时才分配当前分块所需的 FP32 中间量并归并。数值、推理模式、设备、布局和界限均有检查；`run_bounded` 仅省略由调用者保证的数值范围检查。
+
+验证用长度 17、65；**不重新编译**运行 2、31、32、33、129、513、1025、2049，每个长度另取三个输入。两种几何、两套种子；每个配置只用 **2 个机器码对象**，同 tile 的逐长度静态 CUDA 用到 13 个不同内核缓存键。每个留出输出与静态 CUDA 逐字节一致，且另行通过 CPU FP64 对照。B2/8 个查询头、D64，S=32/33/2049 的中间量分别是 **0/8,448/274,560 字节**，不是按最大长度预分配。
+
+| 带 BF16 偏置，首套种子 | eager | SparkFuse | Inductor dynamic | Inductor static |
+|---|---:|---:|---:|---:|
+| S=33，设备重放 µs | 23.99 | **6.25** | 31.50 | 8.98 |
+| S=1025，设备重放 µs | 93.21 | **8.12** | 199.34 | 30.99 |
+| 八种长度轮换，主机同步请求 µs | 108.70 | **31.86** | 91.78 | 76.50 |
+
+The two Inductor settings invoked their compiler backend 3 and 8 times on the masked workload (not counts of CUDA binaries). The result does **not** transfer unchanged to unmasked FP16: at S=2049 eager beat SparkFuse on device, **14.61 vs 15.10 µs**; with rotating lengths it also won synchronized latency, **27.42 vs 30.18 µs**. Both Inductor modes produced a different singleton stride in that family, so we excluded them from contract-equivalent timing rather than assigning a speedup. First-seen request times may include persistent-cache hits; they are not clean-build latency. This is an isolated SDPA region, not a dynamic full Qwen layer.
+
+[Example and export signature](../examples/length_decode.py) · [raw shape traces, CPU comparisons, binary hashes and clocks](../reports/symbolic-kv-gb10.json) · [sanitizers](../reports/symbolic-kv-sanitizer-gb10.txt). Reproduce: `python tools/length_decode_panel.py --output /tmp/symbolic-kv.json`.

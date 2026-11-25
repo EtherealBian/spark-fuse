@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "symbolic_kv_length",
+            [
+                sys.executable,
+                str(ROOT / "tools/length_decode_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-symbolic-kv.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "grouped_decode_kv_reuse",
             [
                 sys.executable,
