@@ -1172,3 +1172,20 @@ The two Inductor settings invoked their compiler backend 3 and 8 times on the ma
 The reduced request time is a host dispatch result, not a faster attention kernel. At S=2049 without a mask, eager was still faster on the device: **14.44 vs 15.10 µs** for native. The fast entry assumes a bounded numerical domain. With actual per-request value scans enabled, the masked S=2049 native call took **142.26 µs**, versus **23.47 µs** without scans; neither cost is hidden inside the other timer. The installed-wheel smoke exercises this host entry at four lengths, including the one-to-two launch transition.
 
 [Raw results, held-out hashes, checked calls and timing windows](../reports/length-host-gb10.json) · [stream lifetime and malformed-descriptor tests](../tests/test_length_host.py) · [sanitizers](../reports/length-host-sanitizer-gb10.txt). Reproduce: `python tools/length_host_panel.py --output /tmp/length-host.json`.
+
+<a id="symbolic-qwen"></a>
+### 一张真实 Qwen2 导出图，连续解码四步 / Four decode steps from one symbolic layer
+
+对随机权重的 Hugging Face `Qwen2DecoderLayer` 做 strict export：过去的 K/V 共用一个符号，mask 的最后一维是它加一。每个 mask 配置仅导出一张图，两个 CUDA 二进制供全部长度和步骤使用。仅当 SDPA 的布局无法越过 `transpose → reshape → linear` 暴露，才旁路两段 KV 头复制。残留读者、公开缓存和输入检查不删除。第一步接受真实 prefill 产生的 token-major 缓存，后续步骤消费各自上一步返回的 head-major 缓存；没有为匹配步幅而添加拷贝。
+
+两套权重种子 × 有/无 mask × 八个初始长度（2–2045）× 四步，共 **128 个留出步骤**。每步用 CPU FP64 独立验证注意力；每个后端独立传递自己的缓存，保活一条请求的全部 12 个返回值。两种 SparkFuse host 路径每步的公开 K/V 与 HF 逐字节一致；隐藏状态按列出的容差比较。Inductor 每配置触发三次 backend 编译，通过数值、步幅和旧缓存前缀检查，但并非所有新 K/V 字节都和 HF 一致，下面只将它作为数值等价基线。
+
+| 有 mask，首套种子，**四步合计** µs | HF eager | 导出 ATen | SparkFuse native | dynamic Inductor |
+|---|---:|---:|---:|---:|
+| 过去 2 token，设备重放 | 279.82 | 279.62 | 250.73 | **144.05** |
+| 过去 2045 token，设备重放 | 822.64 | 815.57 | **327.68** | 679.47 |
+| 八种初始长度轮换，主机同步 | 1266.43 | 1600.49 | 1456.79 | **722.78** |
+
+Only the attention subgraph is replaced. The long-context device win did **not** make ordinary rotating requests faster than HF eager or Inductor. Four dependent decode steps, the other layer operators, Python submission, allocation and synchronization are inside the request timer. Not a pretrained-model throughput or accuracy claim.
+
+[Strict export and benchmark](../tools/symbolic_qwen_panel.py) · [raw steps, hashes, FP64 checks and timing windows](../reports/symbolic-qwen-gb10.json) · [sanitizers](../reports/symbolic-qwen-sanitizer-gb10.txt). Reproduce with the optional Transformers environment: `python tools/symbolic_qwen_panel.py --output /tmp/symbolic-qwen.json`.

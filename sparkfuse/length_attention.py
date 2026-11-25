@@ -194,6 +194,19 @@ def compile_length_decode(
 ):
     """Lower a symbolic, single-token SDPA+contiguous clone. No per-length JIT."""
     p = LengthPlan(*_pattern(ep), tile)
+    ref = ep.module()
+    return _build_length(
+        p,
+        example,
+        audit,
+        reference=lambda j, b: ref(*b),
+        host_backend=host_backend,
+        max_workspace_bytes=max_workspace_bytes,
+    )
+
+
+def _build_length(p, example, audit, *, reference, host_backend, max_workspace_bytes):
+    tile = p.tile
     policy = _policy()
     _require(
         torch.is_inference_mode_enabled()
@@ -260,10 +273,9 @@ def compile_length_decode(
             )
             .run
         )
-    ref = ep.module()
     at, rt = (0.012, 0.02) if p.dtype == torch.bfloat16 else (0.002, 0.004)
-    for batch in (xs, ys):
-        e = ref(*batch)
+    for j, batch in enumerate((xs, ys)):
+        e = reference(j, batch)
         y = result.run_bounded(*batch)
         _require(
             e._base is None

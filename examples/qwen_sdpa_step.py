@@ -40,7 +40,9 @@ def suite(seed):
     return m, Qwen2RotaryEmbedding(cfg, device="cuda").eval()
 
 
-def trajectory(m, rope, past, masked, seed):
+def trajectory(m, rope, past, masked, seed, *, steps=2):
+    if type(steps) is not int or not 1 <= steps <= 64:
+        raise ValueError("expected 1..64 decode steps")
     rng = torch.Generator(device="cuda").manual_seed(seed)
     offset = torch.tensor([[0], [19]], device="cuda")
     state = DynamicCache()
@@ -55,7 +57,7 @@ def trajectory(m, rope, past, masked, seed):
     m.layer(
         x, position_embeddings=cs, past_key_value=state, use_cache=True, output_attentions=False
     )
-    for s in (past, past + 1):
+    for s in range(past, past + steps):
         k, v = state.to_legacy_cache()[0]
         x = hidden(1)
         c, si = rope(x, offset + s)
