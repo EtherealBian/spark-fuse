@@ -518,3 +518,19 @@ Same DGX Spark, width 8,960, BF16. Synchronized **host latency** below includes 
 All values in µs. At two rows the **device** medians of static FX and static native were both about 1.99 µs: most of the host difference is outside the kernel. A narrow native ABI avoids the exported FX entry without removing the native tensor guards. It is not a drop-in replacement for arbitrary module calls, a policy for all packet widths, or an end-to-end decoding speedup. The dynamically compiled Inductor control did not pass the exact product gate on these samples and has no timing entry.
 
 [First weight: raw host/device data](../reports/bounded-packed-rows-gb10.json) · [Independent weight](../reports/bounded-packed-rows-heldout-gb10.json) · [Generated sources](../examples/generated/packed-rows) · [Sanitizer](../reports/bounded-packed-rows-sanitizer-gb10.txt) · [Installed-wheel and full regression](../reports/bounded-packed-stage-acceptance.json). Reproduce with `python tools/packed_rows_panel.py --seed-offset 86783 --output /tmp/packed-rows.json` and `bash tools/sanitize_packed_rows.sh`.
+
+### Qwen2 有偏置的 Q/K/V：什么时候能合并？ / QKV packing admission
+
+同一个归一化输入原本经过三个有偏置的线性层，输出宽度分别为 1,536、256、256。一次宽 GEMM 可以省两次启动，但不保证 BF16 输出逐位相同。我们从真实 HF Qwen2 层的 forward hook 取输入和参照值，用两组随机权重、每组三个输入种子，检查三个前缀的 prefill 和其后两步 decode（共 54 组）。除投影外也比较 RoPE 后的 Q/K，并与 HF 写入 cache 的 K/V 新片段交叉核对。
+
+| First weight · projection-only, device µs | HF: three | Packed, private views | Packed, three copies | Q + packed KV | Inductor |
+|---|---:|---:|---:|---:|---:|
+| Prefix 127 · decode step 1 | 20.58 | 8.81 | 13.07 | 14.43 | 20.58 |
+| Prefix 127 · prefill | 118.95 | rejected | rejected | rejected | 119.22 |
+| Prefix 255 · prefill | 94.31 | 44.39 | 51.82 | rejected | 94.30 |
+
+仅比较张量值时，可以使用切分视图；调用方若能观察三个独立输出，还要保留原来的 stride 和独立存储，不能把 8.81 µs 当作这个接口的结果。127-token prefill 首个输入的打包 K/V 分别有 **38,399 / 38,022 个 BF16 元素**与参考位型不同；复制输出不修复错误。第二组权重同样失败（38,264 / 38,242）。255-token prefill 则恰好相反：全打包在已测输入上通过，只打包 KV 却失败。因此**没有默认 QKV 改写**，也不按“单 token”或某个前缀向未测模型承诺等价。
+
+Each timing is the median of seven shuffled windows on the last input, after all three inputs for that weight and case passed the private bitwise gate. Weight packing, RoPE and cache writes are outside these timings. The report retains first mismatching indices, BF16 encodings, output layouts and launched kernel names even for rejected candidates; the latter are not timed. These are projection measurements, not layer acceleration or generation throughput.
+
+[Raw inputs' hashes, mismatches, traces and timing samples](../reports/qwen-qkv-projection-admission-gb10.json) · [Release checks](../reports/qkv-admission-stage-acceptance.json). Reproduce on DGX Spark with `python tools/qkv_projection_audit.py --output /tmp/qkv.json` in the Transformers-enabled project environment.
