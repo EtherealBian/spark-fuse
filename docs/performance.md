@@ -293,3 +293,17 @@ Native had the lower median than each other frontend in 9/9 windows on these wor
 Inductor 在本实验 21 组输入的隐藏态上没有通过原精度约定，因此不报告它的速度；两份 JSON 均保留逐种子的结果。例如长度 33、种子 30211 的隐藏态有 4,990 / 101,376 个元素超出容差，而该请求的注意力概率通过。未加载预训练权重，无 KV 缓存，不是生成吞吐基准。RoPE 表在计时外生成，旋转和所有投影在计时内。
 
 **English.** A topological barrier used to send a whole single-reduction component back to ATen. The partitioner can now retain a legal two-output residual/RMSNorm prefix without moving work across a projection. On one real Qwen2 layer, this removed eight observed GPU kernel launches at each tested length. Four sampled tensors matched eager bitwise. The reports include both paired timing runs and the Inductor parity failures. Reproduce with `python tools/qwen_decoder.py --seq 33 65 97 --profile --output /tmp/qwen-decoder.json`.
+
+### Qwen2 解码层：两支旋转位置编码合为一次发射 / Paired Q/K rotary
+
+在同一次试验中只切换 `rotary_pairs`。两条路径都已经融合残差与 RMSNorm，使用相同的权重、输入、线程配置和主机调用路径。一个 CUDA kernel 分别读写 Q、K 的两半，复用同一组位置表，保留每次乘法的低精度舍入。单次普通 forward 的 profiler 记录显示，原先两支旋转的 10 次发射变为 1 次。切片视图不算 GPU kernel。
+
+| 序列长度 | eager 设备 µs | SparkFuse 设备 µs，关 → 开 | 同步主机 µs，关 → 开 | 整层发射数，关 → 开 |
+|---:|---:|---:|---:|---:|
+| 33 | 605.973 | 584.728 → 559.120 | 676.330 → 636.617 | 28 → 19 |
+| 65 | 622.867 | 584.349 → 568.739 | 756.251 → 685.898 | 28 → 19 |
+| 97 | 743.696 | 681.557 → 653.856 | 804.540 → 735.035 | 29 → 20 |
+
+[整层原始记录](../reports/qwen-decoder-rotary-gb10.json)含七个乱序计时窗口。BF16、batch 2、12 个 Q 头和 2 个 KV 头；三个长度各七组输入。Q/K 的值与步幅、可见残差、归一化结果及两个公开层输出均与 eager 对照。完整图 Inductor 的隐藏态未通过原容差，因此未计时。这是没有 KV cache 的单个随机权重解码层；计时包含所有投影及旋转应用，不含位置表生成。
+
+The [isolated Q/K panel](../reports/paired-rotary-panel-gb10.json) also varies layout, input offsets and precision. For BF16 at length 97 in token-major physical storage, aligned device replay fell from 24.101 µs eager to 2.203 µs fused; with offset inputs it fell from 24.097 to 2.342 µs. In the small aligned FP32 case, eager / Inductor / SparkFuse took 12.581 / 1.574 / 1.062 µs. Inductor failed the unchanged tolerance on the four lower-precision cases, so their reports omit its timing. The paired pass is opt-in; an isolated speedup does not predict layer latency at other shapes or on other GPUs.

@@ -67,48 +67,8 @@ def build(source, device):
     return lib, cu
 
 
-class Kernel:
-    def __init__(self, ep, device, schedule=None):
-        self.plan = p = lower(ep)
-        from .mean_tree import ordered_default, sensitive
-
-        self.schedule = schedule or (
-            ordered_default(p)
-            if sensitive(p)
-            else (
-                Schedule(128, "block", True)
-                if p.red is not None
-                else Schedule(
-                    256, "flat" if all(p.vals[i].shape == p.domain for i in p.outputs) else "block"
-                )
-            )
-        )
-        self.device = torch.device(device)
-        self.device = (
-            torch.device(
-                "cuda",
-                torch.cuda.current_device() if self.device.index is None else self.device.index,
-            )
-            if self.device.type == "cuda"
-            else self.device
-        )
-        if self.device.type != "cuda":
-            raise Unsupported("CUDA device required")
-        self.ep = ep
-        self.bind = []
-        for spec in ep.graph_signature.input_specs:
-            kind = spec.kind.name
-            if kind == "USER_INPUT":
-                self.bind.append(None)
-            elif kind in ("PARAMETER", "BUFFER", "CONSTANT_TENSOR"):
-                src = ep.state_dict if spec.target in ep.state_dict else ep.constants
-                self.bind.append(src[spec.target])
-            else:
-                raise Unsupported(f"unsupported input kind {kind}")
-        if any(s.kind.name != "USER_OUTPUT" for s in ep.graph_signature.output_specs):
-            raise Unsupported("side effects unsupported")
-        self.source = generate(p, self.schedule)
-        self.lib, self.path = build(self.source, self.device)
+class DenseKernelCall:
+    """Guard, allocate and launch a lowered plan over physical contiguous tensors."""
 
     def prepare(self, *args, **kwargs):
         flat, spec = tree.tree_flatten((args, kwargs))
@@ -155,6 +115,50 @@ class Kernel:
 
     def __call__(self, *args, **kwargs):
         return self.prepare(*args, **kwargs)()
+
+
+class Kernel(DenseKernelCall):
+    def __init__(self, ep, device, schedule=None):
+        self.plan = p = lower(ep)
+        from .mean_tree import ordered_default, sensitive
+
+        self.schedule = schedule or (
+            ordered_default(p)
+            if sensitive(p)
+            else (
+                Schedule(128, "block", True)
+                if p.red is not None
+                else Schedule(
+                    256, "flat" if all(p.vals[i].shape == p.domain for i in p.outputs) else "block"
+                )
+            )
+        )
+        self.device = torch.device(device)
+        self.device = (
+            torch.device(
+                "cuda",
+                torch.cuda.current_device() if self.device.index is None else self.device.index,
+            )
+            if self.device.type == "cuda"
+            else self.device
+        )
+        if self.device.type != "cuda":
+            raise Unsupported("CUDA device required")
+        self.ep = ep
+        self.bind = []
+        for spec in ep.graph_signature.input_specs:
+            kind = spec.kind.name
+            if kind == "USER_INPUT":
+                self.bind.append(None)
+            elif kind in ("PARAMETER", "BUFFER", "CONSTANT_TENSOR"):
+                src = ep.state_dict if spec.target in ep.state_dict else ep.constants
+                self.bind.append(src[spec.target])
+            else:
+                raise Unsupported(f"unsupported input kind {kind}")
+        if any(s.kind.name != "USER_OUTPUT" for s in ep.graph_signature.output_specs):
+            raise Unsupported("side effects unsupported")
+        self.source = generate(p, self.schedule)
+        self.lib, self.path = build(self.source, self.device)
 
 
 def compile_export(ep, device="cuda", schedule=None):

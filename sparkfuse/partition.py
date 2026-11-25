@@ -212,6 +212,7 @@ def partition_export(
     split_collectives=True,
     schedule_policy=None,
     split_barriers=True,
+    rotary_pairs=False,
 ):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
     if host_backend not in ("python", "native"):
@@ -219,13 +220,18 @@ def partition_export(
     if any(s.kind.name != "USER_OUTPUT" for s in ep.graph_signature.output_specs):
         raise Unsupported("graph with externally observable effects")
     gm = ep.module()
-    nodes = list(gm.graph.nodes)
-    pos = {n: i for i, n in enumerate(nodes)}
-    pot = {n for n in nodes if eligible(n)}
-    for n in nodes:
+    for n in gm.graph.nodes:
         schema = getattr(n.target, "_schema", None)
         if schema is not None and schema.is_mutable:
             raise Unsupported("requires functional graph without mutations")
+    records = []
+    if rotary_pairs:
+        from .rotary import fuse_pairs
+
+        records.extend(fuse_pairs(gm, device, host_backend))
+    nodes = list(gm.graph.nodes)
+    pos = {n: i for i, n in enumerate(nodes)}
+    pot = {n for n in nodes if eligible(n)}
     components = []
     while pot:
         first = min(pot, key=pos.get)
@@ -240,7 +246,6 @@ def partition_export(
                     todo.append(u)
                     pot.remove(u)
         components.append(sorted(comp, key=pos.get))
-    records = []
     pending = deque((str(ci), g, None, False) for ci, g in enumerate(components))
     while pending:
         ci, group, parent, skip = pending.popleft()

@@ -88,3 +88,17 @@ The [panel](../reports/compact-mean-panel.json) and [production replay](../repor
 ### Residual visibility across a fallback projection
 
 `partition_export(..., split_barriers=False)` disables single-collective barrier recovery; `split_collectives=False` disables both this and multi-collective slicing. No pure pointwise diamond is split by this new rule. `tests/test_barrier_split.py` checks both native and Python dispatch, an unreturned residual, a returned residual, and a returned view sharing its storage. The optional real-framework release stage `qwen_decoder_layer_residual_barrier` additionally hooks the original post-attention RMSNorm and the generated two-output region on **untimed** calls. It compares their input/output and both public layer results at BF16 bit level, checks masked probabilities and row sums, then removes the hooks. Run `python tools/qwen_decoder.py --seq 33 --verify-only --output /tmp/qwen-check.json` with the Transformers environment. Offline evidence checks recompute both published panels' medians, verify source archives and reconcile the kernel inventories with their event counts.
+
+### Paired rotary position embeddings
+
+`partition_export(..., rotary_pairs=True)` recognizes two half-rotate/multiply/add branches sharing both phase inputs in the exported ATen graph. Query and key may have different head counts or physical axis order. The pass checks shape, dtype, strides, intermediate consumers and whether both inputs are available before the first output use. An unsupported pattern remains in the normal partition/fallback path. Width must be even; no equal-phase-halves assumption or pointer alignment contract is required. Runtime tests cover output strides, offset pointers, rejection paths and non-default CUDA streams.
+
+Run these separately in the project environment (use the optional Transformers dependency for the layer). Serialize with any GPU campaign. The sanitizer runs memcheck, racecheck and synccheck on the generated rotary kernel.
+
+```bash
+flock .runtime/gpu-execution.lock python tools/rotary_panel.py --output /tmp/rotary.json
+flock .runtime/gpu-execution.lock python tools/qwen_decoder.py --seq 33 65 97 --rotary --seed-offset 18119 --profile --output /tmp/rotary-decoder.json
+bash tools/sanitize_rotary.sh  # acquires the GPU lock internally
+```
+
+[Offline evidence checks](../tests/test_rotary_evidence.py) recalculate the reported medians, reconcile profiler counts and hash the generated CUDA. The [release run](../reports/paired-rotary-stage-acceptance.json) also verifies the layer on a separate weight/input seed family. [Sanitizer log](../reports/paired-rotary-sanitizer.txt).

@@ -110,6 +110,21 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "qwen_decoder_paired_rotary",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_decoder.py"),
+                    "--verify-only",
+                    "--rotary",
+                    "--seed-offset",
+                    "11039",
+                    "--output",
+                    str(report.with_name(report.stem + "-rotary.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (
