@@ -209,3 +209,28 @@ The [DGX Spark panel](../reports/dynamic-native-panel.json) exports at seven row
 | squared mean, output `[R,1]` | 768 / FP32 | 13.216 | 26.159 | 22.992 | 7.280 |
 
 Native had the lower median than each other frontend in 9/9 windows on these workloads. This is a host-dispatch improvement: on 33-row RMSNorm, Python/native fixed-shape CUDA Graph replay was 2.232/2.249 µs; at 129 rows, 2.771/2.707 µs. The two frontends launch the same CUDA binary. Replayed GPU time excludes the host and does not describe variable-shape graph capture. These warmed, single-subgraph calls are not serving throughput, cold compilation latency, or a claim about arbitrary dynamic axes. Reproduce with `python tools/dynamic_native_panel.py --output /tmp/rows.json` on an idle GPU, or add `--verify-only` for the parity matrix without timings/Inductor.
+
+### 只写行结果的均值归约 / Compact row outputs
+
+当下游只要每行的一个或多个标量时，没有必要让整块线程都拿到均值。`compact_mean` 每个 CTA 读一行，用寄存器累加向量包；跨 warp 时各 warp 只写一个部分和，最后由 lane 0 计算行级后处理并写回。多个按元素输入的地址必须全部对齐，才能走无尾部的向量读路径。带完整残差输出的 RMSNorm 不符合此布局的条件，也没有替换已有默认策略。
+
+[DGX Spark 对照](../reports/compact-mean-panel.json)使用平方均值子图。每种布局同样搜索八种线程数和向量宽度组合，包括 1024 线程的普通 block。冻结每种布局的胜者，再用两个未参与选型的输入分别测量；一个对齐，另一个偏移一个元素。单位 µs，为七轮交错 CUDA Graph 设备时间的中位数，不含 Python，也不是整模型加速。
+
+| 行 × 宽度 / 类型 | 偏移（元素） | eager | Inductor | 普通 block | compact |
+|---|---:|---:|---:|---:|---:|
+| 31 × 14336 BF16 | 0 | 3.852 | 1.421 | 1.912 | 1.677 |
+| 31 × 14336 BF16 | 1 | 4.128 | 5.879 | 2.060 | 2.060 |
+| 32 × 1536 BF16 | 0 | 3.085 | 1.037 | 1.165 | 1.143 |
+| 32 × 1536 BF16 | 1 | 3.191 | 2.061 | 1.185 | 1.144 |
+| 47 × 769 FP32 | 0 | 3.341 | 1.036 | 1.164 | 1.096 |
+| 47 × 769 FP32 | 1 | 3.319 | 1.787 | 1.164 | 1.090 |
+| 128 × 4096 FP16 | 0 | 5.773 | 1.464 | 1.793 | 1.610 |
+| 128 × 4096 FP16 | 1 | 6.220 | 4.236 | 1.933 | 1.931 |
+
+在第一行，两种布局都选中了 1024 线程、8 元素一包，compact 在七轮中都比普通 block 快；同形状的偏移输入上则没有可辨的收益。四个对齐输入上 Inductor 均更快。偏移与对齐使用不同种子，不把两行之差解读成仅由地址造成的因果效应。报告另含每个后端各 31 次普通同步主机调用，没有把这些时间混进上表。
+
+[独立的生产选型回放](../reports/compact-mean-replay.json.gz)使用原搜索任务、空数据库和 24 个候选。它选中了 1024 线程的 `compact_mean`，在五轮留出复测中相对默认布局的配对中位比为 1.611；第三个种子的 eager / Inductor / SparkFuse 设备时间分别为 **3.858 / 1.428 / 1.683 µs**。三者均通过数值检查后才发布 SQLite 记录，未修改原搜索的记录。
+
+**English.** The compact schedule removes the final block-wide broadcast when only row-sized results escape. Broadening the conventional block search to the same thread counts isolates the layout benefit. The aligned long BF16 case improved against the best conventional candidate, not against Inductor. Misaligned long rows were effectively tied. The table reports a single exported reduction, not Transformer latency. Reproduce the family comparison with `python tools/compact_mean_panel.py --output /tmp/compact-panel.json` on an idle GPU.
+
+**What changed in the binary?** For the `31 × 14336` BF16 row above, the [ordinary](../examples/generated/compact-mean/block.cu) and [compact](../examples/generated/compact-mean/compact_mean.cu) emitted kernels use the same 1024 threads and eight-element pack. `cuobjdump --dump-sass` found two block-barrier instruction sites and two shared-load/store sites each in the ordinary kernel; each compact specialization has one of each. The compact aligned specialization has a 128-bit global load and no scalar BF16 global-load sites. These are [static counts per binary function](../reports/compact-mean-sass.json), not executed counts or a causal attribution of all the timing difference. After running the panel with the same build settings, use `python tools/inspect_reduction_sass.py reports/compact-mean-panel.json --cache .cache/kernels --output /tmp/reduction-sass.json` to inspect the selected binaries.

@@ -1,6 +1,8 @@
 """Offline frontend for trusted torch.export archives; emission does not build or launch code."""
 
-import argparse, hashlib, json
+import argparse
+import hashlib
+import json
 from pathlib import Path
 import torch
 from .codegen import Schedule, generate
@@ -58,7 +60,9 @@ def main(argv=None):
     )
     p.add_argument("--threads", type=int, default=128)
     p.add_argument(
-        "--layout", choices=("block", "warp", "flat", "warp_xor", "block_welford"), default="block"
+        "--layout",
+        choices=("block", "warp", "flat", "warp_xor", "block_welford", "compact_mean"),
+        default="block",
     )
     p.add_argument("--vec", type=int, default=1)
     p.add_argument("--cache", action="store_true")

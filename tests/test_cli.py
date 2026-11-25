@@ -1,5 +1,7 @@
-import hashlib, json
-import pytest, torch
+import hashlib
+import json
+import pytest
+import torch
 from torch import nn
 from sparkfuse.__main__ import main
 
@@ -42,3 +44,21 @@ def test_unsupported_offline_graph_does_not_create_directory(tmp_path):
     with pytest.raises(SystemExit) as e:
         main(["emit", str(src), "--out", str(out)])
     assert e.value.code == 2 and not out.exists()
+
+
+def test_offline_compact_mean_emits_one_row_result(tmp_path):
+    class RowMean(nn.Module):
+        def forward(self, x):
+            return x.square().mean(-1, keepdim=True)
+
+    out = tmp_path / "cuda"
+    src = tmp_path / "row-mean.pt2"
+    torch.export.save(torch.export.export(RowMean(), (torch.randn(3, 769),)), src)
+    assert (
+        main(["emit", str(src), "--out", str(out), "--layout", "compact_mean", "--vec", "4"]) == 0
+    )
+    manifest = json.loads((out / "manifest.json").read_text())
+    cu = (out / "kernel.cu").read_bytes()
+    assert manifest["schedule"] == dict(threads=128, layout="compact_mean", cache=False, vec=4)
+    assert manifest["source_sha256"] == hashlib.sha256(cu).hexdigest()
+    assert b"fused_compact" in cu and len(manifest["plan"]["output_ids"]) == 1

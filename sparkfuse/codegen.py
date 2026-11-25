@@ -34,9 +34,20 @@ class Schedule:
             "warp",
             "warp_xor",
             "block_welford",
+            "compact_mean",
             "flat",
         ):
             raise Unsupported("unknown schedule")
+        if self.layout == "compact_mean" and (
+            self.cache
+            or p.red is None
+            or p.vals[p.red].op != "mean"
+            or p.width <= 1
+            or any(p.vals[i].shape != (*p.domain[:-1], 1) for i in p.outputs)
+        ):
+            raise Unsupported(
+                "compact_mean requires only row-sized outputs from an uncached mean reduction"
+            )
         if self.layout == "block_welford" and (
             p.red is None
             or p.vals[p.red].op != "layer_norm"
@@ -141,6 +152,11 @@ def generate(p, s):
 
         names = [rec(i) for i in targets]
         return "\n".join(lines), names
+
+    if s.layout == "compact_mean":
+        from .compact_mean import generate_compact_mean
+
+        return generate_compact_mean(p, s, emit, index)
 
     if p.red is not None and p.vals[p.red].op in ("softmax", "layer_norm"):
         from .softmax import generate_rowwise

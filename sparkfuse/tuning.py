@@ -19,6 +19,7 @@ def backend_id():
         "ir.py",
         "codegen.py",
         "vector.py",
+        "compact_mean.py",
         "softmax.py",
         "layernorm.py",
         "runtime.py",
@@ -64,6 +65,15 @@ def compile_tuned(ep, path, device="cuda"):
     return compile_export(ep, device, schedule)
 
 
+def compact_eligible(p):
+    return (
+        p.red is not None
+        and p.vals[p.red].op == "mean"
+        and p.width > 1
+        and all(p.vals[i].shape == (*p.domain[:-1], 1) for i in p.outputs)
+    )
+
+
 def candidates(p):
     choices = []
     layouts = ["block", "warp"] if p.red is not None else ["flat", "warp", "block"]
@@ -88,6 +98,16 @@ def candidates(p):
                     if cache and (p.width + 31) // (32 if layout == "warp" else threads) > 160:
                         continue
                     choices.append(s)
+    if compact_eligible(p):
+        for threads in (128, 256, 512, 1024):
+            for vec in (1, 2, 4, 8):
+                for layout in ("compact_mean", "block") if threads == 1024 else ("compact_mean",):
+                    sched = Schedule(threads, layout, False, vec)
+                    try:
+                        sched.validate(p)
+                    except Unsupported:
+                        continue
+                    choices.append(sched)
     if p.red is not None and p.vals[p.red].op == "layer_norm" and p.width % 4 == 0:
         for cache in caches:
             if not cache or p.width <= 128 * 160:
@@ -134,6 +154,16 @@ def tune(
         Schedule(512, "block", False, 4),
         Schedule(64, "warp", False, 1),
     ]
+    if compact_eligible(p):
+        # Test a conventional 1024-thread reduction as well: wider blocks alone can help.
+        pack = max(s.vec for s in candidates_ if s.layout == "compact_mean")
+        front.extend(
+            [
+                Schedule(1024, "block", False, pack),
+                Schedule(1024, "compact_mean", False, pack),
+                Schedule(512, "compact_mean", False, min(pack, 4)),
+            ]
+        )
     ranked = [base.schedule] + [s for s in front if s in candidates_] + candidates_
     ordered = list(dict.fromkeys(ranked))[:budget]
     measured = []
