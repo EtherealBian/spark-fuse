@@ -72,3 +72,34 @@ Device µs with warm addresses. Inductor is faster on the single-query case. [Ex
 On a fourth request, the entire module's **hot device** medians were **14.46 / 14.20 / 12.86 µs** for eager / default mixed / selected mixed. Its **synchronized host** medians were **27.52 / 47.09 / 45.92 µs**; eager was faster there. Mixed passed the unchanged tolerances on all four requests. Full-graph Inductor missed parity on those requests and is not assigned a speed. [Graphs, per-input errors, chosen schedule, timing order and windows](../reports/bert-self-output-guarded-gb10.json). No claim about end-to-end BERT throughput.
 
 The intermediate implementation exposed bad GPU address calculations. We keep [the two failing generated kernels and Compute Sanitizer traces](../reports/layernorm-debug/README.md), not just the successful timings. [Stage regression: 231 tests plus installed wheel, Qwen and BERT checks](../reports/layernorm-guarded-acceptance.json).
+
+### 完整 BERT 编码层：归约顺序与可见的舍入边界
+
+在真实 `transformers.BertLayer` 导出图上，整块相连区域可能含两个归约，不能用一个内核替换。分区器在最多 48 个节点的候选区内尝试合法切分，这个编码层得到三个融合区：一处注意力分数除法 + Softmax，两处残差加法 + 仿射 LayerNorm。其余计算（含 GEMM 与 GELU）仍由 PyTorch 执行。
+
+局部误差小不等于整层能过。对三个融合区做[八种开关组合](../reports/bert-layer-ablation-gb10.json)，并用原生结果作为下一区域的输入，分别隔离各处误差。固定顺序的 Softmax 用 warp XOR 归约和逐元素除法，LayerNorm 用四个 warp 合并 FP32 Welford 统计量。[第一轮固定顺序复验](../reports/bert-layer-ordered-boundaries-gb10.json)通过了 32 次整层比较，但在改变仿射参数后仍有 1 个整层元素不等。将**同一 LayerNorm 内部**的 `gamma * normalized + beta` 改为显式 `fmaf` 后，[原输入复验](../reports/bert-layer-affine-fma-dev-gb10.json)消除了剩余差异。独立的 `aten.mul` 和 `aten.add` 仍各自舍入。
+
+[另换四组随机权重与八个新输入种子](../reports/bert-layer-affine-holdout-gb10.json)：33 和 97 tokens，含单位和非单位仿射参数，共 32 次运行、1,597,440 个 BF16 输出元素；固定顺序策略与 eager 逐元素一致，三个隔离区也一致。这里没有使用预训练权重或真实文本，不代表任意形状、权重、输入或 PyTorch 版本都能精确匹配。
+
+另用四个不同输入种子运行性能对照，只有四个输入全过精度门槛的后端才计时。下表为第四输入、七轮交错测量的中位数；单位 µs，batch 1，hidden 768。
+
+| tokens | eager 设备 | SparkFuse 设备 | eager 同步主机 | SparkFuse 同步主机 |
+|---:|---:|---:|---:|---:|
+| [33](../reports/bert-layer-affine-bench-33-gb10.json) | 81.54 | 75.84 | 155.35 | 164.48 |
+| [97](../reports/bert-layer-affine-bench-97-gb10.json) | 139.74 | 137.47 | 186.15 | 201.60 |
+
+这两个样例设备时间下降，普通主机调用反而变慢；97 tokens 的设备差距很小。默认布局、独立选型和此版本 Inductor 未通过全部输入的门槛，未列速度。校准现在要求 train、holdout、audit 三个请求均通过**整图**校验才允许更新 dispatch 数据库。固定顺序是显式策略，可用 `partition_export(ep, host_backend="native", schedule_policy=ordered_collectives)` 启用。
+
+```bash
+# 使用包含 transformers 的项目 Python 环境，GPU 上不要并行跑其他基准
+source tools/env.sh
+python tools/ordered_boundaries.py --weight-offset 6256 \
+  --seeds 74929 88019 97247 55267 62423 47303 30577 21599 --output /tmp/bert-boundaries.json
+python tools/bert_layer.py --seq 33 --seeds 11413 27617 31469 52783 \
+  --db /tmp/bert-dispatch.sqlite --output /tmp/bert-33.json
+bash tools/sanitize.sh
+```
+
+**English.** An opt-in fixed-order policy matches eager element for element on 32 held-out BF16 BERT encoder-layer runs, including non-identity LayerNorm weights and biases. The comparison is a single random-weight encoder layer, not full-model inference. The table separates warm CUDA Graph replay from ordinary synchronized host latency; the latter got worse at both lengths. Reports retain rejected schedules and baseline failures.
+
+[阶段验收：262 个测试、隔离 wheel、Qwen 与 BERT 集成](../reports/affine-ordered-stage-acceptance.json) · [Compute Sanitizer 三项检查与额外无过滤 memcheck](../reports/ordered-reductions-sanitizer-gb10.txt)。

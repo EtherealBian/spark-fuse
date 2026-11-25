@@ -198,14 +198,22 @@ def lower(ep):
             if not math.isfinite(eps) or not 0 <= eps <= 3.4028234e38:
                 raise Unsupported("invalid layer_norm epsilon")
             red = idx = put("layer_norm", shape, "f32", [src], imm=eps)
-            for name, v in (("mul", weight), ("add", bias)):
+            aff = []
+            for v in (weight, bias):
                 if v is not None:
                     v = arg(v)
                     if vs[v].dt != vs[src].dt:
                         raise Unsupported("mixed-dtype LayerNorm affine parameters unsupported")
                     if vs[v].shape != (shape[-1],):
                         raise Unsupported("requires dense last-axis LayerNorm affine parameters")
-                    idx = put(name, shape, "f32", [idx, v])
+                aff.append(v)
+            if all(v is not None for v in aff):
+                # This affine belongs to one ATen op, not a freely contractible graph pattern.
+                idx = put("layer_affine", shape, "f32", [idx, *aff])
+            elif aff[0] is not None:
+                idx = put("mul", shape, "f32", [idx, aff[0]])
+            elif aff[1] is not None:
+                idx = put("add", shape, "f32", [idx, aff[1]])
             idx = put("cast", sh, dt, [idx])
         elif op == "aten.rms_norm.default":
             src = arg(a[0])

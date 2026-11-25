@@ -1,0 +1,2367 @@
+{
+  "scope": "One randomly initialized BF16 BertLayer, same ATen boundary inputs. Records in listed seed order. No tuning or timing.",
+  "compiler": "d7ea7af237cdeee250e1fcb98d4613ffe1d4f697d0e36a490349bfcc33da2ca9",
+  "provenance": {
+    "git_head_at_capture": "f2887be004da3ee733a41ddf47166275761c7809",
+    "source_tree_sha256": "afd74785eda163cd0e9d6631ad4a14e90db70be2d26611fe3313d7898fd84fb0",
+    "archive": "sources/afd74785eda163cd0e9d6631ad4a14e90db70be2d26611fe3313d7898fd84fb0.tar.gz"
+  },
+  "cases": [
+    {
+      "seq": 33,
+      "weight_seed": 2643,
+      "affine": "identity",
+      "seeds": [
+        18144,
+        83116,
+        17320,
+        54211,
+        39943,
+        25041,
+        97182,
+        61021
+      ],
+      "backends": {
+        "default": {
+          "regions": [
+            {
+              "ops": [
+                "div",
+                "softmax"
+              ],
+              "module": "_sparkfuse_region_0",
+              "live_ins": [
+                "matmul"
+              ],
+              "live_outs": [
+                "softmax"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add",
+                "layer_norm"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 101376
+              },
+              "module": "_sparkfuse_region_1_0",
+              "live_ins": [
+                "attention_output_layer_norm_weight",
+                "attention_output_layer_norm_bias",
+                "hidden_states",
+                "dropout_1"
+              ],
+              "live_outs": [
+                "layer_norm"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add_1",
+                "layer_norm_1"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 101376
+              },
+              "module": "_sparkfuse_region_1_1",
+              "live_ins": [
+                "output_layer_norm_weight",
+                "output_layer_norm_bias",
+                "getitem_1",
+                "dropout_2"
+              ],
+              "live_outs": [
+                "layer_norm_1"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            }
+          ],
+          "isolated": {
+            "_sparkfuse_region_0": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_0": [
+              {
+                "passed": true,
+                "unequal": 3,
+                "n": 25344,
+                "max_abs": 0.001953125
+              },
+              {
+                "passed": true,
+                "unequal": 7,
+                "n": 25344,
+                "max_abs": 0.0078125
+              },
+              {
+                "passed": true,
+                "unequal": 3,
+                "n": 25344,
+                "max_abs": 3.0517578125e-05
+              },
+              {
+                "passed": true,
+                "unequal": 3,
+                "n": 25344,
+                "max_abs": 0.00048828125
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 25344,
+                "max_abs": 0.00048828125
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 25344,
+                "max_abs": 0.0009765625
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 25344,
+                "max_abs": 7.62939453125e-06
+              }
+            ],
+            "_sparkfuse_region_1_1": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 4,
+                "n": 25344,
+                "max_abs": 0.00048828125
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 25344,
+                "max_abs": 0.00048828125
+              },
+              {
+                "passed": true,
+                "unequal": 3,
+                "n": 25344,
+                "max_abs": 0.001953125
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 25344,
+                "max_abs": 4.76837158203125e-07
+              },
+              {
+                "passed": true,
+                "unequal": 4,
+                "n": 25344,
+                "max_abs": 0.001953125
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 25344,
+                "max_abs": 6.103515625e-05
+              }
+            ]
+          },
+          "whole": [
+            {
+              "passed": false,
+              "unequal": 127,
+              "n": 25344,
+              "max_abs": 0.0078125
+            },
+            {
+              "passed": false,
+              "unequal": 171,
+              "n": 25344,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": true,
+              "unequal": 1,
+              "n": 25344,
+              "max_abs": 0.00048828125
+            },
+            {
+              "passed": false,
+              "unequal": 29,
+              "n": 25344,
+              "max_abs": 0.00390625
+            },
+            {
+              "passed": false,
+              "unequal": 37,
+              "n": 25344,
+              "max_abs": 0.00390625
+            },
+            {
+              "passed": true,
+              "unequal": 1,
+              "n": 25344,
+              "max_abs": 4.76837158203125e-07
+            },
+            {
+              "passed": false,
+              "unequal": 62,
+              "n": 25344,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": true,
+              "unequal": 1,
+              "n": 25344,
+              "max_abs": 6.103515625e-05
+            }
+          ]
+        },
+        "ordered": {
+          "regions": [
+            {
+              "ops": [
+                "div",
+                "softmax"
+              ],
+              "module": "_sparkfuse_region_0",
+              "live_ins": [
+                "matmul"
+              ],
+              "live_outs": [
+                "softmax"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "warp_xor",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add",
+                "layer_norm"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 101376
+              },
+              "module": "_sparkfuse_region_1_0",
+              "live_ins": [
+                "attention_output_layer_norm_weight",
+                "attention_output_layer_norm_bias",
+                "hidden_states",
+                "dropout_1"
+              ],
+              "live_outs": [
+                "layer_norm"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block_welford",
+                "cache": true,
+                "vec": 4
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add_1",
+                "layer_norm_1"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 101376
+              },
+              "module": "_sparkfuse_region_1_1",
+              "live_ins": [
+                "output_layer_norm_weight",
+                "output_layer_norm_bias",
+                "getitem_1",
+                "dropout_2"
+              ],
+              "live_outs": [
+                "layer_norm_1"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block_welford",
+                "cache": true,
+                "vec": 4
+              },
+              "host_backend": "native"
+            }
+          ],
+          "isolated": {
+            "_sparkfuse_region_0": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_0": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_1": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              }
+            ]
+          },
+          "whole": [
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "seq": 97,
+      "weight_seed": 1332,
+      "affine": "identity",
+      "seeds": [
+        18144,
+        83116,
+        17320,
+        54211,
+        39943,
+        25041,
+        97182,
+        61021
+      ],
+      "backends": {
+        "default": {
+          "regions": [
+            {
+              "ops": [
+                "div",
+                "softmax"
+              ],
+              "module": "_sparkfuse_region_0",
+              "live_ins": [
+                "matmul"
+              ],
+              "live_outs": [
+                "softmax"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add",
+                "layer_norm"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 297984
+              },
+              "module": "_sparkfuse_region_1_0",
+              "live_ins": [
+                "attention_output_layer_norm_weight",
+                "attention_output_layer_norm_bias",
+                "hidden_states",
+                "dropout_1"
+              ],
+              "live_outs": [
+                "layer_norm"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add_1",
+                "layer_norm_1"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 297984
+              },
+              "module": "_sparkfuse_region_1_1",
+              "live_ins": [
+                "output_layer_norm_weight",
+                "output_layer_norm_bias",
+                "getitem_1",
+                "dropout_2"
+              ],
+              "live_outs": [
+                "layer_norm_1"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            }
+          ],
+          "isolated": {
+            "_sparkfuse_region_0": [
+              {
+                "passed": true,
+                "unequal": 3,
+                "n": 112908,
+                "max_abs": 6.103515625e-05
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 112908,
+                "max_abs": 6.103515625e-05
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 112908,
+                "max_abs": 0.0001220703125
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 112908,
+                "max_abs": 6.103515625e-05
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 3,
+                "n": 112908,
+                "max_abs": 3.0517578125e-05
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 112908,
+                "max_abs": 3.0517578125e-05
+              }
+            ],
+            "_sparkfuse_region_1_0": [
+              {
+                "passed": true,
+                "unequal": 4,
+                "n": 74496,
+                "max_abs": 0.000244140625
+              },
+              {
+                "passed": true,
+                "unequal": 5,
+                "n": 74496,
+                "max_abs": 0.00390625
+              },
+              {
+                "passed": true,
+                "unequal": 5,
+                "n": 74496,
+                "max_abs": 0.0009765625
+              },
+              {
+                "passed": true,
+                "unequal": 6,
+                "n": 74496,
+                "max_abs": 0.0078125
+              },
+              {
+                "passed": true,
+                "unequal": 4,
+                "n": 74496,
+                "max_abs": 6.103515625e-05
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 74496,
+                "max_abs": 0.0078125
+              },
+              {
+                "passed": true,
+                "unequal": 8,
+                "n": 74496,
+                "max_abs": 0.0009765625
+              },
+              {
+                "passed": true,
+                "unequal": 5,
+                "n": 74496,
+                "max_abs": 0.001953125
+              }
+            ],
+            "_sparkfuse_region_1_1": [
+              {
+                "passed": true,
+                "unequal": 5,
+                "n": 74496,
+                "max_abs": 0.0009765625
+              },
+              {
+                "passed": true,
+                "unequal": 4,
+                "n": 74496,
+                "max_abs": 0.000244140625
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 74496,
+                "max_abs": 0.015625
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 74496,
+                "max_abs": 0.00048828125
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 74496,
+                "max_abs": 0.00390625
+              },
+              {
+                "passed": true,
+                "unequal": 5,
+                "n": 74496,
+                "max_abs": 0.0009765625
+              }
+            ]
+          },
+          "whole": [
+            {
+              "passed": false,
+              "unequal": 420,
+              "n": 74496,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": false,
+              "unequal": 254,
+              "n": 74496,
+              "max_abs": 0.0234375
+            },
+            {
+              "passed": false,
+              "unequal": 295,
+              "n": 74496,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": false,
+              "unequal": 440,
+              "n": 74496,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": false,
+              "unequal": 14,
+              "n": 74496,
+              "max_abs": 0.00390625
+            },
+            {
+              "passed": false,
+              "unequal": 136,
+              "n": 74496,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": false,
+              "unequal": 418,
+              "n": 74496,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": false,
+              "unequal": 161,
+              "n": 74496,
+              "max_abs": 0.0078125
+            }
+          ]
+        },
+        "ordered": {
+          "regions": [
+            {
+              "ops": [
+                "div",
+                "softmax"
+              ],
+              "module": "_sparkfuse_region_0",
+              "live_ins": [
+                "matmul"
+              ],
+              "live_outs": [
+                "softmax"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "warp_xor",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add",
+                "layer_norm"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 297984
+              },
+              "module": "_sparkfuse_region_1_0",
+              "live_ins": [
+                "attention_output_layer_norm_weight",
+                "attention_output_layer_norm_bias",
+                "hidden_states",
+                "dropout_1"
+              ],
+              "live_outs": [
+                "layer_norm"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block_welford",
+                "cache": true,
+                "vec": 4
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add_1",
+                "layer_norm_1"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 297984
+              },
+              "module": "_sparkfuse_region_1_1",
+              "live_ins": [
+                "output_layer_norm_weight",
+                "output_layer_norm_bias",
+                "getitem_1",
+                "dropout_2"
+              ],
+              "live_outs": [
+                "layer_norm_1"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block_welford",
+                "cache": true,
+                "vec": 4
+              },
+              "host_backend": "native"
+            }
+          ],
+          "isolated": {
+            "_sparkfuse_region_0": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_0": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_1": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              }
+            ]
+          },
+          "whole": [
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "seq": 33,
+      "weight_seed": 3308,
+      "affine": "perturbed",
+      "seeds": [
+        18144,
+        83116,
+        17320,
+        54211,
+        39943,
+        25041,
+        97182,
+        61021
+      ],
+      "backends": {
+        "default": {
+          "regions": [
+            {
+              "ops": [
+                "div",
+                "softmax"
+              ],
+              "module": "_sparkfuse_region_0",
+              "live_ins": [
+                "matmul"
+              ],
+              "live_outs": [
+                "softmax"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add",
+                "layer_norm"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 101376
+              },
+              "module": "_sparkfuse_region_1_0",
+              "live_ins": [
+                "attention_output_layer_norm_weight",
+                "attention_output_layer_norm_bias",
+                "hidden_states",
+                "dropout_1"
+              ],
+              "live_outs": [
+                "layer_norm"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add_1",
+                "layer_norm_1"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 101376
+              },
+              "module": "_sparkfuse_region_1_1",
+              "live_ins": [
+                "output_layer_norm_weight",
+                "output_layer_norm_bias",
+                "getitem_1",
+                "dropout_2"
+              ],
+              "live_outs": [
+                "layer_norm_1"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            }
+          ],
+          "isolated": {
+            "_sparkfuse_region_0": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 13068,
+                "max_abs": 0.0001220703125
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 13068,
+                "max_abs": 0.000244140625
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 13068,
+                "max_abs": 0.0001220703125
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_0": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 25344,
+                "max_abs": 2.384185791015625e-07
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 25344,
+                "max_abs": 0.0009765625
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 25344,
+                "max_abs": 0.00390625
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 25344,
+                "max_abs": 3.0517578125e-05
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_1": [
+              {
+                "passed": true,
+                "unequal": 3,
+                "n": 25344,
+                "max_abs": 0.000244140625
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 25344,
+                "max_abs": 1.1920928955078125e-07
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 25344,
+                "max_abs": 0.00390625
+              },
+              {
+                "passed": true,
+                "unequal": 3,
+                "n": 25344,
+                "max_abs": 0.001953125
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 25344,
+                "max_abs": 0.0009765625
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 25344,
+                "max_abs": 0.001953125
+              }
+            ]
+          },
+          "whole": [
+            {
+              "passed": true,
+              "unequal": 3,
+              "n": 25344,
+              "max_abs": 0.000244140625
+            },
+            {
+              "passed": false,
+              "unequal": 89,
+              "n": 25344,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": true,
+              "unequal": 2,
+              "n": 25344,
+              "max_abs": 1.1920928955078125e-07
+            },
+            {
+              "passed": false,
+              "unequal": 33,
+              "n": 25344,
+              "max_abs": 0.0078125
+            },
+            {
+              "passed": false,
+              "unequal": 305,
+              "n": 25344,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": true,
+              "unequal": 2,
+              "n": 25344,
+              "max_abs": 0.0009765625
+            },
+            {
+              "passed": false,
+              "unequal": 181,
+              "n": 25344,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": true,
+              "unequal": 1,
+              "n": 25344,
+              "max_abs": 0.001953125
+            }
+          ]
+        },
+        "ordered": {
+          "regions": [
+            {
+              "ops": [
+                "div",
+                "softmax"
+              ],
+              "module": "_sparkfuse_region_0",
+              "live_ins": [
+                "matmul"
+              ],
+              "live_outs": [
+                "softmax"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "warp_xor",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add",
+                "layer_norm"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 101376
+              },
+              "module": "_sparkfuse_region_1_0",
+              "live_ins": [
+                "attention_output_layer_norm_weight",
+                "attention_output_layer_norm_bias",
+                "hidden_states",
+                "dropout_1"
+              ],
+              "live_outs": [
+                "layer_norm"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block_welford",
+                "cache": true,
+                "vec": 4
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add_1",
+                "layer_norm_1"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 101376
+              },
+              "module": "_sparkfuse_region_1_1",
+              "live_ins": [
+                "output_layer_norm_weight",
+                "output_layer_norm_bias",
+                "getitem_1",
+                "dropout_2"
+              ],
+              "live_outs": [
+                "layer_norm_1"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block_welford",
+                "cache": true,
+                "vec": 4
+              },
+              "host_backend": "native"
+            }
+          ],
+          "isolated": {
+            "_sparkfuse_region_0": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 13068,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_0": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_1": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 25344,
+                "max_abs": 0.0
+              }
+            ]
+          },
+          "whole": [
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 25344,
+              "max_abs": 0.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "seq": 97,
+      "weight_seed": 1348,
+      "affine": "perturbed",
+      "seeds": [
+        18144,
+        83116,
+        17320,
+        54211,
+        39943,
+        25041,
+        97182,
+        61021
+      ],
+      "backends": {
+        "default": {
+          "regions": [
+            {
+              "ops": [
+                "div",
+                "softmax"
+              ],
+              "module": "_sparkfuse_region_0",
+              "live_ins": [
+                "matmul"
+              ],
+              "live_outs": [
+                "softmax"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add",
+                "layer_norm"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 297984
+              },
+              "module": "_sparkfuse_region_1_0",
+              "live_ins": [
+                "attention_output_layer_norm_weight",
+                "attention_output_layer_norm_bias",
+                "hidden_states",
+                "dropout_1"
+              ],
+              "live_outs": [
+                "layer_norm"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add_1",
+                "layer_norm_1"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 297984
+              },
+              "module": "_sparkfuse_region_1_1",
+              "live_ins": [
+                "output_layer_norm_weight",
+                "output_layer_norm_bias",
+                "getitem_1",
+                "dropout_2"
+              ],
+              "live_outs": [
+                "layer_norm_1"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            }
+          ],
+          "isolated": {
+            "_sparkfuse_region_0": [
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 112908,
+                "max_abs": 0.0001220703125
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 4,
+                "n": 112908,
+                "max_abs": 6.103515625e-05
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 112908,
+                "max_abs": 6.103515625e-05
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 112908,
+                "max_abs": 3.0517578125e-05
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_0": [
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 74496,
+                "max_abs": 3.814697265625e-06
+              },
+              {
+                "passed": true,
+                "unequal": 4,
+                "n": 74496,
+                "max_abs": 0.0009765625
+              },
+              {
+                "passed": true,
+                "unequal": 9,
+                "n": 74496,
+                "max_abs": 0.001953125
+              },
+              {
+                "passed": true,
+                "unequal": 3,
+                "n": 74496,
+                "max_abs": 0.001953125
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 74496,
+                "max_abs": 0.015625
+              },
+              {
+                "passed": true,
+                "unequal": 4,
+                "n": 74496,
+                "max_abs": 3.0517578125e-05
+              },
+              {
+                "passed": true,
+                "unequal": 4,
+                "n": 74496,
+                "max_abs": 0.0078125
+              },
+              {
+                "passed": true,
+                "unequal": 5,
+                "n": 74496,
+                "max_abs": 0.0001220703125
+              }
+            ],
+            "_sparkfuse_region_1_1": [
+              {
+                "passed": true,
+                "unequal": 6,
+                "n": 74496,
+                "max_abs": 0.00390625
+              },
+              {
+                "passed": true,
+                "unequal": 3,
+                "n": 74496,
+                "max_abs": 0.000244140625
+              },
+              {
+                "passed": true,
+                "unequal": 2,
+                "n": 74496,
+                "max_abs": 3.0517578125e-05
+              },
+              {
+                "passed": true,
+                "unequal": 4,
+                "n": 74496,
+                "max_abs": 0.00390625
+              },
+              {
+                "passed": true,
+                "unequal": 1,
+                "n": 74496,
+                "max_abs": 0.015625
+              },
+              {
+                "passed": true,
+                "unequal": 3,
+                "n": 74496,
+                "max_abs": 0.0078125
+              },
+              {
+                "passed": true,
+                "unequal": 5,
+                "n": 74496,
+                "max_abs": 0.001953125
+              },
+              {
+                "passed": true,
+                "unequal": 4,
+                "n": 74496,
+                "max_abs": 0.000244140625
+              }
+            ]
+          },
+          "whole": [
+            {
+              "passed": false,
+              "unequal": 168,
+              "n": 74496,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": false,
+              "unequal": 79,
+              "n": 74496,
+              "max_abs": 0.0078125
+            },
+            {
+              "passed": false,
+              "unequal": 649,
+              "n": 74496,
+              "max_abs": 0.03125
+            },
+            {
+              "passed": false,
+              "unequal": 103,
+              "n": 74496,
+              "max_abs": 0.0078125
+            },
+            {
+              "passed": false,
+              "unequal": 315,
+              "n": 74496,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": true,
+              "unequal": 5,
+              "n": 74496,
+              "max_abs": 0.0078125
+            },
+            {
+              "passed": false,
+              "unequal": 355,
+              "n": 74496,
+              "max_abs": 0.015625
+            },
+            {
+              "passed": true,
+              "unequal": 4,
+              "n": 74496,
+              "max_abs": 0.000244140625
+            }
+          ]
+        },
+        "ordered": {
+          "regions": [
+            {
+              "ops": [
+                "div",
+                "softmax"
+              ],
+              "module": "_sparkfuse_region_0",
+              "live_ins": [
+                "matmul"
+              ],
+              "live_outs": [
+                "softmax"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "warp_xor",
+                "cache": true,
+                "vec": 1
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add",
+                "layer_norm"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 297984
+              },
+              "module": "_sparkfuse_region_1_0",
+              "live_ins": [
+                "attention_output_layer_norm_weight",
+                "attention_output_layer_norm_bias",
+                "hidden_states",
+                "dropout_1"
+              ],
+              "live_outs": [
+                "layer_norm"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block_welford",
+                "cache": true,
+                "vec": 4
+              },
+              "host_backend": "native"
+            },
+            {
+              "ops": [
+                "add_1",
+                "layer_norm_1"
+              ],
+              "split": {
+                "component": "1",
+                "original_rejection": "no legal insertion point between live-ins and live-outs",
+                "covered_ops": 4,
+                "planned_regions": 2,
+                "logical_output_bytes": 297984
+              },
+              "module": "_sparkfuse_region_1_1",
+              "live_ins": [
+                "output_layer_norm_weight",
+                "output_layer_norm_bias",
+                "getitem_1",
+                "dropout_2"
+              ],
+              "live_outs": [
+                "layer_norm_1"
+              ],
+              "schedule": {
+                "threads": 128,
+                "layout": "block_welford",
+                "cache": true,
+                "vec": 4
+              },
+              "host_backend": "native"
+            }
+          ],
+          "isolated": {
+            "_sparkfuse_region_0": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 112908,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_0": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              }
+            ],
+            "_sparkfuse_region_1_1": [
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              },
+              {
+                "passed": true,
+                "unequal": 0,
+                "n": 74496,
+                "max_abs": 0.0
+              }
+            ]
+          },
+          "whole": [
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            },
+            {
+              "passed": true,
+              "unequal": 0,
+              "n": 74496,
+              "max_abs": 0.0
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

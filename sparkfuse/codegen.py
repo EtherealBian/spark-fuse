@@ -106,6 +106,13 @@ def generate(p, s):
                 expr = float(v.imm).hex() + "f"
             elif v.op == "input":
                 expr = LOAD[v.dt](f"in{v.imm}[{index(v)}]")
+            elif v.op == "layer_affine":
+                bias = args[2]
+                expr = (
+                    f"fmaf({a},{b},{bias})"
+                    if s.layout == "block_welford"
+                    else f"__fadd_rn(__fmul_rn({a},{b}),{bias})"
+                )
             elif v.op in ("mean", "softmax", "layer_norm"):
                 raise AssertionError("unbound reduction")
             else:

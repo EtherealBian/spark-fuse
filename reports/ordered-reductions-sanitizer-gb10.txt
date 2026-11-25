@@ -1,0 +1,64 @@
+# bash tools/sanitize.sh: memcheck, racecheck, synccheck; generated kernels, offset inputs
+========= COMPUTE-SANITIZER
+resnorm2 7 113 Schedule(threads=128, layout='warp', cache=True, vec=1) passed
+resnorm2 7 113 Schedule(threads=64, layout='warp', cache=True, vec=8) passed
+gate 5 3 Schedule(threads=128, layout='flat', cache=False, vec=8) passed
+mean 3 127 Schedule(threads=128, layout='block', cache=False, vec=4) passed
+decomp 11 128 Schedule(threads=128, layout='block', cache=True, vec=4) passed
+gate 47 128 Schedule(threads=128, layout='flat', cache=False, vec=4) passed
+mean 47 128 Schedule(threads=64, layout='warp', cache=False, vec=4) passed
+scores2 13 97 Schedule(threads=128, layout='warp', cache=True, vec=1) passed
+scores 7 769 Schedule(threads=256, layout='block', cache=False, vec=1) passed
+scores2 13 97 Schedule(threads=128, layout='warp', cache=True, vec=8) passed
+scores2 3 769 Schedule(threads=128, layout='block', cache=False, vec=4) passed
+scores2 13 97 Schedule(threads=128, layout='warp_xor', cache=True, vec=1) passed
+scores2 5 257 Schedule(threads=64, layout='warp_xor', cache=False, vec=1) passed
+layernorm2 11 768 Schedule(threads=128, layout='block_welford', cache=True, vec=4) passed
+layernorm2 11 1536 Schedule(threads=128, layout='block_welford', cache=False, vec=4) passed
+layernorm2 14 768 Schedule(threads=128, layout='block', cache=True, vec=4) passed
+layernorm2 17 129 Schedule(threads=64, layout='warp', cache=False, vec=8) passed
+========= ERROR SUMMARY: 0 errors
+========= COMPUTE-SANITIZER
+resnorm2 7 113 Schedule(threads=128, layout='warp', cache=True, vec=1) passed
+resnorm2 7 113 Schedule(threads=64, layout='warp', cache=True, vec=8) passed
+gate 5 3 Schedule(threads=128, layout='flat', cache=False, vec=8) passed
+mean 3 127 Schedule(threads=128, layout='block', cache=False, vec=4) passed
+decomp 11 128 Schedule(threads=128, layout='block', cache=True, vec=4) passed
+gate 47 128 Schedule(threads=128, layout='flat', cache=False, vec=4) passed
+mean 47 128 Schedule(threads=64, layout='warp', cache=False, vec=4) passed
+scores2 13 97 Schedule(threads=128, layout='warp', cache=True, vec=1) passed
+scores 7 769 Schedule(threads=256, layout='block', cache=False, vec=1) passed
+scores2 13 97 Schedule(threads=128, layout='warp', cache=True, vec=8) passed
+scores2 3 769 Schedule(threads=128, layout='block', cache=False, vec=4) passed
+scores2 13 97 Schedule(threads=128, layout='warp_xor', cache=True, vec=1) passed
+scores2 5 257 Schedule(threads=64, layout='warp_xor', cache=False, vec=1) passed
+layernorm2 11 768 Schedule(threads=128, layout='block_welford', cache=True, vec=4) passed
+layernorm2 11 1536 Schedule(threads=128, layout='block_welford', cache=False, vec=4) passed
+layernorm2 14 768 Schedule(threads=128, layout='block', cache=True, vec=4) passed
+layernorm2 17 129 Schedule(threads=64, layout='warp', cache=False, vec=8) passed
+========= RACECHECK SUMMARY: 0 hazards displayed (0 errors, 0 warnings)
+========= COMPUTE-SANITIZER
+resnorm2 7 113 Schedule(threads=128, layout='warp', cache=True, vec=1) passed
+resnorm2 7 113 Schedule(threads=64, layout='warp', cache=True, vec=8) passed
+gate 5 3 Schedule(threads=128, layout='flat', cache=False, vec=8) passed
+mean 3 127 Schedule(threads=128, layout='block', cache=False, vec=4) passed
+decomp 11 128 Schedule(threads=128, layout='block', cache=True, vec=4) passed
+gate 47 128 Schedule(threads=128, layout='flat', cache=False, vec=4) passed
+mean 47 128 Schedule(threads=64, layout='warp', cache=False, vec=4) passed
+scores2 13 97 Schedule(threads=128, layout='warp', cache=True, vec=1) passed
+scores 7 769 Schedule(threads=256, layout='block', cache=False, vec=1) passed
+scores2 13 97 Schedule(threads=128, layout='warp', cache=True, vec=8) passed
+scores2 3 769 Schedule(threads=128, layout='block', cache=False, vec=4) passed
+scores2 13 97 Schedule(threads=128, layout='warp_xor', cache=True, vec=1) passed
+scores2 5 257 Schedule(threads=64, layout='warp_xor', cache=False, vec=1) passed
+layernorm2 11 768 Schedule(threads=128, layout='block_welford', cache=True, vec=4) passed
+layernorm2 11 1536 Schedule(threads=128, layout='block_welford', cache=False, vec=4) passed
+layernorm2 14 768 Schedule(threads=128, layout='block', cache=True, vec=4) passed
+layernorm2 17 129 Schedule(threads=64, layout='warp', cache=False, vec=8) passed
+========= ERROR SUMMARY: 0 errors
+
+# compute-sanitizer --tool memcheck --target-processes application-only --error-exitcode 86 python -m pytest -q tests/test_ordered.py (no kernel-name filter)
+========= COMPUTE-SANITIZER
+........................                                                 [100%]
+24 passed in 2.58s
+========= ERROR SUMMARY: 0 errors

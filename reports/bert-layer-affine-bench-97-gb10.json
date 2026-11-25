@@ -1,0 +1,1365 @@
+{
+  "scope": "One real randomly initialized BERT encoder layer, eval, BF16, batch 1. Eager self-attention, no mask. Not entire BERT.",
+  "torch": "2.13.0+cu130",
+  "transformers": "4.51.3",
+  "compiler": "d7ea7af237cdeee250e1fcb98d4613ffe1d4f697d0e36a490349bfcc33da2ca9",
+  "device": "NVIDIA GB10",
+  "weight_seed": 2643,
+  "seeds": [
+    11413,
+    27617,
+    31469,
+    52783
+  ],
+  "seq": 97,
+  "decisions": {
+    "unsplit": {
+      "regions": [
+        {
+          "ops": [
+            "div",
+            "softmax"
+          ],
+          "module": "_sparkfuse_region_0",
+          "live_ins": [
+            "matmul"
+          ],
+          "live_outs": [
+            "softmax"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        },
+        {
+          "ops": [
+            "add",
+            "layer_norm",
+            "add_1",
+            "layer_norm_1"
+          ],
+          "fallback": "no legal insertion point between live-ins and live-outs"
+        }
+      ],
+      "fx": "graph():\n    %attention_self_query_weight : [num_users=1] = get_attr[target=attention.self.query.weight]\n    %attention_self_query_bias : [num_users=1] = get_attr[target=attention.self.query.bias]\n    %attention_self_key_weight : [num_users=1] = get_attr[target=attention.self.key.weight]\n    %attention_self_key_bias : [num_users=1] = get_attr[target=attention.self.key.bias]\n    %attention_self_value_weight : [num_users=1] = get_attr[target=attention.self.value.weight]\n    %attention_self_value_bias : [num_users=1] = get_attr[target=attention.self.value.bias]\n    %attention_output_dense_weight : [num_users=1] = get_attr[target=attention.output.dense.weight]\n    %attention_output_dense_bias : [num_users=1] = get_attr[target=attention.output.dense.bias]\n    %attention_output_layer_norm_weight : [num_users=1] = get_attr[target=attention.output.LayerNorm.weight]\n    %attention_output_layer_norm_bias : [num_users=1] = get_attr[target=attention.output.LayerNorm.bias]\n    %intermediate_dense_weight : [num_users=1] = get_attr[target=intermediate.dense.weight]\n    %intermediate_dense_bias : [num_users=1] = get_attr[target=intermediate.dense.bias]\n    %output_dense_weight : [num_users=1] = get_attr[target=output.dense.weight]\n    %output_dense_bias : [num_users=1] = get_attr[target=output.dense.bias]\n    %output_layer_norm_weight : [num_users=1] = get_attr[target=output.LayerNorm.weight]\n    %output_layer_norm_bias : [num_users=1] = get_attr[target=output.LayerNorm.bias]\n    %hidden_states : [num_users=5] = placeholder[target=hidden_states]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states,), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_query_weight, %attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_key_weight, %attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [1, 97, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_value_weight, %attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [1, 97, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [1, 97, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %_sparkfuse_region_0 : [num_users=1] = call_module[target=_sparkfuse_region_0](args = (%matmul,), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_0, 0), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%getitem, 0.1, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 97, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %attention_output_dense_weight, %attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.1, False), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_1, %hidden_states), kwargs = {})\n    %layer_norm : [num_users=2] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [768], %attention_output_layer_norm_weight, %attention_output_layer_norm_bias, 1e-12, False), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%layer_norm, %intermediate_dense_weight, %intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %output_dense_weight, %output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.1, False), kwargs = {})\n    %add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_2, %layer_norm), kwargs = {})\n    %layer_norm_1 : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add_1, [768], %output_layer_norm_weight, %output_layer_norm_bias, 1e-12, False), kwargs = {})\n    return (layer_norm_1,)",
+      "build_or_load_ms": 27.69072726368904
+    },
+    "split": {
+      "regions": [
+        {
+          "ops": [
+            "div",
+            "softmax"
+          ],
+          "module": "_sparkfuse_region_0",
+          "live_ins": [
+            "matmul"
+          ],
+          "live_outs": [
+            "softmax"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        },
+        {
+          "ops": [
+            "add",
+            "layer_norm"
+          ],
+          "split": {
+            "component": "1",
+            "original_rejection": "no legal insertion point between live-ins and live-outs",
+            "covered_ops": 4,
+            "planned_regions": 2,
+            "logical_output_bytes": 297984
+          },
+          "module": "_sparkfuse_region_1_0",
+          "live_ins": [
+            "attention_output_layer_norm_weight",
+            "attention_output_layer_norm_bias",
+            "hidden_states",
+            "dropout_1"
+          ],
+          "live_outs": [
+            "layer_norm"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        },
+        {
+          "ops": [
+            "add_1",
+            "layer_norm_1"
+          ],
+          "split": {
+            "component": "1",
+            "original_rejection": "no legal insertion point between live-ins and live-outs",
+            "covered_ops": 4,
+            "planned_regions": 2,
+            "logical_output_bytes": 297984
+          },
+          "module": "_sparkfuse_region_1_1",
+          "live_ins": [
+            "output_layer_norm_weight",
+            "output_layer_norm_bias",
+            "getitem_1",
+            "dropout_2"
+          ],
+          "live_outs": [
+            "layer_norm_1"
+          ],
+          "schedule": {
+            "threads": 128,
+            "layout": "block",
+            "cache": true,
+            "vec": 1
+          },
+          "host_backend": "native"
+        }
+      ],
+      "fx": "graph():\n    %attention_self_query_weight : [num_users=1] = get_attr[target=attention.self.query.weight]\n    %attention_self_query_bias : [num_users=1] = get_attr[target=attention.self.query.bias]\n    %attention_self_key_weight : [num_users=1] = get_attr[target=attention.self.key.weight]\n    %attention_self_key_bias : [num_users=1] = get_attr[target=attention.self.key.bias]\n    %attention_self_value_weight : [num_users=1] = get_attr[target=attention.self.value.weight]\n    %attention_self_value_bias : [num_users=1] = get_attr[target=attention.self.value.bias]\n    %attention_output_dense_weight : [num_users=1] = get_attr[target=attention.output.dense.weight]\n    %attention_output_dense_bias : [num_users=1] = get_attr[target=attention.output.dense.bias]\n    %attention_output_layer_norm_weight : [num_users=1] = get_attr[target=attention.output.LayerNorm.weight]\n    %attention_output_layer_norm_bias : [num_users=1] = get_attr[target=attention.output.LayerNorm.bias]\n    %intermediate_dense_weight : [num_users=1] = get_attr[target=intermediate.dense.weight]\n    %intermediate_dense_bias : [num_users=1] = get_attr[target=intermediate.dense.bias]\n    %output_dense_weight : [num_users=1] = get_attr[target=output.dense.weight]\n    %output_dense_bias : [num_users=1] = get_attr[target=output.dense.bias]\n    %output_layer_norm_weight : [num_users=1] = get_attr[target=output.LayerNorm.weight]\n    %output_layer_norm_bias : [num_users=1] = get_attr[target=output.LayerNorm.bias]\n    %hidden_states : [num_users=5] = placeholder[target=hidden_states]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states,), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_query_weight, %attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_key_weight, %attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [1, 97, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_value_weight, %attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [1, 97, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [1, 97, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %_sparkfuse_region_0 : [num_users=1] = call_module[target=_sparkfuse_region_0](args = (%matmul,), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_0, 0), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%getitem, 0.1, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 97, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %attention_output_dense_weight, %attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.1, False), kwargs = {})\n    %_sparkfuse_region_1_0 : [num_users=1] = call_module[target=_sparkfuse_region_1_0](args = (%attention_output_layer_norm_weight, %attention_output_layer_norm_bias, %hidden_states, %dropout_1), kwargs = {})\n    %getitem_1 : [num_users=2] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_0, 0), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem_1, %intermediate_dense_weight, %intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %output_dense_weight, %output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.1, False), kwargs = {})\n    %_sparkfuse_region_1_1 : [num_users=1] = call_module[target=_sparkfuse_region_1_1](args = (%output_layer_norm_weight, %output_layer_norm_bias, %getitem_1, %dropout_2), kwargs = {})\n    %getitem_2 : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_1, 0), kwargs = {})\n    return (getitem_2,)",
+      "build_or_load_ms": 7.283126004040241
+    }
+  },
+  "fx": "graph():\n    %p_attention_self_query_weight : [num_users=1] = placeholder[target=p_attention_self_query_weight]\n    %p_attention_self_query_bias : [num_users=1] = placeholder[target=p_attention_self_query_bias]\n    %p_attention_self_key_weight : [num_users=1] = placeholder[target=p_attention_self_key_weight]\n    %p_attention_self_key_bias : [num_users=1] = placeholder[target=p_attention_self_key_bias]\n    %p_attention_self_value_weight : [num_users=1] = placeholder[target=p_attention_self_value_weight]\n    %p_attention_self_value_bias : [num_users=1] = placeholder[target=p_attention_self_value_bias]\n    %p_attention_output_dense_weight : [num_users=1] = placeholder[target=p_attention_output_dense_weight]\n    %p_attention_output_dense_bias : [num_users=1] = placeholder[target=p_attention_output_dense_bias]\n    %p_attention_output_layernorm_weight : [num_users=1] = placeholder[target=p_attention_output_layernorm_weight]\n    %p_attention_output_layernorm_bias : [num_users=1] = placeholder[target=p_attention_output_layernorm_bias]\n    %p_intermediate_dense_weight : [num_users=1] = placeholder[target=p_intermediate_dense_weight]\n    %p_intermediate_dense_bias : [num_users=1] = placeholder[target=p_intermediate_dense_bias]\n    %p_output_dense_weight : [num_users=1] = placeholder[target=p_output_dense_weight]\n    %p_output_dense_bias : [num_users=1] = placeholder[target=p_output_dense_bias]\n    %p_output_layernorm_weight : [num_users=1] = placeholder[target=p_output_layernorm_weight]\n    %p_output_layernorm_bias : [num_users=1] = placeholder[target=p_output_layernorm_bias]\n    %hidden_states : [num_users=4] = placeholder[target=hidden_states]\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_attention_self_query_weight, %p_attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_attention_self_key_weight, %p_attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [1, 97, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_attention_self_value_weight, %p_attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [1, 97, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [1, 97, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %div : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%matmul, 8.0), kwargs = {})\n    %softmax : [num_users=1] = call_function[target=torch.ops.aten.softmax.int](args = (%div, -1), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%softmax, 0.1, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 97, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %p_attention_output_dense_weight, %p_attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.1, False), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_1, %hidden_states), kwargs = {})\n    %layer_norm : [num_users=2] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add, [768], %p_attention_output_layernorm_weight, %p_attention_output_layernorm_bias, 1e-12, False), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%layer_norm, %p_intermediate_dense_weight, %p_intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %p_output_dense_weight, %p_output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.1, False), kwargs = {})\n    %add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%dropout_2, %layer_norm), kwargs = {})\n    %layer_norm_1 : [num_users=1] = call_function[target=torch.ops.aten.layer_norm.default](args = (%add_1, [768], %p_output_layernorm_weight, %p_output_layernorm_bias, 1e-12, False), kwargs = {})\n    return (layer_norm_1,)",
+  "ordered_regions": [
+    {
+      "ops": [
+        "div",
+        "softmax"
+      ],
+      "module": "_sparkfuse_region_0",
+      "live_ins": [
+        "matmul"
+      ],
+      "live_outs": [
+        "softmax"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "warp_xor",
+        "cache": true,
+        "vec": 1
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add",
+        "layer_norm"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 297984
+      },
+      "module": "_sparkfuse_region_1_0",
+      "live_ins": [
+        "attention_output_layer_norm_weight",
+        "attention_output_layer_norm_bias",
+        "hidden_states",
+        "dropout_1"
+      ],
+      "live_outs": [
+        "layer_norm"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block_welford",
+        "cache": true,
+        "vec": 4
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add_1",
+        "layer_norm_1"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 297984
+      },
+      "module": "_sparkfuse_region_1_1",
+      "live_ins": [
+        "output_layer_norm_weight",
+        "output_layer_norm_bias",
+        "getitem_1",
+        "dropout_2"
+      ],
+      "live_outs": [
+        "layer_norm_1"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block_welford",
+        "cache": true,
+        "vec": 4
+      },
+      "host_backend": "native"
+    }
+  ],
+  "calibration": {
+    "status": "rejected",
+    "failure": "whole-graph train rejected; dispatch not published: Tensor-likes are not close!\n\nMismatched elements: 43 / 74496 (0.1%)\nGreatest absolute difference: 0.00390625 at index (0, 58, 21) (up to 0.0002 allowed)\nGreatest relative difference: 2.921875 at index (0, 65, 519) (up to 0.012 allowed)"
+  },
+  "orderings": [
+    [
+      "ordered",
+      "exported_aten",
+      "eager"
+    ],
+    [
+      "exported_aten",
+      "ordered",
+      "eager"
+    ],
+    [
+      "eager",
+      "ordered",
+      "exported_aten"
+    ],
+    [
+      "eager",
+      "exported_aten",
+      "ordered"
+    ],
+    [
+      "ordered",
+      "exported_aten",
+      "eager"
+    ],
+    [
+      "ordered",
+      "eager",
+      "exported_aten"
+    ],
+    [
+      "eager",
+      "ordered",
+      "exported_aten"
+    ]
+  ],
+  "backends": {
+    "eager": {
+      "samples": [
+        {
+          "seed": 11413,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 27617,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 31469,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 52783,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "device": {
+            "median_us": 140.7870054244995,
+            "p10_us": 140.2519941329956,
+            "p90_us": 140.94200730323792,
+            "samples_us": [
+              140.94200730323792,
+              140.7870054244995,
+              140.52100479602814,
+              140.3380036354065,
+              140.89900255203247,
+              140.2519941329956,
+              176.24899744987488
+            ]
+          },
+          "host": {
+            "median_us": 184.29,
+            "p10_us": 182.178,
+            "p90_us": 193.362,
+            "samples_us": [
+              283.188,
+              226.962,
+              187.843,
+              181.042,
+              182.178,
+              187.186,
+              193.362,
+              185.267,
+              183.314,
+              186.898,
+              184.162,
+              184.29,
+              184.243,
+              184.13,
+              184.162
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 140.4229998588562,
+            "p10_us": 140.31699299812317,
+            "p90_us": 169.02600228786469,
+            "samples_us": [
+              140.4229998588562,
+              170.43599486351013,
+              140.3840035200119,
+              140.51200449466705,
+              140.393003821373,
+              169.02600228786469,
+              140.31699299812317
+            ]
+          },
+          "host": {
+            "median_us": 186.242,
+            "p10_us": 184.05,
+            "p90_us": 193.458,
+            "samples_us": [
+              422.565,
+              195.843,
+              188.194,
+              193.458,
+              184.034,
+              187.171,
+              188.354,
+              185.042,
+              190.274,
+              185.299,
+              185.106,
+              186.242,
+              184.05,
+              184.466,
+              185.954
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 139.74200189113617,
+            "p10_us": 139.5609974861145,
+            "p90_us": 167.71100461483002,
+            "samples_us": [
+              167.71100461483002,
+              139.74200189113617,
+              139.5609974861145,
+              139.67899978160858,
+              169.74399983882904,
+              139.74300026893616,
+              139.73300158977509
+            ]
+          },
+          "host": {
+            "median_us": 187.155,
+            "p10_us": 182.21,
+            "p90_us": 191.346,
+            "samples_us": [
+              424.389,
+              200.882,
+              190.93,
+              188.322,
+              187.155,
+              191.346,
+              190.37,
+              183.106,
+              185.171,
+              185.074,
+              182.162,
+              187.282,
+              182.21,
+              183.138,
+              185.347
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 140.40100574493408,
+            "p10_us": 139.87800478935242,
+            "p90_us": 142.90300011634827,
+            "samples_us": [
+              140.93099534511566,
+              139.87800478935242,
+              140.0970071554184,
+              140.00900089740753,
+              140.40100574493408,
+              142.90300011634827,
+              170.99900543689728
+            ]
+          },
+          "host": {
+            "median_us": 186.146,
+            "p10_us": 185.122,
+            "p90_us": 194.498,
+            "samples_us": [
+              492.566,
+              194.707,
+              187.906,
+              187.058,
+              187.234,
+              186.099,
+              185.282,
+              194.498,
+              186.146,
+              185.122,
+              185.219,
+              185.17,
+              183.298,
+              188.178,
+              185.202
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 139.50100541114807,
+            "p10_us": 139.3660008907318,
+            "p90_us": 139.81600105762482,
+            "samples_us": [
+              139.38699662685394,
+              139.3660008907318,
+              139.64200019836426,
+              139.81600105762482,
+              139.50100541114807,
+              139.4129991531372,
+              155.6590050458908
+            ]
+          },
+          "host": {
+            "median_us": 187.234,
+            "p10_us": 182.179,
+            "p90_us": 255.875,
+            "samples_us": [
+              420.356,
+              436.214,
+              192.562,
+              190.514,
+              248.563,
+              255.875,
+              186.034,
+              187.283,
+              185.17,
+              183.138,
+              184.242,
+              187.234,
+              184.13,
+              182.179,
+              182.162
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 139.62200284004211,
+            "p10_us": 139.0639990568161,
+            "p90_us": 139.93999361991882,
+            "samples_us": [
+              139.45500552654266,
+              139.93999361991882,
+              139.64499533176422,
+              139.62200284004211,
+              139.55600559711456,
+              170.60600221157074,
+              139.0639990568161
+            ]
+          },
+          "host": {
+            "median_us": 184.034,
+            "p10_us": 182.066,
+            "p90_us": 190.434,
+            "samples_us": [
+              445.941,
+              208.994,
+              186.018,
+              182.066,
+              182.146,
+              190.434,
+              186.066,
+              183.187,
+              184.034,
+              183.026,
+              182.098,
+              184.706,
+              189.891,
+              183.09,
+              181.138
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 139.41599428653717,
+            "p10_us": 139.10700380802155,
+            "p90_us": 141.98200404644012,
+            "samples_us": [
+              139.27100598812103,
+              141.98200404644012,
+              142.59600639343262,
+              139.62200284004211,
+              139.31399583816528,
+              139.10700380802155,
+              139.41599428653717
+            ]
+          },
+          "host": {
+            "median_us": 185.026,
+            "p10_us": 182.274,
+            "p90_us": 191.394,
+            "samples_us": [
+              437.317,
+              195.986,
+              186.995,
+              188.29,
+              191.394,
+              184.162,
+              183.09,
+              184.195,
+              185.266,
+              186.194,
+              185.026,
+              182.274,
+              184.051,
+              184.226,
+              182.162
+            ]
+          }
+        }
+      ],
+      "device_us": 139.74200189113617,
+      "host_us": 186.146
+    },
+    "unsplit": {
+      "samples": [
+        {
+          "seed": 11413,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 59 / 74496 (0.1%)\nGreatest absolute difference: 0.00390625 at index (0, 9, 323) (up to 0.0002 allowed)\nGreatest relative difference: 3.0625 at index (0, 50, 598) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 27617,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 25 / 74496 (0.0%)\nGreatest absolute difference: 0.001953125 at index (0, 0, 42) (up to 0.0002 allowed)\nGreatest relative difference: 1.765625 at index (0, 88, 197) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 31469,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 17 / 74496 (0.0%)\nGreatest absolute difference: 0.001953125 at index (0, 86, 299) (up to 0.0002 allowed)\nGreatest relative difference: 0.306640625 at index (0, 86, 660) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 52783,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": false
+    },
+    "split": {
+      "samples": [
+        {
+          "seed": 11413,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 62 / 74496 (0.1%)\nGreatest absolute difference: 0.00390625 at index (0, 9, 323) (up to 0.0002 allowed)\nGreatest relative difference: 3.0625 at index (0, 50, 598) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 27617,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 57 / 74496 (0.1%)\nGreatest absolute difference: 0.00390625 at index (0, 40, 709) (up to 0.0002 allowed)\nGreatest relative difference: 1.765625 at index (0, 88, 197) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 31469,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 17 / 74496 (0.0%)\nGreatest absolute difference: 0.001953125 at index (0, 86, 299) (up to 0.0002 allowed)\nGreatest relative difference: 0.306640625 at index (0, 86, 660) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 52783,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 39 / 74496 (0.1%)\nGreatest absolute difference: 0.00390625 at index (0, 74, 45) (up to 0.0002 allowed)\nGreatest relative difference: 0.271484375 at index (0, 81, 132) (up to 0.012 allowed)"
+        }
+      ],
+      "passed": false
+    },
+    "ordered": {
+      "samples": [
+        {
+          "seed": 11413,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 27617,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 31469,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 52783,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "device": {
+            "median_us": 136.1979991197586,
+            "p10_us": 135.96999645233154,
+            "p90_us": 136.48800551891327,
+            "samples_us": [
+              136.18899881839752,
+              136.48800551891327,
+              136.1590027809143,
+              135.96999645233154,
+              136.1979991197586,
+              136.48000359535217,
+              153.38000655174255
+            ]
+          },
+          "host": {
+            "median_us": 204.723,
+            "p10_us": 200.371,
+            "p90_us": 299.156,
+            "samples_us": [
+              337.108,
+              358.581,
+              211.698,
+              244.419,
+              299.156,
+              217.346,
+              200.371,
+              200.594,
+              202.754,
+              202.483,
+              213.554,
+              204.723,
+              200.274,
+              200.738,
+              201.971
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 136.57699525356293,
+            "p10_us": 136.2909972667694,
+            "p90_us": 136.80599629878998,
+            "samples_us": [
+              136.57699525356293,
+              136.74099743366241,
+              137.05800473690033,
+              136.2909972667694,
+              136.45599782466888,
+              136.80599629878998,
+              136.35200262069702
+            ]
+          },
+          "host": {
+            "median_us": 202.546,
+            "p10_us": 199.634,
+            "p90_us": 210.386,
+            "samples_us": [
+              493.318,
+              232.274,
+              206.419,
+              206.77,
+              205.779,
+              210.386,
+              201.506,
+              201.539,
+              202.866,
+              201.123,
+              201.538,
+              199.634,
+              199.491,
+              202.546,
+              200.85
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 137.5730037689209,
+            "p10_us": 137.38399744033813,
+            "p90_us": 139.02999460697174,
+            "samples_us": [
+              137.60100305080414,
+              137.5730037689209,
+              137.5100016593933,
+              164.92800414562225,
+              139.02999460697174,
+              137.38399744033813,
+              137.4090015888214
+            ]
+          },
+          "host": {
+            "median_us": 201.587,
+            "p10_us": 198.45,
+            "p90_us": 213.715,
+            "samples_us": [
+              486.709,
+              234.515,
+              213.715,
+              200.466,
+              201.522,
+              201.587,
+              198.45,
+              207.779,
+              198.578,
+              199.522,
+              197.395,
+              201.746,
+              206.578,
+              201.667,
+              200.658
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 137.472003698349,
+            "p10_us": 137.31400668621063,
+            "p90_us": 137.63399422168732,
+            "samples_us": [
+              137.79300451278687,
+              137.38499581813812,
+              137.50199973583221,
+              137.4479979276657,
+              137.472003698349,
+              137.63399422168732,
+              137.31400668621063
+            ]
+          },
+          "host": {
+            "median_us": 199.17,
+            "p10_us": 197.315,
+            "p90_us": 204.435,
+            "samples_us": [
+              496.037,
+              232.243,
+              204.435,
+              203.442,
+              198.578,
+              201.635,
+              196.418,
+              199.554,
+              198.675,
+              199.17,
+              197.586,
+              197.315,
+              201.666,
+              198.515,
+              198.562
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 136.87099516391754,
+            "p10_us": 136.6640031337738,
+            "p90_us": 136.90100610256195,
+            "samples_us": [
+              136.89599931240082,
+              136.73900067806244,
+              136.87099516391754,
+              136.81000471115112,
+              136.90100610256195,
+              137.00099289417267,
+              136.6640031337738
+            ]
+          },
+          "host": {
+            "median_us": 201.602,
+            "p10_us": 199.586,
+            "p90_us": 277.507,
+            "samples_us": [
+              487.03,
+              231.555,
+              210.546,
+              201.506,
+              376.709,
+              201.602,
+              201.459,
+              199.586,
+              202.642,
+              200.451,
+              200.482,
+              198.659,
+              201.346,
+              267.683,
+              277.507
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 139.45700228214264,
+            "p10_us": 137.25599646568298,
+            "p90_us": 163.20399940013885,
+            "samples_us": [
+              137.34400272369385,
+              163.20399940013885,
+              143.00400018692017,
+              137.25599646568298,
+              137.25699484348297,
+              139.45700228214264,
+              165.72199761867523
+            ]
+          },
+          "host": {
+            "median_us": 201.474,
+            "p10_us": 196.594,
+            "p90_us": 205.57,
+            "samples_us": [
+              500.278,
+              235.282,
+              202.051,
+              201.426,
+              201.699,
+              205.57,
+              199.474,
+              202.643,
+              199.666,
+              201.202,
+              203.763,
+              197.426,
+              196.451,
+              196.594,
+              201.474
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 137.56899535655975,
+            "p10_us": 137.38100230693817,
+            "p90_us": 137.6049965620041,
+            "samples_us": [
+              137.472003698349,
+              137.6979947090149,
+              137.38100230693817,
+              137.56899535655975,
+              137.6049965620041,
+              137.5740021467209,
+              137.56099343299866
+            ]
+          },
+          "host": {
+            "median_us": 201.666,
+            "p10_us": 199.41,
+            "p90_us": 205.154,
+            "samples_us": [
+              495.686,
+              229.235,
+              205.154,
+              204.546,
+              203.555,
+              200.594,
+              201.539,
+              201.81,
+              200.37,
+              200.259,
+              201.666,
+              199.33,
+              199.779,
+              199.41,
+              202.899
+            ]
+          }
+        }
+      ],
+      "device_us": 137.472003698349,
+      "host_us": 201.602
+    },
+    "exported_aten": {
+      "samples": [
+        {
+          "seed": 11413,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 27617,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 31469,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 52783,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 74496,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true,
+      "windows": [
+        {
+          "device": {
+            "median_us": 145.18000185489655,
+            "p10_us": 139.36400413513184,
+            "p90_us": 167.14799404144287,
+            "samples_us": [
+              139.4519954919815,
+              167.14799404144287,
+              139.5300030708313,
+              139.36400413513184,
+              153.72000634670258,
+              167.60100424289703,
+              145.18000185489655
+            ]
+          },
+          "host": {
+            "median_us": 214.818,
+            "p10_us": 210.802,
+            "p90_us": 229.235,
+            "samples_us": [
+              318.052,
+              224.899,
+              212.594,
+              210.883,
+              215.698,
+              211.683,
+              211.842,
+              210.627,
+              210.802,
+              229.235,
+              328.036,
+              214.818,
+              211.763,
+              215.906,
+              214.818
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 139.55600559711456,
+            "p10_us": 139.31700587272644,
+            "p90_us": 210.39600670337677,
+            "samples_us": [
+              139.31700587272644,
+              139.3599957227707,
+              139.46199417114258,
+              167.72900521755219,
+              139.55600559711456,
+              210.39600670337677,
+              211.50599420070648
+            ]
+          },
+          "host": {
+            "median_us": 316.5,
+            "p10_us": 209.586,
+            "p90_us": 372.516,
+            "samples_us": [
+              372.516,
+              415.061,
+              253.507,
+              357.588,
+              348.836,
+              316.5,
+              318.756,
+              311.748,
+              357.876,
+              374.884,
+              298.66,
+              209.586,
+              216.035,
+              218.626,
+              208.578
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 139.55800235271454,
+            "p10_us": 139.22999799251556,
+            "p90_us": 144.68200504779816,
+            "samples_us": [
+              139.5840048789978,
+              139.55800235271454,
+              164.09599781036377,
+              144.68200504779816,
+              139.22999799251556,
+              139.49400186538696,
+              139.49500024318695
+            ]
+          },
+          "host": {
+            "median_us": 212.786,
+            "p10_us": 209.763,
+            "p90_us": 256.371,
+            "samples_us": [
+              539.926,
+              256.371,
+              385.557,
+              215.906,
+              224.963,
+              212.786,
+              209.763,
+              207.874,
+              211.667,
+              218.77,
+              211.811,
+              209.922,
+              210.707,
+              211.906,
+              219.859
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 139.58700001239777,
+            "p10_us": 139.17399942874908,
+            "p90_us": 139.72899317741394,
+            "samples_us": [
+              139.58700001239777,
+              140.066996216774,
+              139.72899317741394,
+              139.61100578308105,
+              139.17399942874908,
+              139.44199681282043,
+              139.2260044813156
+            ]
+          },
+          "host": {
+            "median_us": 211.698,
+            "p10_us": 209.682,
+            "p90_us": 218.482,
+            "samples_us": [
+              692.233,
+              253.219,
+              218.482,
+              211.555,
+              209.778,
+              211.699,
+              211.698,
+              210.723,
+              208.866,
+              217.923,
+              209.682,
+              210.851,
+              209.73,
+              211.795,
+              215.826
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 139.86900448799133,
+            "p10_us": 139.60500061511993,
+            "p90_us": 140.2759999036789,
+            "samples_us": [
+              140.2759999036789,
+              140.05400240421295,
+              139.86900448799133,
+              169.96599733829498,
+              139.86100256443024,
+              139.60500061511993,
+              139.66499269008636
+            ]
+          },
+          "host": {
+            "median_us": 210.771,
+            "p10_us": 207.698,
+            "p90_us": 218.915,
+            "samples_us": [
+              514.759,
+              243.026,
+              213.875,
+              212.738,
+              218.915,
+              210.771,
+              209.81,
+              210.771,
+              206.834,
+              216.659,
+              208.722,
+              208.627,
+              208.866,
+              207.698,
+              213.939
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 140.20000398159027,
+            "p10_us": 139.61400091648102,
+            "p90_us": 153.31900119781494,
+            "samples_us": [
+              153.31900119781494,
+              140.20000398159027,
+              139.94100689888,
+              142.88699626922607,
+              168.05599629878998,
+              139.61400091648102,
+              139.73799347877502
+            ]
+          },
+          "host": {
+            "median_us": 210.419,
+            "p10_us": 207.635,
+            "p90_us": 241.906,
+            "samples_us": [
+              503.653,
+              241.906,
+              212.675,
+              209.682,
+              208.723,
+              210.754,
+              215.843,
+              206.802,
+              354.308,
+              210.419,
+              212.818,
+              208.867,
+              208.674,
+              207.635,
+              208.914
+            ]
+          }
+        },
+        {
+          "device": {
+            "median_us": 139.38499987125397,
+            "p10_us": 139.03599977493286,
+            "p90_us": 139.42599296569824,
+            "samples_us": [
+              139.2669975757599,
+              139.57299292087555,
+              139.38499987125397,
+              139.11400735378265,
+              139.42499458789825,
+              139.42599296569824,
+              139.03599977493286
+            ]
+          },
+          "host": {
+            "median_us": 209.635,
+            "p10_us": 207.746,
+            "p90_us": 213.859,
+            "samples_us": [
+              506.95,
+              239.747,
+              213.859,
+              209.634,
+              209.891,
+              211.794,
+              209.635,
+              208.85,
+              209.779,
+              208.546,
+              208.675,
+              207.746,
+              207.746,
+              208.755,
+              210.834
+            ]
+          }
+        }
+      ],
+      "device_us": 139.58700001239777,
+      "host_us": 211.698
+    },
+    "inductor": {
+      "samples": [
+        {
+          "seed": 11413,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 5154 / 74496 (6.9%)\nGreatest absolute difference: 0.03125 at index (0, 2, 84) (up to 0.0002 allowed)\nGreatest relative difference: 43.75 at index (0, 73, 305) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 27617,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 5259 / 74496 (7.1%)\nGreatest absolute difference: 0.03125 at index (0, 2, 203) (up to 0.0002 allowed)\nGreatest relative difference: 201.0 at index (0, 7, 535) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 31469,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 5041 / 74496 (6.8%)\nGreatest absolute difference: 0.03125 at index (0, 0, 511) (up to 0.0002 allowed)\nGreatest relative difference: 17.75 at index (0, 44, 595) (up to 0.012 allowed)"
+        },
+        {
+          "seed": 52783,
+          "failure": "Tensor-likes are not close!\n\nMismatched elements: 5030 / 74496 (6.8%)\nGreatest absolute difference: 0.03125 at index (0, 0, 171) (up to 0.0002 allowed)\nGreatest relative difference: 48.0 at index (0, 17, 393) (up to 0.012 allowed)"
+        }
+      ],
+      "passed": false
+    },
+    "selected": {
+      "passed": false,
+      "failure": "whole-graph train rejected; dispatch not published: Tensor-likes are not close!\n\nMismatched elements: 43 / 74496 (0.1%)\nGreatest absolute difference: 0.00390625 at index (0, 58, 21) (up to 0.0002 allowed)\nGreatest relative difference: 2.921875 at index (0, 65, 519) (up to 0.012 allowed)"
+    }
+  },
+  "provenance": {
+    "git_head_at_capture": "f2887be004da3ee733a41ddf47166275761c7809",
+    "source_tree_sha256": "afd74785eda163cd0e9d6631ad4a14e90db70be2d26611fe3313d7898fd84fb0",
+    "archive": "sources/afd74785eda163cd0e9d6631ad4a14e90db70be2d26611fe3313d7898fd84fb0.tar.gz"
+  }
+}

@@ -92,9 +92,18 @@ def run(seq, weight_seed, affine, seeds):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--output", required=True, type=Path)
+    p.add_argument("--weight-offset", type=int, default=0)
+    p.add_argument(
+        "--seeds",
+        type=int,
+        nargs="+",
+        default=[18144, 83116, 17320, 54211, 39943, 25041, 97182, 61021],
+    )
     a = p.parse_args()
+    if len(a.seeds) != len(set(a.seeds)):
+        p.error("seeds must be distinct")
     a.output.parent.mkdir(parents=True, exist_ok=True)
-    seeds = [18144, 83116, 17320, 54211, 39943, 25041, 97182, 61021]
+    seeds = a.seeds
     result = dict(
         scope="One randomly initialized BF16 BertLayer, same ATen boundary inputs. Records in listed seed order. No tuning or timing.",
         compiler=backend_id(),
@@ -109,6 +118,7 @@ if __name__ == "__main__":
         (33, 3308, "perturbed"),
         (97, 1348, "perturbed"),
     ]:
+        weight += a.weight_offset
         row = run(seq, weight, affine, seeds)
         result["cases"].append(row)
         tmp = a.output.with_suffix(".pending")
