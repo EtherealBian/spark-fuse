@@ -53,15 +53,15 @@ def graph_source(g, rd, t):
     return k
 
 
-def layer_gate(c):
+def layer_gate(c, *, methods=ALL, exact=EXACT):
     panel = c["trajectories"]
-    assert set(panel) == ALL
+    assert set(panel) == methods
     for name, trajs in panel.items():
         assert [z["seed"] for z in trajs] == c["seeds"]
         for tr in trajs:
             for i, st in enumerate(tr["checks"]):
                 if "error" in st:
-                    assert name == "inductor" and not st["passed"]
+                    assert name not in exact and not st["passed"]
                     continue
                 outs = st["outputs"]
                 assert set(outs) == {"hidden", "probabilities", "key", "value"}
@@ -72,10 +72,11 @@ def layer_gate(c):
                         stride=[t * 2048, 128, 2048, 1], offset=1792, storage_bytes=2 * t * 2048 * 2
                     )
                 else:
+                    length = t + sum(c.get("chunks", (1, 1))[:i])
                     assert layout == dict(
-                        stride=[2 * (t + i) * 128, (t + i) * 128, 128, 1],
+                        stride=[2 * length * 128, length * 128, 128, 1],
                         offset=0,
-                        storage_bytes=2 * 2 * (t + i) * 128 * 2,
+                        storage_bytes=2 * 2 * length * 128 * 2,
                     )
                 assert st["passed"] == (
                     st["distinct_outputs"]
@@ -83,11 +84,11 @@ def layer_gate(c):
                     and st["prefix_exact"]
                     and st["masked_nonzero"] == 0
                     and st["max_row_sum_error"] <= 0.004
-                    and (name == "inductor" or st["metadata"] == st["expected_metadata"])
+                    and (name not in exact or st["metadata"] == st["expected_metadata"])
                     and all(
                         d["finite"]
                         and d["tolerance_pass"]
-                        and (name == "inductor" or d["unequal_bits"] == 0)
+                        and (name not in exact or d["unequal_bits"] == 0)
                         for d in outs.values()
                     )
                 )
@@ -95,7 +96,7 @@ def layer_gate(c):
                 len(tr["checks"]) == 3 and all(s["passed"] for s in tr["checks"])
             )
     allowed = {n for n, ts in panel.items() if all(t["passed"] for t in ts)}
-    assert allowed == set(c["admitted_layer"]) and EXACT <= allowed
+    assert allowed == set(c["admitted_layer"]) and exact <= allowed
     return allowed
 
 

@@ -70,7 +70,7 @@ def suite(offset, rd):
     return m, Phi3RotaryEmbedding(cfg, device="cuda")
 
 
-def reference(m, rope, n, seed):
+def reference(m, rope, n, seed, chunks=(1, 1)):
     """One actual eager layer, one persistent HF cache and one projection hook for all three calls."""
     g = torch.Generator(device="cuda").manual_seed(seed)
     dt = torch.bfloat16
@@ -81,11 +81,14 @@ def reference(m, rope, n, seed):
     wide = []
     hook = m.layer.self_attn.qkv_proj.register_forward_hook(lambda mod, args, y: wide.append(y))
     try:
-        for i, t in enumerate((n, 1, 1)):
+        for i, t in enumerate((n, *chunks)):
             x = torch.randn(2, t, 1536, device="cuda", dtype=dt, generator=g)
-            c, s = rope(x, pos + (torch.arange(t, device="cuda")[None, :] if not i else n + i - 1))
+            past = kv[0].shape[2] if kv else 0
+            c, s = rope(x, pos + past + torch.arange(t, device="cuda")[None, :])
             if i:
-                mask = torch.zeros(2, 1, 1, n + i, device="cuda", dtype=dt)
+                mask = torch.full((2, 1, t, past + t), float("-inf"), device="cuda", dtype=dt).triu(
+                    past + 1
+                )
                 mask[1, :, :, 0] = float("-inf")
                 mask[0, :, :, 1] = float("-inf")
             else:

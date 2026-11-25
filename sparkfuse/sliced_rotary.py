@@ -114,22 +114,23 @@ def _part(out):
     )
 
 
-def emit(b, t, w, d, r, heads, offsets, shared, dt):
-    hq, hk = heads
-    oq, ok = offsets
-    half = r // 2
-    lanes = half + d - r
-    nq = b * hq * t * lanes
-    total = b * (hq + hk) * t * lanes
+def cuda_header(dt):
     typ = {"bf16": "__nv_bfloat16", "f16": "__half", "f32": "float"}[dt]
     bits = "unsigned int" if dt == "f32" else "unsigned short"
     return f"""#include <cuda_runtime.h>
 #include <cuda_fp16.h>
 #include <cuda_bf16.h>
 using T={typ}; using Bits={bits};
-template<int H,int Off> __device__ __forceinline__ void sliced_head(const T*x,const T*c,const T*s,T*y,int i){{
+"""
+
+
+def head_function(t, w, d, r, shared, *, name="sliced_head", past=0):
+    half = r // 2
+    lanes = half + d - r
+    destination = f"row*{d}" if not past else f"((row/{t})*{past + t}+{past}+row%{t})*{d}"
+    return f"""template<int H,int Off> __device__ __forceinline__ void {name}(const T*x,const T*c,const T*s,T*y,int i){{
   const int row=i/{lanes}, j=i%{lanes}, batch=row/(H*{t}), token=row%{t}, head=(row/{t})%H;
-  const int in=(batch*{t}+token)*{w}+Off+head*{d}, out=row*{d};
+  const int in=(batch*{t}+token)*{w}+Off+head*{d}, out={destination};
   if(j<{half}){{
     const int p=(({0 if shared else "batch"}*{t}+token)*{r})+j;
     const float l=float(x[in+j]), h=float(x[in+j+{half}]);
@@ -138,7 +139,20 @@ template<int H,int Off> __device__ __forceinline__ void sliced_head(const T*x,co
     y[out+j]=T(float(lc)+float(ls)); y[out+j+{half}]=T(float(hc)+float(hs));
   }} else {{const int k=j+{half};reinterpret_cast<Bits*>(y)[out+k]=reinterpret_cast<const Bits*>(x)[in+k];}}
 }}
-__global__ void sliced_rotary_pair(const T*x,const T*c,const T*s,T*q,T*k){{
+"""
+
+
+def emit(b, t, w, d, r, heads, offsets, shared, dt):
+    hq, hk = heads
+    oq, ok = offsets
+    half = r // 2
+    lanes = half + d - r
+    nq = b * hq * t * lanes
+    total = b * (hq + hk) * t * lanes
+    return (
+        cuda_header(dt)
+        + head_function(t, w, d, r, shared)
+        + f"""__global__ void sliced_rotary_pair(const T*x,const T*c,const T*s,T*q,T*k){{
   const int i=int(blockIdx.x)*blockDim.x+threadIdx.x;
   if(i<{nq}) sliced_head<{hq},{oq}>(x,c,s,q,i);
   else if(i<{total}) sliced_head<{hk},{ok}>(x,c,s,k,i-{nq});
@@ -148,6 +162,7 @@ extern "C" int launch(void**p,int,void*stream){{
   return int(cudaGetLastError());
 }}
 """
+    )
 
 
 def fuse_sliced_rotary(gm, device, host_backend):

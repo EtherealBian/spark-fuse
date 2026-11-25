@@ -26,11 +26,20 @@ static at::ScalarType dtype(int key) {
 class HostPlan {
  public:
   HostPlan(py::object owner, uintptr_t entry, int device, int rows, size_t nin,
-           std::vector<Shape> shapes, std::vector<int> types, bool leaf, int lo, int hi)
+           std::vector<Shape> shapes, std::vector<int> types, bool leaf, int lo, int hi,
+           std::vector<Shape> strides)
       : owner_(std::move(owner)), launch_(reinterpret_cast<Launch>(entry)),
-        device_(device), rows_(rows), nin_(nin), shapes_(std::move(shapes)), leaf_(leaf), lo_(lo), hi_(hi), row_input_(nin) {
+        device_(device), rows_(rows), nin_(nin), shapes_(std::move(shapes)), strides_(std::move(strides)), leaf_(leaf), lo_(lo), hi_(hi), row_input_(nin) {
     if (!entry || rows<=0 || !nin || shapes_.size()<=nin || shapes_.size()!=types.size() ||
         (leaf && shapes_.size()!=nin+1)) throw py::value_error("invalid plan descriptor");
+    if (!strides_.empty()) {
+      if (strides_.size()!=nin || lo || hi) throw py::value_error("invalid static stride descriptor");
+      for (size_t i=0;i<nin;++i) {
+        if (strides_[i].empty()) continue;
+        if (strides_[i].size()!=shapes_[i].size()) throw py::value_error("invalid stride rank");
+        for (auto step : strides_[i]) if (step<=0) throw py::value_error("non-positive stride");
+      }
+    }
     if ((lo || hi) && (lo < 1 || rows < lo || rows > hi))
       throw py::value_error("invalid dynamic bounds");
     for (size_t i=0; i<shapes_.size(); ++i) {
@@ -72,7 +81,8 @@ class HostPlan {
       const bool shape_ok=(Dynamic && !shape.empty() && shape[0]==-1)
         ? (t.dim()==2 && t.size(0)==rows && t.size(1)==shape[1]) : t.sizes().equals(shape);
       if (!t.is_cuda() || t.get_device()!=device_ || t.scalar_type()!=types_[i] ||
-          t.layout()!=at::kStrided || !t.is_contiguous() || !shape_ok ||
+          t.layout()!=at::kStrided || !shape_ok ||
+          ((strides_.empty() || strides_[i].empty()) ? !t.is_contiguous() : !t.strides().equals(strides_[i])) ||
           t.is_neg() || t.is_conj()) throw py::value_error("input shape/dtype/device/layout mismatch");
       if (at::GradMode::is_enabled() && t.requires_grad()) throw py::value_error("inference only");
       ptrs.push_back(t.data_ptr());
@@ -100,7 +110,7 @@ class HostPlan {
   c10::DeviceIndex device_;
   int rows_;
   size_t nin_;
-  std::vector<Shape> shapes_;
+  std::vector<Shape> shapes_, strides_;
   std::vector<at::ScalarType> types_;
   bool leaf_;
   int lo_, hi_;
@@ -108,6 +118,6 @@ class HostPlan {
 };
 PYBIND11_MODULE(_sparkfuse_host,m){
   py::class_<HostPlan>(m,"_Plan")
-    .def(py::init<py::object, uintptr_t, int, int, size_t, std::vector<Shape>,std::vector<int>,bool,int,int>())
+    .def(py::init<py::object, uintptr_t, int, int, size_t, std::vector<Shape>,std::vector<int>,bool,int,int,std::vector<Shape>>())
     .def("run",&HostPlan::run);
 }

@@ -594,3 +594,25 @@ These are medians of seven shuffled warm-address replay windows, not model throu
 Across two weights, both rotary widths (64 and 128), two prefixes and five unseen inputs per combination, each backend carried its own prefill cache into two decode steps. We checked hidden states, probabilities, K/V bits and metadata (including the underlying storage size), mask zeros, unchanged old cache and exact prefixes against a persistent Hugging Face `DynamicCache`. For the isolated epilogue the upstream input was the real hooked projection. Inductor was evaluated on the same exports, but did not pass the layer tolerance or bitwise epilogue gate; its failure details remain in both reports, without a speed ranking.
 
 [First weight: raw windows and FX](../reports/phi3-native-packed-gb10.json) · [Independent weight](../reports/phi3-native-packed-heldout-gb10.json) · [Generated CUDA](../examples/generated/sliced-rotary) · [Sanitizer](../reports/sliced-rotary-sanitizer-gb10.txt) · [Full regression](../reports/phi3-native-stage-acceptance.json). Reproduce with `python tools/phi3_native.py --seed-offset 124093 --past 127 1024 --rotary-dim 64 128 --output /tmp/phi3.json`; change the offset to `131327` for the independent weight. `bash tools/sanitize_sliced_rotary.sh` checks memory, race and synchronization errors.
+
+<a id="phi3-cache"></a>
+
+### Phi-3：用一次发射更新 KV 缓存 / Fused cache updates
+
+在 `sliced_rotary=True` 的基础上开启 `sliced_cache=True`，编译器把宽 QKV 投影上的 Q/K 旋转和两个缓存拼接合为一次发射。Q、新 K 缓存、新 V 缓存各自拥有独立存储；如果图还返回未拼接的 V，它仍引用原投影。第一次更新直接从 prefill 留下的跨步 V 视图读取历史，第二次读取上一步产生的连续缓存。旧缓存不被覆盖。只有在图能证明切片不重叠、旋转结果 K 没有其他使用者、历史布局符合静态描述时才替换。
+
+两组随机权重，旋转宽度 64/128，前缀 127/1024；每个组合测试连续单 token 更新 `(1,1)` 和带因果掩码的分块更新 `(4,3)`。五条独立输入轨迹中，各后端携带自己的缓存。两种 SparkFuse 路径都对齐 Hugging Face eager 的隐藏态、注意力概率和完整 K/V（BF16 逐位、步幅、偏移及存储大小）。以下是前缀 1024、旋转宽度 64、`(4,3)` 的热地址 CUDA Graph 设备中位数，单位 µs：
+
+| 计时范围 / window | eager | 原融合 / rotation only | 加入 KV 更新 / fused | Inductor, cast emulation |
+|---|---:|---:|---:|---:|
+| 首组权重，4-token 子图 | 30.83 | 11.70 | 3.99 | 6.34 |
+| 首组权重，4-token 整层 | 410.45 | 372.02 | 363.88 | — |
+| 首组权重，接续 3-token 整层 | 425.66 | 388.38 | 381.86 | — |
+| 第二组权重，4-token 整层 | 411.51 | 371.72 | 364.56 | — |
+| 第二组权重，接续 3-token 整层 | 425.65 | 385.71 | 377.76 | — |
+
+Across both weights the profiler counted **3 → 1** launches for the isolated update, **15 → 13** for the single-token layer and **16 → 14** for the chunked layer. All 32 measured whole-layer device medians improved against the rotation-only path (2.24–9.43 µs). These are two successive functional cache updates of one layer, not sustained generation throughput; allocating fresh caches still copies the prefix on every call.
+
+Default Inductor failed the isolated contract; `emulate_precision_casts=True` qualified in 24 of 32 isolated windows. For full-width rotation with multiple new tokens, even the cast-aware output Q could have matching bits but a different stride. Neither Inductor variant passed the existing whole-layer numerical gate across all five trajectories for any configuration. The dash omits those timings, not the failed results. Both reports retain the per-output checks and all seven time windows for admitted methods (including synchronized host time).
+
+[Primary report](../reports/phi3-sliced-cache-gb10.json) · [Independent weights](../reports/phi3-sliced-cache-heldout-gb10.json) · [Emitted CUDA](../examples/generated/sliced-cache) · [Sanitizer](../reports/sliced-cache-sanitizer-gb10.txt) · [Regression](../reports/sliced-cache-stage-acceptance.json). Run `python tools/phi3_cache.py --seed-offset 145091 --output /tmp/phi3-cache.json`; repeat with `152519`. Run `bash tools/sanitize_sliced_cache.sh` for memory, race and synchronization checks.

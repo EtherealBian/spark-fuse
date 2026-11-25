@@ -9,9 +9,29 @@ from .runtime import DenseKernelCall, build
 
 
 class IndexProgram(DenseKernelCall):
-    def __init__(self, inputs, outputs, dtype, device, source):
+    def __init__(self, inputs, outputs, dtype, device, source, *, input_strides=None):
         n = len(inputs)
         m = len(outputs)
+        # A descriptor is relative to data_ptr(), never the backing storage base.
+        # None keeps the normal dense guard. Only an explicitly specialized index
+        # program can accept a noncompact input. Output allocation is unchanged.
+        if input_strides is not None:
+            if len(input_strides) != n:
+                raise ValueError("one stride descriptor required per input")
+            checked = []
+            for shape, st in zip(inputs, input_strides, strict=True):
+                if st is None:
+                    checked.append(())
+                    continue
+                if (
+                    not shape
+                    or len(st) != len(shape)
+                    or any(type(x) is not int or not 0 < x < 2**31 for x in (*shape, *st))
+                    or sum((size - 1) * step for size, step in zip(shape, st)) >= 2**29
+                ):
+                    raise ValueError("invalid fixed input stride or address span")
+                checked.append(tuple(st))
+            self.input_strides = tuple(checked)
         self.plan = SimpleNamespace(
             inputs=list(range(n)),
             outputs=list(range(n, n + m)),

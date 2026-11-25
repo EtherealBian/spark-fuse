@@ -102,6 +102,7 @@ def _native_dispatch(kernel, row_bounds):
         [num[x.dt] for x in desc],
         out_spec.is_leaf(),
         *(row_bounds or (0, 0)),
+        getattr(kernel, "input_strides", ()),
     )
     raw = host.run
     plain_out = out_spec.is_leaf() or (

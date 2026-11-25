@@ -284,6 +284,25 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "phi3_chunked_cache_updates",
+                [
+                    opt,
+                    str(ROOT / "tools/phi3_cache.py"),
+                    "--verify-only",
+                    "--past",
+                    "127",
+                    "--rotary-dim",
+                    "64",
+                    "128",
+                    "--seed-offset",
+                    "166909",
+                    "--output",
+                    str(report.with_name(report.stem + "-phi3-cache.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (

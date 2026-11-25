@@ -1,0 +1,321 @@
+{
+  "torch": "2.13.0+cu130",
+  "transformers": "4.51.3",
+  "random_seed": 711,
+  "hidden_size": 1536,
+  "intermediate_size": 8960,
+  "rows": 32,
+  "host_backend": "python",
+  "dtype": "torch.bfloat16",
+  "modules": {
+    "rms_norm": {
+      "regions": [
+        {
+          "ops": [
+            "_assert_tensor_metadata_default"
+          ],
+          "fallback": "below minimum region size"
+        },
+        {
+          "ops": [
+            "to",
+            "pow_1",
+            "mean",
+            "add",
+            "rsqrt",
+            "mul",
+            "_assert_tensor_metadata_default_1",
+            "to_1",
+            "mul_1"
+          ],
+          "module": "_sparkfuse_region_1",
+          "live_ins": [
+            "weight",
+            "hidden_states"
+          ],
+          "live_outs": [
+            "mul_1"
+          ],
+          "schedule": {
+            "threads": 256,
+            "layout": "mean_cohort",
+            "cache": true,
+            "vec": 4
+          },
+          "host_backend": "python"
+        }
+      ],
+      "original": "graph():\n    %p_weight : [num_users=1] = placeholder[target=p_weight]\n    %hidden_states : [num_users=2] = placeholder[target=hidden_states]\n    %_assert_tensor_metadata_default : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%hidden_states,), kwargs = {dtype: torch.bfloat16, device: cuda:0, layout: torch.strided})\n    %to : [num_users=2] = call_function[target=torch.ops.aten.to.dtype](args = (%hidden_states, torch.float32), kwargs = {})\n    %pow_1 : [num_users=1] = call_function[target=torch.ops.aten.pow.Tensor_Scalar](args = (%to, 2), kwargs = {})\n    %mean : [num_users=1] = call_function[target=torch.ops.aten.mean.dim](args = (%pow_1, [-1], True), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mean, 1e-06), kwargs = {})\n    %rsqrt : [num_users=1] = call_function[target=torch.ops.aten.rsqrt.default](args = (%add,), kwargs = {})\n    %mul : [num_users=2] = call_function[target=torch.ops.aten.mul.Tensor](args = (%to, %rsqrt), kwargs = {})\n    %_assert_tensor_metadata_default_1 : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%mul,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to_1 : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%mul, torch.bfloat16), kwargs = {})\n    %mul_1 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%p_weight, %to_1), kwargs = {})\n    return (mul_1,)",
+      "partitioned": "graph():\n    %weight : [num_users=1] = get_attr[target=weight]\n    %hidden_states : [num_users=3] = placeholder[target=hidden_states]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states,), kwargs = {})\n    %_assert_tensor_metadata_default : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%hidden_states,), kwargs = {dtype: torch.bfloat16, device: cuda:0, layout: torch.strided})\n    %_sparkfuse_region_1 : [num_users=1] = call_module[target=_sparkfuse_region_1](args = (%weight, %hidden_states), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1, 0), kwargs = {})\n    return (getitem,)",
+      "errors": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 49152,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ],
+      "eager_device": {
+        "median_us": 11.15300040692091,
+        "p10_us": 11.134999804198742,
+        "p90_us": 11.15499995648861,
+        "samples_us": [
+          11.136000044643879,
+          11.152000166475773,
+          11.15499995648861,
+          11.15449983626604,
+          11.15300040692091,
+          11.140000075101852,
+          11.15449983626604,
+          11.15499995648861,
+          11.134999804198742
+        ]
+      },
+      "mixed_device": {
+        "median_us": 2.919499995186925,
+        "p10_us": 2.899999963119626,
+        "p90_us": 2.92899995110929,
+        "samples_us": [
+          2.9394999146461487,
+          2.899999963119626,
+          2.92899995110929,
+          2.9279999434947968,
+          2.899999963119626,
+          2.904500113800168,
+          2.9239999130368233,
+          2.9074999038130045,
+          2.919499995186925
+        ]
+      },
+      "eager_host": {
+        "median_us": 37.201,
+        "p10_us": 36.657,
+        "p90_us": 38.353,
+        "samples_us": [
+          104.403,
+          39.649,
+          38.353,
+          38.113,
+          37.297,
+          38.001,
+          36.865,
+          37.473,
+          37.665,
+          37.505,
+          37.089,
+          37.25,
+          36.833,
+          37.201,
+          37.185,
+          37.361,
+          36.657,
+          36.369,
+          36.769,
+          36.737,
+          37.281,
+          36.625,
+          37.457,
+          37.121,
+          37.233,
+          36.849,
+          39.761,
+          36.881,
+          36.481,
+          36.849,
+          36.769
+        ]
+      },
+      "mixed_host": {
+        "median_us": 44.274,
+        "p10_us": 42.386,
+        "p90_us": 47.537,
+        "samples_us": [
+          76.194,
+          49.585,
+          45.505,
+          45.522,
+          47.537,
+          43.345,
+          44.705,
+          43.474,
+          46.065,
+          43.009,
+          42.945,
+          42.386,
+          42.401,
+          42.945,
+          45.185,
+          44.337,
+          43.266,
+          46.769,
+          42.017,
+          41.873,
+          44.274,
+          110.291,
+          45.985,
+          44.689,
+          44.049,
+          44.322,
+          44.721,
+          43.921,
+          42.785,
+          42.37,
+          42.593
+        ]
+      }
+    },
+    "mlp": {
+      "regions": [
+        {
+          "ops": [
+            "silu",
+            "mul"
+          ],
+          "module": "_sparkfuse_region_0",
+          "live_ins": [
+            "linear",
+            "linear_1"
+          ],
+          "live_outs": [
+            "mul"
+          ],
+          "schedule": {
+            "threads": 256,
+            "layout": "flat",
+            "cache": false,
+            "vec": 1
+          },
+          "host_backend": "python"
+        }
+      ],
+      "original": "graph():\n    %p_gate_proj_weight : [num_users=1] = placeholder[target=p_gate_proj_weight]\n    %p_up_proj_weight : [num_users=1] = placeholder[target=p_up_proj_weight]\n    %p_down_proj_weight : [num_users=1] = placeholder[target=p_down_proj_weight]\n    %x : [num_users=2] = placeholder[target=x]\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%x, %p_gate_proj_weight), kwargs = {})\n    %silu : [num_users=1] = call_function[target=torch.ops.aten.silu.default](args = (%linear,), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%x, %p_up_proj_weight), kwargs = {})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%silu, %linear_1), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%mul, %p_down_proj_weight), kwargs = {})\n    return (linear_2,)",
+      "partitioned": "graph():\n    %gate_proj_weight : [num_users=1] = get_attr[target=gate_proj.weight]\n    %up_proj_weight : [num_users=1] = get_attr[target=up_proj.weight]\n    %down_proj_weight : [num_users=1] = get_attr[target=down_proj.weight]\n    %x : [num_users=3] = placeholder[target=x]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%x,), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%x, %gate_proj_weight), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%x, %up_proj_weight), kwargs = {})\n    %_sparkfuse_region_0 : [num_users=1] = call_module[target=_sparkfuse_region_0](args = (%linear, %linear_1), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_0, 0), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem, %down_proj_weight), kwargs = {})\n    return (linear_2,)",
+      "errors": [
+        {
+          "max_abs": 0.0,
+          "mean_abs": 0.0,
+          "unequal": 0,
+          "finite_pairs": 49152,
+          "matched_nan": 0,
+          "matched_posinf": 0,
+          "matched_neginf": 0,
+          "rtol": 0.012,
+          "atol": 0.0002
+        }
+      ],
+      "eager_device": {
+        "median_us": 403.95450592041016,
+        "p10_us": 395.06348967552185,
+        "p90_us": 406.0629904270172,
+        "samples_us": [
+          404.9924910068512,
+          403.95450592041016,
+          405.32800555229187,
+          395.06348967552185,
+          406.0629904270172,
+          395.8264887332916,
+          410.75950860977173,
+          398.7799882888794,
+          395.5639898777008
+        ]
+      },
+      "mixed_device": {
+        "median_us": 394.95348930358887,
+        "p10_us": 394.3130075931549,
+        "p90_us": 395.85500955581665,
+        "samples_us": [
+          395.85500955581665,
+          394.7240114212036,
+          395.5540060997009,
+          394.99399065971375,
+          394.6259915828705,
+          394.95348930358887,
+          394.3130075931549,
+          413.0755066871643,
+          394.75250244140625
+        ]
+      },
+      "eager_host": {
+        "median_us": 410.219,
+        "p10_us": 404.459,
+        "p90_us": 414.987,
+        "samples_us": [
+          450.477,
+          411.979,
+          413.404,
+          412.363,
+          413.276,
+          408.523,
+          403.996,
+          407.611,
+          402.251,
+          405.564,
+          402.827,
+          404.459,
+          435.469,
+          429.1,
+          414.987,
+          410.94,
+          409.419,
+          411.564,
+          410.219,
+          410.604,
+          412.939,
+          409.932,
+          407.195,
+          407.74,
+          407.883,
+          407.947,
+          408.748,
+          407.675,
+          410.348,
+          410.875,
+          411.052
+        ]
+      },
+      "mixed_host": {
+        "median_us": 425.628,
+        "p10_us": 421.884,
+        "p90_us": 433.676,
+        "samples_us": [
+          461.725,
+          429.404,
+          427.116,
+          425.692,
+          424.444,
+          428.316,
+          426.62,
+          425.164,
+          425.196,
+          425.515,
+          427.34,
+          425.564,
+          422.732,
+          428.988,
+          423.26,
+          421.884,
+          420.14,
+          419.739,
+          423.548,
+          421.388,
+          433.676,
+          446.445,
+          449.212,
+          425.308,
+          424.172,
+          426.924,
+          425.628,
+          428.86,
+          432.012,
+          427.564,
+          423.532
+        ]
+      }
+    }
+  }
+}

@@ -68,7 +68,7 @@ def build(source, device):
 
 
 class DenseKernelCall:
-    """Guard, allocate and launch a lowered plan over physical contiguous tensors."""
+    """Guard inputs, allocate fresh dense outputs, and launch on the current stream."""
 
     def prepare(self, *args, **kwargs):
         flat, spec = tree.tree_flatten((args, kwargs))
@@ -77,15 +77,17 @@ class DenseKernelCall:
         it = iter(flat)
         tensors = [next(it) if v is None else v for v in self.bind]
         p = self.plan
-        for t, i in zip(tensors, p.inputs):
+        fixed = getattr(self, "input_strides", None)
+        for j, (t, i) in enumerate(zip(tensors, p.inputs)):
             v = p.vals[i]
+            stride = fixed[j] if fixed else None
             if (
                 not isinstance(t, torch.Tensor)
                 or tuple(t.shape) != v.shape
                 or DT.get(t.dtype) != v.dt
                 or t.device != self.device
-                or not t.is_contiguous()
                 or t.layout != torch.strided
+                or (tuple(t.stride()) != stride if stride else not t.is_contiguous())
                 or t.is_neg()
                 or t.is_conj()
             ):
