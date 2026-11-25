@@ -574,3 +574,23 @@ Both compiled paths run their full FX wrappers. At 1,024-token prefill, synchron
 For the full single-layer **decode**, we compared the same exported packed-checkpoint graph on two random weights, two prefixes and five held-out two-step trajectories per combination. The four outputs matched HF bits and strides, cache prefixes stayed intact, and every backend consumed its own cache on step two. The joint pass removed **one launch (29 → 28)**. The device-time change was small and inconsistent: at prefix 1,024, first weight, step one was slower (**564.82 → 571.17 µs**) and step two faster (**565.51 → 563.72 µs**). Synchronized host latency decreased on each of these eight measured weight/prefix/step combinations. Whole-layer Inductor did not meet its existing tolerance; it has no reported latency. No claim about full-model speed follows from these results.
 
 [Raw samples and graphs](../reports/qwen-packed-rotary-gb10.json) · [Second weight](../reports/qwen-packed-rotary-heldout-gb10.json) · [Generated CUDA](../examples/generated/packed-rotary) · [Compute Sanitizer](../reports/packed-rotary-sanitizer-gb10.txt) · [Regression suite](../reports/packed-rotary-stage-acceptance.json). To reproduce with the Transformers-enabled environment, use `python tools/qwen_packed_rotary.py --past 127 1024 --seed-offset 80831 --output /tmp/joint.json`; run `bash tools/sanitize_packed_rotary.sh` for memory, race and synchronization checks.
+
+<a id="phi3-native"></a>
+
+### 原生 Phi-3：保留 V 的视图 / Native Phi-3, full and partial RoPE
+
+Phi-3 原生就使用宽 QKV 投影，无需重新打包权重。`partition_export(ep, sliced_rotary=True)` 识别同一投影上的两段切片，读取共享相位，对 Q/K 旋转部分做两次独立舍入的乘法再相加，未旋转的尾部按位复制。Q/K 写入各自的新张量；V 保持为原张量的视图。以 127-token prefill 为例，返回的 V 在原宽张量中的偏移是 1,792 个 BF16 元素，stride 为 `(260096, 128, 2048, 1)`；换成 `.contiguous()` 虽然数值一样，接口就不对了。匹配条件不成立时保留 ATen。选项默认关闭。
+
+| GB10 设备时间，µs | eager | 原混合分区 | 加入切片旋转融合 |
+|---|---:|---:|---:|
+| 整层：127-token prefill，旋转半头 | 444.07 | 372.85 | 344.74 |
+| 整层：前缀 127，第一步解码，旋转半头 | 306.62 | 284.20 | 268.51 |
+| 整层：前缀 1,024，第一步解码，旋转半头 | 397.65 | 382.22 | 365.83 |
+| 仅 Q/K/V 后处理：1,024-token prefill，旋转半头 | 155.07 | 154.98 | 39.24 |
+| 仅 Q/K/V 后处理：1,024-token prefill，旋转整头 | 278.39 | 274.51 | 34.99 |
+
+These are medians of seven shuffled warm-address replay windows, not model throughput. Batch 2, 12 query heads, 2 KV heads, head width 128; the table uses random weight seed 184406. On independent weight seed 191640, the same 127-prefix first decode went from **294.06 to 277.83 µs** on device and **473.73 to 380.64 µs** with synchronized host calls. The epilogue went from **12 launches to 1**, the complete layer from **26 to 15**. Large (1,024-token) whole-layer prefill was profiled, **not timed**.
+
+Across two weights, both rotary widths (64 and 128), two prefixes and five unseen inputs per combination, each backend carried its own prefill cache into two decode steps. We checked hidden states, probabilities, K/V bits and metadata (including the underlying storage size), mask zeros, unchanged old cache and exact prefixes against a persistent Hugging Face `DynamicCache`. For the isolated epilogue the upstream input was the real hooked projection. Inductor was evaluated on the same exports, but did not pass the layer tolerance or bitwise epilogue gate; its failure details remain in both reports, without a speed ranking.
+
+[First weight: raw windows and FX](../reports/phi3-native-packed-gb10.json) · [Independent weight](../reports/phi3-native-packed-heldout-gb10.json) · [Generated CUDA](../examples/generated/sliced-rotary) · [Sanitizer](../reports/sliced-rotary-sanitizer-gb10.txt) · [Full regression](../reports/phi3-native-stage-acceptance.json). Reproduce with `python tools/phi3_native.py --seed-offset 124093 --past 127 1024 --rotary-dim 64 128 --output /tmp/phi3.json`; change the offset to `131327` for the independent weight. `bash tools/sanitize_sliced_rotary.sh` checks memory, race and synchronization errors.

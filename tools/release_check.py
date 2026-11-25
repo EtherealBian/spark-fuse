@@ -265,6 +265,25 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "phi3_native_prefill_cached",
+                [
+                    opt,
+                    str(ROOT / "tools/phi3_native.py"),
+                    "--past",
+                    "127",
+                    "--rotary-dim",
+                    "64",
+                    "128",
+                    "--seed-offset",
+                    "137413",
+                    "--verify-only",
+                    "--output",
+                    str(report.with_name(report.stem + "-phi3.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (

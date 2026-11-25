@@ -55,7 +55,7 @@ class Branch:
     bshd: bool
 
 
-def _branch(out):
+def _arithmetic(out):
     # Match the ordered arithmetic tree, not node names or module classes.
     if not _is(out, A.add.Tensor, 2):
         return None
@@ -101,6 +101,19 @@ def _branch(out):
             or (len(v.args) == 5 and v.args[4] != 1)
         ):
             return None
+    inside = frozenset((direct, rot, lo, hi, neg, cat, out))
+    if len(inside) != 7 or any(set(n.users) - inside for n in inside if n is not out):
+        return None
+    return x, c, s, inside
+
+
+def _branch(out):
+    m = _arithmetic(out)
+    if m is None:
+        return None
+    x, c, s, inside = m
+    vx, vo = _tensor(x), _tensor(out)
+    _, h, t, d = vx.shape
     # Output stride, including singleton axes, is observable. Only build a view
     # when its exact physical layout agrees with what ATen exported.
     heads = (h * t * d, t * d, d, 1)
@@ -110,9 +123,6 @@ def _branch(out):
     elif vx.transpose(1, 2).is_contiguous() and tuple(vo.stride()) == tokens:
         bshd = True
     else:
-        return None
-    inside = frozenset((direct, rot, lo, hi, neg, cat, out))
-    if len(inside) != 7 or any(set(n.users) - inside for n in inside if n is not out):
         return None
     return Branch(out, x, c, s, inside, bshd)
 

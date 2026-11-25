@@ -1,0 +1,181 @@
+{
+  "checks": [
+    {
+      "check": "tests",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "........................................................................ [ 10%]\n........................................................................ [ 21%]\n........................................................................ [ 31%]\n........................................................................ [ 42%]\n........................................................................ [ 52%]\n........................................................................ [ 63%]\n........................................................................ [ 73%]\n........................................................................ [ 84%]\n........................................................................ [ 94%]\n...................................                                      [100%]\n683 passed in 14.07s\n",
+      "elapsed_s": 15.464120424352586
+    },
+    {
+      "check": "installed_wheel",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 2.8499933276325464
+    },
+    {
+      "check": "qwen_modules",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.737890560179949
+    },
+    {
+      "check": "qwen_modules_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.6354263238608837
+    },
+    {
+      "check": "qwen_attention_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.630837612785399
+    },
+    {
+      "check": "bert_self_output_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "BertSelfOutput verified\n",
+      "elapsed_s": 3.0559150874614716
+    },
+    {
+      "check": "bert_encoder_layer_fixed_order",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "{'eager': (True, None, None), 'unsplit': (False, None, None), 'split': (False, None, None), 'ordered': (True, None, None), 'exported_aten': (True, None, None)}\n",
+      "elapsed_s": 3.2321916734799743
+    },
+    {
+      "check": "bert_host_call_equivalence",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "bert 33 [('eager', True, None), ('export', True, None), ('export_fast', True, None), ('mixed', True, None), ('mixed_fast', True, None)]\n{}\n",
+      "elapsed_s": 3.251399048604071
+    },
+    {
+      "check": "qwen_decoder_layer_residual_barrier",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "33 witness True {'eager': (True, None, None), 'exported_aten': (True, None, None), 'prior': (True, None, None), 'split': (True, None, None)}\n",
+      "elapsed_s": 3.658574877306819
+    },
+    {
+      "check": "qwen_decoder_paired_rotary",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "33 witness True {'eager': (True, None, None), 'exported_aten': (True, None, None), 'prior': (True, None, None), 'split': (True, None, None), 'rotary': (True, None, None)}\n",
+      "elapsed_s": 3.8269541524350643
+    },
+    {
+      "check": "qwen_decode_cache_carry",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "63 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': []}\n",
+      "elapsed_s": 4.053752855397761
+    },
+    {
+      "check": "qwen_decode_head_repeat",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "255 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': [], 'repeat': []}\n1025 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': [], 'repeat': []}\n",
+      "elapsed_s": 4.426318385638297
+    },
+    {
+      "check": "qwen_decode_ordered_scores",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "1023 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': []}\n2047 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': []}\n",
+      "elapsed_s": 4.8520488422364
+    },
+    {
+      "check": "qwen_decode_guarded_bf16_scores",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "1535 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': [], 'guarded': []}\n2047 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': [], 'guarded': []}\n",
+      "elapsed_s": 5.003936401568353
+    },
+    {
+      "check": "qwen_decode_cache_fanout",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "63 True {'eager': [], 'exported_aten': [], 'separate': [], 'fanout': []}\n1024 True {'eager': [], 'exported_aten': [], 'separate': [], 'fanout': []}\n2047 True {'eager': [], 'exported_aten': [], 'separate': [], 'fanout': []}\n",
+      "elapsed_s": 4.950761119835079
+    },
+    {
+      "check": "qwen_decode_packed_swiglu",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "63 True []\n2047 True []\n",
+      "elapsed_s": 5.504429766908288
+    },
+    {
+      "check": "qwen_qkv_checkpoint_layout",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "127 True []\n",
+      "elapsed_s": 4.9460937269032
+    },
+    {
+      "check": "qwen_joint_packed_rotary",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "127 True [] [None, None, None]\n",
+      "elapsed_s": 4.168132672086358
+    },
+    {
+      "check": "phi3_native_prefill_cached",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "64 127 True ['eager', 'base', 'sliced'] [None, None, None]\n128 127 True ['eager', 'base', 'sliced'] [None, None, None]\n",
+      "elapsed_s": 4.696872101165354
+    },
+    {
+      "check": "t5_gated-gelu",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gated-gelu [('eager', True, None, None), ('exported_aten', True, None, None), ('mixed', True, None, None)]\n",
+      "elapsed_s": 3.1879763854667544
+    },
+    {
+      "check": "t5_gated-gelu_pytorch_tanh",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gated-gelu_pytorch_tanh [('eager', True, None, None), ('exported_aten', True, None, None), ('mixed', True, None, None)]\n",
+      "elapsed_s": 3.003625934012234
+    },
+    {
+      "check": "all_low_precision_activation_encodings",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "torch.float16 1 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.float16 4 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.bfloat16 1 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.bfloat16 4 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\n",
+      "elapsed_s": 2.246889039874077
+    },
+    {
+      "check": "wide_cached_score_schedules",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "scores 24 8192 float16 31885 pass\nscores 24 8192 float16 39804 pass\nscores 24 8192 float16 47723 pass\nscores 24 8192 float16 55642 pass\nscores2 24 2048 float16 32395 pass\nscores2 24 2048 float16 40314 pass\nscores2 24 2048 float16 48233 pass\nscores2 24 2048 float16 56152 pass\nscores 384 4096 bfloat16 32497 pass\nscores 384 4096 bfloat16 40416 pass\nscores 384 4096 bfloat16 48335 pass\nscores 384 4096 bfloat16 56254 pass\n",
+      "elapsed_s": 2.2048031417652965
+    },
+    {
+      "check": "dynamic_native_shape_matrix",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gate verify only excluded: []\nresnorm2 verify only excluded: []\nmean verify only excluded: []\n",
+      "elapsed_s": 2.4074085475876927
+    },
+    {
+      "check": "offline_campaign_evidence",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "{\"run\": \"gb10-attention\", \"panel\": \"attention\", \"indexed\": 122, \"passed\": 117, \"distinct_sources_verified\": 44, \"missing_source\": 0, \"state\": \"in progress at capture\"}\n{\"run\": \"gb10-overnight\", \"panel\": \"general\", \"indexed\": 230, \"passed\": 224, \"distinct_sources_verified\": 55, \"missing_source\": 87, \"state\": \"in progress at capture\"}\n",
+      "elapsed_s": 0.26637734565883875
+    }
+  ],
+  "passed": true,
+  "completed_epoch": 1795632960.6442685
+}
