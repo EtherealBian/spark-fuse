@@ -472,6 +472,8 @@ def capture_export(
     int8_rhs_layout="preserve" or "column_major" admits a signed W8A8 projection with direct,
     frozen full-storage RHS buffers without changing the GEMM. "packed_fanout" instead
     combines 2–4 frozen weights into one library GEMM and materializes live compact branch outputs.
+    "packed_groups" applies this rewrite to 2–8 complete disjoint groups in one static graph.
+    All signed GEMMs must be covered. It does not share snapshots across shape families.
     request_backend="native" stages and clones a flat tuple of fresh outputs (or one tensor)
     in a single host call. Other output contracts remain supported by the default Python path.
     slot_copy_backend="cuda" optionally compiles one byte-copy kernel for run_into() with
@@ -479,19 +481,32 @@ def capture_export(
     fresh_copy_backend="cuda" separately opts the fresh call into that copy grid. Each
     output still owns an independent allocation; the default is one ATen clone per output.
     """
-    return _capture_export(
-        ep,
-        example,
-        audit,
-        backend,
-        partition_options,
-        max_static_bytes,
-        None,
-        int8_rhs_layout=int8_rhs_layout,
-        request_backend=request_backend,
-        slot_copy_backend=slot_copy_backend,
-        fresh_copy_backend=fresh_copy_backend,
-    )
+    try:
+        return _capture_export(
+            ep,
+            example,
+            audit,
+            backend,
+            partition_options,
+            max_static_bytes,
+            None,
+            int8_rhs_layout=int8_rhs_layout,
+            request_backend=request_backend,
+            slot_copy_backend=slot_copy_backend,
+            fresh_copy_backend=fresh_copy_backend,
+        )
+    except RuntimeError as exc:
+        # The static int8 geometry is necessary but does not guarantee that the installed
+        # cuBLASLt offers an algorithm for this layout. Reject that specific capability miss;
+        # do not mask OOM, asynchronous device failures or other library errors.
+        if (
+            int8_rhs_layout == "packed_groups"
+            and "CUBLAS_STATUS_NOT_SUPPORTED when calling cublasLtMatmul" in str(exc)
+        ):
+            raise Unsupported(
+                "cuBLASLt does not support a matrix geometry in this grouped export"
+            ) from exc
+        raise
 
 
 @torch.inference_mode()
@@ -524,13 +539,18 @@ def _capture_export(
         raise ValueError("choose aten without partition options, or mixed")
     if type(max_static_bytes) is not int or max_static_bytes < 1:
         raise ValueError("positive byte limit required")
-    if int8_rhs_layout not in (None, "preserve", "column_major", "packed_fanout") or (
-        shared is not None and int8_rhs_layout not in (None, "packed_fanout")
-    ):
+    if int8_rhs_layout not in (
+        None,
+        "preserve",
+        "column_major",
+        "packed_fanout",
+        "packed_groups",
+    ) or (shared is not None and int8_rhs_layout not in (None, "packed_fanout")):
         raise ValueError(
-            "choose a single-export W8A8 snapshot layout: preserve, column_major, or packed_fanout"
+            "choose a single-export W8A8 snapshot layout: preserve, column_major, packed_fanout, or packed_groups"
         )
-    fanout = int8_rhs_layout == "packed_fanout"
+    multiple = int8_rhs_layout == "packed_groups"
+    fanout = int8_rhs_layout == "packed_fanout" or multiple
     if (packed_descriptor is not None) != (shared is not None and fanout):
         raise ValueError("shared packed capture requires the first member descriptor")
     if fanout and (
@@ -539,7 +559,7 @@ def _capture_export(
             (partition_options or {}).get(k) is True for k in ("token_quant", "group_epilogues")
         )
     ):
-        raise ValueError("packed_fanout requires mixed token_quant and group_epilogues")
+        raise ValueError(f"{int8_rhs_layout} requires mixed token_quant and group_epilogues")
     quantized = int8_rhs_layout is not None
     _validate_export(
         ep,
@@ -575,7 +595,9 @@ def _capture_export(
         if fanout:
             from .packed_projection import preflight, prepare
 
-            source_keys, _, source_size = preflight(raw, dev, example, audit, max_static_bytes)
+            source_keys, _, source_size = preflight(
+                raw, dev, example, audit, max_static_bytes, multiple=multiple
+            )
         elif quantized:
             # Reject malformed or aliased source state before even the reference BLAS call.
             # Check again on the partitioned/snapshotted graph, whose users may differ.
@@ -597,7 +619,7 @@ def _capture_export(
                     raise Unsupported("missing shared packed RHS")
                 reuse = (inventory_descriptor, shared[weight_name])
             gm, recs, adopted, keys, size = prepare(
-                gm, recs, dev, example, audit, max_static_bytes, reuse=reuse
+                gm, recs, dev, example, audit, max_static_bytes, reuse=reuse, multiple=multiple
             )
             if keys != source_keys or size != source_size:
                 raise Unsupported("mixed packed fanout changed live model state")

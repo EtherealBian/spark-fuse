@@ -162,6 +162,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "stacked_bert_packed_groups",
+                [
+                    opt,
+                    str(ROOT / "tools/stacked_bert_panel.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-stacked-bert.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "whole_request_policy_selection",
                 [
                     opt,

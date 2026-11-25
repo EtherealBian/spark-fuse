@@ -15,7 +15,7 @@ SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 
 | 工作负载 | 同机结果 | 口径 |
 |---|---|---|
 | [可见残差 RMSNorm](reports/accepted-resnorm2-32x1536-bf16.json)，BF16，`32 × 1536` | eager 2.961、Inductor 1.827、SparkFuse 1.850 µs | 热地址、设备重放时间；这组 Inductor 略快 |
-| [量化 BERT 编码层](docs/performance.md#bert-w8a8)，33 个 token | 59 → 16 次 kernel 发射 | 仅 Q/K/V 使用 W8A8；完整层的两个输出与量化 eager 逐字节比较 |
+| [四层 BERT 编码器](docs/performance.md#stacked-bert)，33 个 token | 233 → 64 次 kernel 发射 | 仅 Q/K/V 使用 W8A8；逐层返回隐藏状态和注意力概率，8 个输出与量化 eager 逐字节一致 |
 | [21 输出诊断图](docs/performance.md#fused-slot-copy)，33 行 | 89.21 → 36.55 µs | 同步单请求，逐个写入预分配张量 → 一个 CUDA kernel 批量写入 |
 
 [注意力分数扫描](reports/campaign-final-attention.md)的 290 个有效对照中，SparkFuse 有 125 个设备时间更短。调用方需要独占新输出时，可[批量写回新分配的张量](docs/performance.md#fresh-transport)，不必预先分配缓冲区。真实框架实验使用随机权重。子图提速不保证整层提速：[一个 Qwen2 长度反而变慢](docs/performance.md#qwen-packed-mean)。GEMM 由 PyTorch 执行；范围限于单 GPU 前向推理，支持静态形状，以及部分 token 行数有界的动态子图。
@@ -38,4 +38,4 @@ python -m pytest -q
 
 SparkFuse turns functional regions of a `torch.export` inference graph into readable CUDA C++ on NVIDIA DGX Spark. It uses values consumed outside a region to decide what a kernel must write. For example, compare [RMSNorm alone](examples/generated/resnorm.cu) with [RMSNorm that also returns the residual](examples/generated/resnorm2.cu). The mixed execution path leaves unsupported operators and matrix multiplications in PyTorch.
 
-The table above separates device replay, launch count and complete-request latency. On the BF16 residual example, SparkFuse took 1.850 µs versus 1.827 µs for Inductor. In a BERT layer with W8A8 Q/K/V, sharing the input quantizer and packing three projections reduced whole-layer launches from 59 to 16 at 33 tokens. These are random-weight inference experiments, not model quality measurements. Follow the commands above to export a graph, inspect its CUDA and benchmark all three backends. The [performance notes](docs/performance.md) includes Qwen2, BERT, Phi-3 and T5 results, raw measurements, and cases where a change slowed the layer down.
+The table above separates device replay, launch count and complete-request latency. On the BF16 residual example, SparkFuse took 1.850 µs versus 1.827 µs for Inductor. In a four-layer BERT stack with W8A8 Q/K/V, packing each layer’s projections reduced launches from 233 to 64 at 33 tokens while retaining all eight observable outputs. These are random-weight inference experiments, not model quality measurements. Follow the commands above to export a graph, inspect its CUDA and benchmark all three backends. The [performance notes](docs/performance.md) include Qwen2, BERT, Phi-3 and T5 results, raw measurements, and cases where a change slowed the layer down.

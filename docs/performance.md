@@ -1046,3 +1046,19 @@ The [12-case report](../reports/request-policy-gb10.json) contains the timings, 
 三条路径都为八次请求分配了 **168** 个 CUDA 张量，保留了同样的 7,168,000 字节。收益来自减少逐张量拷贝发射，不能声称减少分配。profiler 中，ATen 的 23 次设备拷贝变为 2 次输入拷贝和 1 个输出 kernel。三个大输出的 prefill 例不总是受益：在显式 stream 上，同步延迟 50.98 → 53.37 µs，排队时则是 43.86 → 41.02 µs（种子 1674131）。需要最低分配开销的调用方仍可使用前述预分配接口。
 
 All three arms return fresh, independently owned tensors. The [complete panel](../reports/fresh-transport-gb10.json) covers two seeds, three projection graphs, default and explicit streams, and six single-output controls. The projections reuse the archived CPU INT32 oracle's matching inputs and outputs; all public tensors are checked before and after the handles close. Run `python tools/fresh_transport_panel.py --output /tmp/fresh.json` and `bash tools/sanitize_fresh_transport.sh` to reproduce the [memory and synchronization checks](../reports/fresh-transport-sanitizer-gb10.txt).
+
+<a id="stacked-bert"></a>
+### 四层 BERT 的 Q/K/V：按层打包，在一次请求中执行 / Packed groups across encoder layers
+
+以前 `packed_fanout` 只接受一组投影。新的 `int8_rhs_layout="packed_groups"` 从同一个静态导出图中识别 2–8 组投影；每组 2–4 个独立、冻结的有符号整数矩阵乘必须读取同一份量化激活。按 FX 拓扑顺序为每组生成一个紧凑权重、一次库 GEMM 和一个 CUDA 后处理 kernel。不跨层拼接权重，输出也不是大张量上的切片。编译器先检查所有组是否完整覆盖整数 GEMM、权重是否不共享存储、是否存在过早读取累加值的使用者，再开始打包。单组接口和已有的形状族接口不变。
+
+DGX Spark 上用两组不同的随机权重测试真实的 Hugging Face `BertLayer` 堆叠。输入为 BF16，batch 1；仅 Q/K/V 用 W8A8。四层、33 个 token 时，量化 eager 的一次普通前向有 **233** 次 kernel 发射；独立量化为 **88** 次，共享每层输入量化为 **72** 次，再把每层三次 GEMM 合为一次后为 **64** 次。四层的隐藏状态及注意力概率全部对外可见；8 个留出请求的 8 个输出逐字节匹配量化 eager。
+
+| 四层，33 个 token；轮换请求，同步延迟（µs） | 量化 eager | 层内共享量化 | 逐层单独打包并调用 | 整图分组打包 |
+|---|---:|---:|---:|---:|
+| 权重种子 1981121 | 1749.32 | 459.51 | 451.50 | 431.24 |
+| 权重种子 1993243 | 1755.40 | 494.20 | 488.02 | 462.44 |
+
+逐层调用也有胜例：两层、17 个 token、第一组权重的同步延迟为 261.90 µs，整图为 264.76 µs。两种 Inductor 配置都运行了，但没有在这些用例的所有可见输出上达到逐字节一致，未列入计时。这里不据此声称快于 Inductor。库不提供相应矩阵尺寸的算法时，整图分组模式会明确拒绝，不会把 OOM 或其他执行错误当成可回退的能力限制。
+
+The [full panel](../reports/stacked-bert-gb10.json) records all eight cases, both Inductor gates, two CPU INT32 Q/K/V audits per layer, weight and output digests, setup cost, launch traces and seven shuffled timing windows. Layerwise and whole-graph paths expose exactly the same intermediate hidden states and probabilities. The control captures the residual in the first layer, rather than charging it an extra host operation. Only the fixed-shape single-export path supports multi-group packing; this is not an end-to-end BERT task or accuracy benchmark. Reproduce with `python tools/stacked_bert_panel.py --output /tmp/stacked.json` in the Transformers environment and `bash tools/sanitize_packed_groups.sh`.

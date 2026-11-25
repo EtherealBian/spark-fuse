@@ -38,3 +38,21 @@ def replace_qkv(block):
     for key in ("query", "key", "value"):
         setattr(attention, key, TokenLinear(getattr(attention, key)))
     return block
+
+
+class ObservableStack(nn.Module):
+    """Each distinct EncoderBlock keeps its hidden state and attention probabilities observable."""
+
+    def __init__(self, layers):
+        super().__init__()
+        self.layers = nn.ModuleList(layers)
+
+    def forward(self, x, residual=None):
+        hidden = x
+        outputs = []
+        for i, layer in enumerate(self.layers):
+            hidden, probs = (
+                layer(hidden, residual) if i == 0 and residual is not None else layer(hidden)
+            )
+            outputs.extend((hidden, probs))
+        return tuple(outputs)
