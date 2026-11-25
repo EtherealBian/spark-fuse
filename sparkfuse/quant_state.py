@@ -23,7 +23,7 @@ def _static(t, dtype):
     )
 
 
-def certify(ep):
+def certify(ep, *, activation=False):
     """Admit the extra operators only inside the exact quantizer and bounded signed GEMM."""
     added = set()
     codes = set()
@@ -33,6 +33,8 @@ def certify(ep):
             continue
         v = node.meta.get("val")
         site = candidate(node, v.device) if isinstance(v, torch.Tensor) else None
+        if site is None and activation and isinstance(v, torch.Tensor):
+            site = candidate(node, v.device, activation=True)
         if site is not None:
             added.update(site.members)
             codes.add(node)

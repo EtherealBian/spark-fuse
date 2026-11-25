@@ -31,7 +31,7 @@ _DTYPES = {torch.float16, torch.bfloat16, torch.float32, torch.int32, torch.int6
 _CAPTURE = threading.Lock()
 
 
-def _validate_export(ep, *, quantized=False):
+def _validate_export(ep, *, quantized=False, activation=False):
     if ep.range_constraints or any(
         s.kind.name != "USER_OUTPUT" for s in ep.graph_signature.output_specs
     ):
@@ -40,7 +40,7 @@ def _validate_export(ep, *, quantized=False):
     if quantized:
         from .quant_state import certify
 
-        added = certify(ep)
+        added = certify(ep, activation=activation)
     for n in ep.graph.nodes:
         if n.op in ("placeholder", "output"):
             continue
@@ -509,7 +509,11 @@ def _capture_export(
     ):
         raise ValueError("packed_fanout requires mixed token_quant and group_epilogues")
     quantized = int8_rhs_layout is not None
-    _validate_export(ep, quantized=quantized)
+    _validate_export(
+        ep,
+        quantized=quantized,
+        activation=(partition_options or {}).get("activation_quant") is True,
+    )
     if (
         not isinstance(example, tuple)
         or not example

@@ -45,7 +45,7 @@ class Site:
     dtype: str
 
 
-def candidate(q, dev):
+def candidate(q, dev, *, activation=False):
     if not (_is(q, A.to.dtype, 2) and q.args[1] is torch.int8 and q.users):
         return None
     c = q.args[0]
@@ -66,8 +66,9 @@ def candidate(q, dev):
     ):
         return None
     low, z = s.args[0], f.args[0]
-    if not (
-        _is(z, A.add.Tensor, 2) and _is(low, A.clamp_min.default, 2) and _num(low.args[1], 1.0e-5)
+    residual = _is(z, A.add.Tensor, 2) and not activation
+    if not (residual or activation) or not (
+        _is(low, A.clamp_min.default, 2) and _num(low.args[1], 1.0e-5)
     ):
         return None
     peak = low.args[0]
@@ -76,7 +77,7 @@ def candidate(q, dev):
     absolute, dims, _ = peak.args
     if not (_is(absolute, A.abs.default, 1) and absolute.args[0] is f):
         return None
-    v = z.meta.get("val")
+    v = getattr(z, "meta", {}).get("val")
     if (
         not isinstance(v, torch.Tensor)
         or v.dtype not in (torch.float16, torch.bfloat16)
@@ -95,13 +96,13 @@ def candidate(q, dev):
     ):
         return None
     if (
-        not all(_dense(n, shape, v.dtype, dev) for n in (*z.args, z))
+        not all(_dense(n, shape, v.dtype, dev) for n in ((*z.args, z) if residual else (z,)))
         or not all(_dense(n, shape, torch.float32, dev) for n in (f, absolute, d, t, c))
         or not all(_dense(n, (*shape[:-1], 1), torch.float32, dev) for n in (peak, low, s))
         or not _dense(q, shape, torch.int8, dev)
     ):
         return None
-    members = (z, f, absolute, peak, low, s, d, t, c, q)
+    members = ((z,) if residual else ()) + (f, absolute, peak, low, s, d, t, c, q)
     guards, escapes = [], set()
     for n in members:
         for u in n.users:
@@ -124,7 +125,7 @@ def candidate(q, dev):
         return None
     live = [(n, role) for n, role in ((z, "residual"), (q, "codes"), (s, "scale")) if n in escapes]
     return Site(
-        z.args,
+        z.args if residual else (z,),
         members,
         guards,
         tuple(n for n, _ in live),
@@ -143,14 +144,19 @@ def emit(site):
     )
     sig = {"residual": "N* z", "codes": "signed char* q", "scale": "float* so"}
     ptr = {"residual": "N*", "codes": "signed char*", "scale": "float*"}
+    residual = len(site.inputs) == 2
+    name = "residual_token_quant" if residual else "activation_token_quant"
+    input_decl = "const N* x, const N* r" if residual else "const N* x"
+    input_args = "(const N*)p[0],(const N*)p[1]" if residual else "(const N*)p[0]"
+    read = f"{store}({load}(x[base+i])+{load}(r[base+i]))" if residual else "x[base+i]"
     params = ", ".join(sig[k] for k in site.roles)
-    args = ", ".join(f"({ptr[k]})p[{i + 2}]" for i, k in enumerate(site.roles))
+    args = ", ".join(f"({ptr[k]})p[{i + len(site.inputs)}]" for i, k in enumerate(site.roles))
     return f"""#include <cuda_runtime.h>
 #include <cuda_fp16.h>
 #include <cuda_bf16.h>
 using N = {ty};
 constexpr int W = {w}, T = 128;
-__global__ void residual_token_quant(const N* x, const N* r, {params}) {{
+__global__ void {name}({input_decl}, {params}) {{
     const int base=int(blockIdx.x)*W, lane=threadIdx.x%32, warp=threadIdx.x/32;
     __shared__ unsigned peaks[T/32];
     __shared__ float scale;
@@ -160,7 +166,7 @@ __global__ void residual_token_quant(const N* x, const N* r, {params}) {{
     for (int k=0; k<(W+T-1)/T; ++k) {{
         int i=threadIdx.x+k*T;
         if (i<W) {{
-            N a={store}({load}(x[base+i])+{load}(r[base+i]));
+            N a={read};
             keep[k]=a;
             {"z[base+i]=a;" if "residual" in site.roles else ""}
             float f={load}(a);
@@ -193,13 +199,13 @@ __global__ void residual_token_quant(const N* x, const N* r, {params}) {{
     }}
 }}
 extern "C" int launch(void** p,int,void* stream) {{
-    residual_token_quant<<<{rows},T,0,(cudaStream_t)stream>>>((const N*)p[0],(const N*)p[1],{args});
+    {name}<<<{rows},T,0,(cudaStream_t)stream>>>({input_args},{args});
     return int(cudaGetLastError());
 }}
 """
 
 
-def fuse_token_quant(gm, device, host_backend):
+def fuse_token_quant(gm, device, host_backend, *, activation=False, residual=True):
     records = []
     dev = torch.device(device)
     if dev.type != "cuda":
@@ -207,13 +213,15 @@ def fuse_token_quant(gm, device, host_backend):
     if dev.index is None:
         dev = torch.device("cuda", torch.cuda.current_device())
     for q in list(gm.graph.nodes):
-        site = candidate(q, dev)
+        site = candidate(q, dev) if residual else None
+        if site is None and activation:
+            site = candidate(q, dev, activation=True)
         if site is None:
             continue
         source = emit(site)
         types = {"codes": "i8", "scale": "f32", "residual": site.dtype}
         prog = IndexProgram(
-            [site.shape] * 2,
+            [site.shape] * len(site.inputs),
             [tuple(n.meta["val"].shape) for n in site.outs],
             site.dtype,
             dev,
@@ -232,7 +240,7 @@ def fuse_token_quant(gm, device, host_backend):
             gm.graph.erase_node(n)
         records.append(
             dict(
-                kind="residual_token_quant",
+                kind="residual_token_quant" if len(site.inputs) == 2 else "activation_token_quant",
                 module=label,
                 live_ins=[n.name for n in site.inputs],
                 live_outs=[n.name for n in site.outs],

@@ -228,6 +228,8 @@ def partition_export(
     projection_epilogue=False,
     group_epilogues=False,
     affine_epilogues=False,
+    activation_quant=False,
+    share_activation_quant=False,
 ):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
     if ordered_scores not in (None, "loop", "slots", "guarded") or (
@@ -252,10 +254,20 @@ def partition_export(
         if schema is not None and schema.is_mutable:
             raise Unsupported("requires functional graph without mutations")
     records = []
-    if token_quant:
+    if share_activation_quant:
+        if not activation_quant:
+            raise ValueError("share_activation_quant requires activation_quant")
+        from .shared_quant import share
+
+        records.extend(share(gm, device))
+    if token_quant or activation_quant:
         from .token_quant import fuse_token_quant
 
-        records.extend(fuse_token_quant(gm, device, host_backend))
+        records.extend(
+            fuse_token_quant(
+                gm, device, host_backend, activation=activation_quant, residual=token_quant
+            )
+        )
     if affine_epilogues:
         from .projection_affine import fuse_affine
 

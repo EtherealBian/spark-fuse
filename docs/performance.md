@@ -966,3 +966,22 @@ On GB10 the ordinary graph launches **28 / 10 / 5 / 3** kernels (eager / previou
 The same graph runs three compute kernels in both modes. At 21 outputs, the per-request trace still shows 23 device copies (two inputs plus 21 results); the new path removes the 21 clones/allocations. In a queue of eight this is **168 → 0 hot CUDA allocations**, after paying for the ring up front. At the second seed, rotating latency was 116.03 → 88.72 µs. The longer three-output case was slower for a synchronous request at both seeds. The caller controls buffer reuse; this does not change the default fresh-result API. Seven shuffled windows include the complete request; the retained outputs of all eight requests match the archived arithmetic oracle byte for byte.
 
 [Allocator counters, copy traces and raw clocks](../reports/output-slot-gb10.json) · [Compute Sanitizer](../reports/output-slot-sanitizer-gb10.txt). Reproduce after `source tools/env.sh` with `python tools/output_slot_panel.py --output /tmp/slots.json` and `bash tools/sanitize_output_slots.sh`. The plain-process test separately checks backing storage expires when the caller drops it; the instrumentation can retain Python arguments. Stream ordering and destination version increments are tested under all three sanitizer tools.
+
+<a id="bert-w8a8"></a>
+### 同一份输入，三条量化投影 / W8A8 Q/K/V inside a BERT layer
+
+实验使用 Hugging Face 的 `BertLayer`（768 维、12 个头、FFN 3072 维）。只把 Q/K/V 三个线性层换成独立的 W8A8 模块：权重按输出通道量化，激活按 token 量化。导出图里三个模块分别读取同一个激活。若编码和尺度不对外可见，编译器可以只计算一份，供三个整数 GEMM 使用；冻结权重后还可把三个 GEMM 打包成一个。注意力、FFN 和 LayerNorm 仍按原图执行。
+
+| 长度，第一组权重 | 整层 CUDA 发射：量化 eager / 独立融合 / 共享量化 / 再打包 | 热图设备时间：独立 → 共享 → 再打包（µs） | 轮换输入、同步完整请求：独立 → 共享 → 再打包（µs） |
+|---|---|---|---|
+| 17 | 58 / 22 / 18 / 16 | 79.97 → 75.88 → 67.01 | 101.66 → 97.54 → 120.64 |
+| 33，含外部残差 | 59 / 22 / 18 / 16 | 81.43 → 76.56 → 67.85 | 104.80 → 100.53 → 91.46 |
+| 129 | 58 / 22 / 18 / 16 | 109.48 → 105.06 → 102.51 | 131.50 → 128.99 → 122.22 |
+
+17 个 token 时，第一次打包让同步请求变慢；换一组权重和请求后，打包的同步延迟从 97.10 降到 87.45 µs，热图设备时间却从 76.03 增到 99.06 µs。不能用发射次数代替请求耗时。33 和 129 两个长度的打包路径在两组权重下都改善了这两项指标。
+
+`activation_quant=True` recognizes read-only activation quantization; `share_activation_quant=True` additionally shares hidden quantizers of eligible sibling projections. Observable intermediate codes or scales, unrelated inputs and unknown intervening operations prevent sharing. The panel uses `min_ops=100000` to keep unrelated generic arithmetic in PyTorch. The optional `packed_fanout` weight layout is selected at capture.
+
+Across two random-weight seeds, three lengths and eight held-out requests per case, both the final hidden states and attention probabilities matched **quantized eager** byte for byte. Each Q/K/V narrow result was checked using independent CPU INT32 accumulation. Quantization itself changes the original BF16 model: case-wise maximum hidden-state differences ranged from 0.03125 to 0.0390625. Both default and cast-aware Inductor missed the byte gate and are excluded from equivalent-precision timings. Batch size was one, dropout was off, and no mask or pretrained weights were used.
+
+[Raw timing windows and per-output checks](../reports/bert-w8a8-gb10.json) · [Compute Sanitizer](../reports/bert-w8a8-sanitizer-gb10.txt). To reproduce, source `tools/env.sh`, then run `python tools/bert_w8a8_panel.py --output /tmp/bert-w8a8.json` in a CUDA PyTorch environment with Transformers 4.51.3; run `bash tools/sanitize_shared_quant.sh` for the focused kernel checks.

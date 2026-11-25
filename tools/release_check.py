@@ -138,6 +138,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "quantized_bert_encoder_layer",
+                [
+                    opt,
+                    str(ROOT / "tools/bert_w8a8_panel.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-bert-w8a8.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "shared_state_shape_family",
                 [
                     opt,

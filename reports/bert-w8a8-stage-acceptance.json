@@ -1,0 +1,300 @@
+{
+  "checks": [
+    {
+      "check": "tests",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "........................................................................ [  7%]\n........................................................................ [ 14%]\n........................................................................ [ 22%]\n........................................................................ [ 29%]\n........................................................................ [ 36%]\n........................................................................ [ 44%]\n........................................................................ [ 51%]\n........................................................................ [ 58%]\n........................................................................ [ 66%]\n........................................................................ [ 73%]\n........................................................................ [ 80%]\n........................................................................ [ 88%]\n........................................................................ [ 95%]\n..........................................                               [100%]\n=============================== warnings summary ===============================\ntests/test_family.py: 19 warnings\ntests/test_output_slots.py: 10 warnings\ntests/test_packed_family.py: 20 warnings\ntests/test_packed_projection.py: 8 warnings\ntests/test_projection_affine.py: 5 warnings\ntests/test_quant_state.py: 11 warnings\ntests/test_resident.py: 13 warnings\ntests/test_resident_io.py: 15 warnings\ntests/test_shared_quant.py: 3 warnings\n  /usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n    return cls.__new__(cls, *args)\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n978 passed, 104 warnings in 21.71s\n",
+      "elapsed_s": 23.20314472541213
+    },
+    {
+      "check": "installed_wheel",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 2.9936863156035542
+    },
+    {
+      "check": "residual_token_quant_projection",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "W1126 05:41:37.419000 3926112 torch/_inductor/utils.py:1953] [0/1] Not enough SMs to use max_autotune_gemm mode\n723553 linear3d {'eager': True, 'aten': True, 'mixed': True, 'inductor': False, 'cast_inductor': False, 'fused': True} {}\n",
+      "elapsed_s": 4.8044758988544345
+    },
+    {
+      "check": "int32_dequantization_ablation",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "934861 b16 isolated passed\nW1126 05:41:42.383000 3926231 torch/_inductor/utils.py:1953] [1/0] Not enough SMs to use max_autotune_gemm mode\n934861 b16 projection passed\n",
+      "elapsed_s": 4.768869343213737
+    },
+    {
+      "check": "frozen_w8a8_rhs_layout",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\nW1126 05:41:46.969000 3926350 torch/_inductor/utils.py:1953] [0/1] Not enough SMs to use max_autotune_gemm mode\n1051397 h33 checked\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n1051397 h33-control checked\n",
+      "elapsed_s": 4.667112055234611
+    },
+    {
+      "check": "grouped_projection_epilogues",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "1220141 h17 tails checked\nW1126 05:41:51.875000 3926470 torch/_inductor/utils.py:1953] [0/0] Not enough SMs to use max_autotune_gemm mode\n1220141 h17 fanout checked\n",
+      "elapsed_s": 4.712777519598603
+    },
+    {
+      "check": "packed_frozen_projection_fanout",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\nW1126 05:41:56.425000 3926589 torch/_inductor/utils.py:1953] [0/1] Not enough SMs to use max_autotune_gemm mode\n1301381 h17 checked\n",
+      "elapsed_s": 4.8054031524807215
+    },
+    {
+      "check": "native_resident_request_io",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n1506559 qkv-short checked\n1506559 one-output checked\n",
+      "elapsed_s": 2.6175180822610855
+    },
+    {
+      "check": "packed_int8_shape_family",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n1575923 {'independent': 5830656, 'shared': 2676736} smoke\n",
+      "elapsed_s": 2.956475183367729
+    },
+    {
+      "check": "biased_narrow_signed_projections",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n1687829 short {} None\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n1687829 visible {} None\n",
+      "elapsed_s": 2.8701876336708665
+    },
+    {
+      "check": "caller_owned_output_slots",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n1687829 short {'fresh': {'new_cuda_allocations': 24, 'retained_cuda_bytes': 77824}, 'run_into': {'new_cuda_allocations': 0, 'retained_cuda_bytes': 0}} None\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n1687829 visible {'fresh': {'new_cuda_allocations': 168, 'retained_cuda_bytes': 7168000}, 'run_into': {'new_cuda_allocations': 0, 'retained_cuda_bytes': 0}} None\n",
+      "elapsed_s": 2.7370397774502635
+    },
+    {
+      "check": "quantized_bert_encoder_layer",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n1752911 17 {} {'eager': True, 'independent': True, 'shared': True, 'packed': True} None\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n1752911 33 {} {'eager': True, 'independent': True, 'shared': True, 'packed': True} None\n",
+      "elapsed_s": 4.039999555796385
+    },
+    {
+      "check": "shared_state_shape_family",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n",
+      "elapsed_s": 4.89916458260268
+    },
+    {
+      "check": "resident_qwen_requests",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n/usr/lib/python3.12/copyreg.py:99: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.\n  return cls.__new__(cls, *args)\n",
+      "elapsed_s": 4.330788129009306
+    },
+    {
+      "check": "qwen_context_site_replay",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "33 517129 flat:256:0:1 -> flat:128:0:4 selected flat:256:0:1 1.0039729932216428 smoke\n",
+      "elapsed_s": 6.870787077583373
+    },
+    {
+      "check": "qwen_rank3_packed_boundary",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 4.489890615455806
+    },
+    {
+      "check": "qwen_modules",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.6497447611764073
+    },
+    {
+      "check": "qwen_modules_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.842219182290137
+    },
+    {
+      "check": "qwen_attention_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "",
+      "elapsed_s": 3.7428307477384806
+    },
+    {
+      "check": "bert_self_output_native",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "BertSelfOutput verified\n",
+      "elapsed_s": 2.987438860349357
+    },
+    {
+      "check": "bert_encoder_layer_fixed_order",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "{'eager': (True, None, None), 'unsplit': (False, None, None), 'split': (False, None, None), 'ordered': (True, None, None), 'exported_aten': (True, None, None)}\n",
+      "elapsed_s": 3.3308199094608426
+    },
+    {
+      "check": "bert_host_call_equivalence",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "bert 33 [('eager', True, None), ('export', True, None), ('export_fast', True, None), ('mixed', True, None), ('mixed_fast', True, None)]\n{}\n",
+      "elapsed_s": 3.3090233989059925
+    },
+    {
+      "check": "qwen_decoder_layer_residual_barrier",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "33 witness True {'eager': (True, None, None), 'exported_aten': (True, None, None), 'prior': (True, None, None), 'split': (True, None, None)}\n",
+      "elapsed_s": 3.7279788311570883
+    },
+    {
+      "check": "qwen_decoder_paired_rotary",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "33 witness True {'eager': (True, None, None), 'exported_aten': (True, None, None), 'prior': (True, None, None), 'split': (True, None, None), 'rotary': (True, None, None)}\n",
+      "elapsed_s": 3.7243076786398888
+    },
+    {
+      "check": "qwen_decode_cache_carry",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "63 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': []}\n",
+      "elapsed_s": 4.007927927188575
+    },
+    {
+      "check": "qwen_decode_head_repeat",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "255 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': [], 'repeat': []}\n1025 True {'eager': [], 'exported_aten': [], 'rotary': [], 'append': [], 'repeat': []}\n",
+      "elapsed_s": 4.516938789747655
+    },
+    {
+      "check": "qwen_decode_ordered_scores",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "1023 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': []}\n2047 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': []}\n",
+      "elapsed_s": 4.97429065965116
+    },
+    {
+      "check": "qwen_decode_guarded_bf16_scores",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "1535 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': [], 'guarded': []}\n2047 True {'eager': [], 'exported_aten': [], 'framework': [], 'loop': [], 'slots': [], 'guarded': []}\n",
+      "elapsed_s": 4.941681846044958
+    },
+    {
+      "check": "qwen_decode_cache_fanout",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "63 True {'eager': [], 'exported_aten': [], 'separate': [], 'fanout': []}\n1024 True {'eager': [], 'exported_aten': [], 'separate': [], 'fanout': []}\n2047 True {'eager': [], 'exported_aten': [], 'separate': [], 'fanout': []}\n",
+      "elapsed_s": 4.971621051430702
+    },
+    {
+      "check": "qwen_decode_packed_swiglu",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "63 True []\n2047 True []\n",
+      "elapsed_s": 5.741296083666384
+    },
+    {
+      "check": "qwen_qkv_checkpoint_layout",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "127 True []\n",
+      "elapsed_s": 4.937781752087176
+    },
+    {
+      "check": "qwen_joint_packed_rotary",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "127 True [] [None, None, None]\n",
+      "elapsed_s": 4.258728752844036
+    },
+    {
+      "check": "phi3_native_prefill_cached",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "64 127 True ['eager', 'base', 'sliced'] [None, None, None]\n128 127 True ['eager', 'base', 'sliced'] [None, None, None]\n",
+      "elapsed_s": 4.9222303833812475
+    },
+    {
+      "check": "phi3_chunked_cache_updates",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "64 127 (1, 1) True ['eager', 'sliced', 'cache'] [None, None]\n64 127 (4, 3) True ['eager', 'sliced', 'cache'] [None, None]\n128 127 (1, 1) True ['eager', 'sliced', 'cache'] [None, None]\n128 127 (4, 3) True ['eager', 'sliced', 'cache'] [None, None]\n",
+      "elapsed_s": 5.835421594791114
+    },
+    {
+      "check": "t5_gated-gelu",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gated-gelu [('eager', True, None, None), ('exported_aten', True, None, None), ('mixed', True, None, None)]\n",
+      "elapsed_s": 3.260393448174
+    },
+    {
+      "check": "t5_gated-gelu_pytorch_tanh",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gated-gelu_pytorch_tanh [('eager', True, None, None), ('exported_aten', True, None, None), ('mixed', True, None, None)]\n",
+      "elapsed_s": 3.0551485484465957
+    },
+    {
+      "check": "all_low_precision_activation_encodings",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "torch.float16 1 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.float16 4 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.bfloat16 1 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\ntorch.bfloat16 4 {'gelu_erf': 0, 'gelu_tanh': 0, 'scalar_cube': 0}\n",
+      "elapsed_s": 2.2481412310153246
+    },
+    {
+      "check": "wide_cached_score_schedules",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "scores 24 8192 float16 31885 pass\nscores 24 8192 float16 39804 pass\nscores 24 8192 float16 47723 pass\nscores 24 8192 float16 55642 pass\nscores2 24 2048 float16 32395 pass\nscores2 24 2048 float16 40314 pass\nscores2 24 2048 float16 48233 pass\nscores2 24 2048 float16 56152 pass\nscores 384 4096 bfloat16 32497 pass\nscores 384 4096 bfloat16 40416 pass\nscores 384 4096 bfloat16 48335 pass\nscores 384 4096 bfloat16 56254 pass\n",
+      "elapsed_s": 2.2547057922929525
+    },
+    {
+      "check": "dynamic_native_shape_matrix",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "gate verify only excluded: []\nresnorm2 verify only excluded: []\nmean verify only excluded: []\n",
+      "elapsed_s": 2.4856840297579765
+    },
+    {
+      "check": "decomp_precision_replay",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "decomp-31x1024-bfloat16 retained_rejection ['eager', 'selected', 'current', 'inductor_casts'] [1, 0, 0]\n",
+      "elapsed_s": 4.739895848557353
+    },
+    {
+      "check": "packed_mean_bitwise",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "31x1024-bf16-final (0, 0, 0) {'previous_best': 'mean_cohort-t256-v4-c1', 'packed_best': 'mean_packed_tile-t128-v2-c1'} ['eager', 'default', 'previous_best', 'packed_best']\n31x1024-bf16-final (1, 2, 3) {'previous_best': 'mean_cohort-t256-v4-c1', 'packed_best': 'mean_packed_tile-t128-v2-c1'} ['eager', 'inductor_casts', 'default', 'previous_best', 'packed_best']\n17x4100-f16-visible (0, 0, 0) {'previous_best': 'mean_cohort-t256-v4-c1', 'packed_best': 'mean_packed_tile-t128-v2-c1'} ['eager', 'default', 'previous_best', 'packed_best']\n17x4100-f16-visible (1, 2, 3) {'previous_best': 'mean_cohort-t256-v4-c1', 'packed_best': 'mean_packed_tile-t128-v2-c1'} ['eager', 'inductor_casts', 'default', 'previous_best', 'packed_best']\n",
+      "elapsed_s": 4.616790486499667
+    },
+    {
+      "check": "offline_campaign_evidence",
+      "status": "pass",
+      "returncode": 0,
+      "tail": "{\"run\": \"gb10-attention\", \"panel\": \"attention\", \"indexed\": 122, \"passed\": 117, \"distinct_sources_verified\": 44, \"missing_source\": 0, \"state\": \"in progress at capture\"}\n{\"run\": \"gb10-overnight\", \"panel\": \"general\", \"indexed\": 230, \"passed\": 224, \"distinct_sources_verified\": 55, \"missing_source\": 87, \"state\": \"in progress at capture\"}\n",
+      "elapsed_s": 0.25526172667741776
+    }
+  ],
+  "passed": true,
+  "completed_epoch": 1795643054.7309103
+}
