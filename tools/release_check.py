@@ -352,6 +352,22 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "decomp_precision_replay",
+            [
+                sys.executable,
+                str(ROOT / "tools/decomp_casts.py"),
+                "--case",
+                "decomp-31x1024-bfloat16",
+                "--verify-only",
+                "--seed-offset",
+                "59419",
+                "--output",
+                str(report.with_name(report.stem + "-decomp.json")),
+            ],
+        )
+    )
     sealed = sorted((ROOT / "reports").glob("campaign-*.json.gz"))
     if sealed:
         commands.append(

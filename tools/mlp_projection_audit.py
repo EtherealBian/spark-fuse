@@ -4,16 +4,14 @@ import argparse
 from hashlib import sha256
 import json
 from pathlib import Path
-import random
-from statistics import median
 
 import torch
 import torch.nn.functional as F
 import transformers
-from kernel_trace import kernel_census
+from paired_timing import measure
 from provenance import capture
 from qwen_cached_decode import bits, suite, trajectory
-from sparkfuse.measure import device_time, host_time
+from sparkfuse.measure import device_time
 
 ROOT = Path(__file__).resolve().parents[1]
 NAMES = ("two", "packed_views", "packed_copies", "pack_per_call")
@@ -94,28 +92,6 @@ def projection(name, x, weights, packed, down):
             a, b = a.contiguous(), b.contiguous()
     product = F.silu(a) * b
     return a, b, product, F.linear(product, down)
-
-
-def measure(paths, seed):
-    rng = random.Random(seed)
-    windows = []
-    for _ in range(7):
-        order = list(paths)
-        rng.shuffle(order)
-        w = dict(order=order, device={}, host={})
-        for name in order:
-            f = paths[name]
-            w["device"][name] = device_time(f, groups=7, unroll=3, replay=4)
-            w["host"][name] = host_time(f, samples=15)
-        windows.append(w)
-    return dict(
-        windows=windows,
-        median_us={
-            m: {n: median(median(w[m][n]["samples_us"]) for w in windows) for n in paths}
-            for m in ("device", "host")
-        },
-        profiles={n: kernel_census(f) for n, f in paths.items()},
-    )
 
 
 @torch.inference_mode()

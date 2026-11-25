@@ -616,3 +616,22 @@ Across both weights the profiler counted **3 → 1** launches for the isolated u
 Default Inductor failed the isolated contract; `emulate_precision_casts=True` qualified in 24 of 32 isolated windows. For full-width rotation with multiple new tokens, even the cast-aware output Q could have matching bits but a different stride. Neither Inductor variant passed the existing whole-layer numerical gate across all five trajectories for any configuration. The dash omits those timings, not the failed results. Both reports retain the per-output checks and all seven time windows for admitted methods (including synchronized host time).
 
 [Primary report](../reports/phi3-sliced-cache-gb10.json) · [Independent weights](../reports/phi3-sliced-cache-heldout-gb10.json) · [Emitted CUDA](../examples/generated/sliced-cache) · [Sanitizer](../reports/sliced-cache-sanitizer-gb10.txt) · [Regression](../reports/sliced-cache-stage-acceptance.json). Run `python tools/phi3_cache.py --seed-offset 145091 --output /tmp/phi3-cache.json`; repeat with `152519`. Run `bash tools/sanitize_sliced_cache.sh` for memory, race and synchronization checks.
+
+<a id="decomp-cast-replay"></a>
+
+### BF16 舍入策略改变后，谁才是有效的对照？ / Replaying rejected comparisons
+
+冻结通用搜索的前 773 条索引记录。19 条 `decomp` BF16 错误中，17 条保留了完整对照，能确认是 Inductor 默认设置超过容差；另有一条旧记录缺少 worker，及一条 [SparkFuse 自身归约次序导致的发现阶段失败](../reports/mean-tree-history.json.gz)，不能归为 Inductor 错误。保留原始判定，另取三组曾通过的同宽对照。在同一 DGX Spark 上重放原比较种子和当时选中的 SparkFuse 布局，17 条失败都复现了原先**超出容差的元素数**。两轮分别加入两个新种子，总计 20 种形状、100 个不同请求；这个刻意抽取的集合不能估计整个搜索的失败率。
+
+分解式残差 RMSNorm 有两个 BF16 舍入点：残差相加之后、归一化值乘权之前。`31 × 1024` 的原请求在 `[24,424]` 处，eager 为 `−1.203125`；在独立 eager 算式里仅省略其中一次舍入得到 `−1.2109375`，两次都省略得到 `−1.21875`，恰好等于默认 Inductor。本请求有 10,858 个输出位模式不同，但仅该元素超出原容差。对全部 100 个请求，“两次都省略”的算式始终是四个候选里最接近默认 Inductor 的；只有 28 个请求的全部元素都与它相同。这里比较可观察的输出，不把它当作 Inductor 内核内部计算步骤的证明。
+
+| 后端 / backend | 容差内的请求 / 100 | 全部 BF16 位相等 / 100 |
+|---|---:|---:|
+| Inductor 默认 | 39 | 0 |
+| Inductor `emulate_precision_casts=True` | 100 | 95 |
+| SparkFuse 历史搜索选中的布局，当前编译器重放 | 100 | 98 |
+| SparkFuse 当前默认布局 | 100 | 100 |
+
+The cast-aware comparator qualifies for timing on **all 20 shapes**. On `256 × 6144`, its warm device median was **7.62 µs** versus **10.92 µs** for current SparkFuse (7.61 vs 11.02 on the independent timing seed). On `512 × 14336`, current SparkFuse took 200.70 vs 201.91 µs for cast-aware Inductor in the first run, 193.03 vs 202.24 in the second. These are single exported regions. Backend admission is evaluated before timing the uninstrumented output. Diagnostics run separately and all failed comparisons remain in the reports.
+
+[Selection and original comparisons](../reports/decomp-cast-catalog.json.gz) · [Replay](../reports/decomp-cast-replay-gb10.json) · [Independent inputs](../reports/decomp-cast-replay-heldout-gb10.json) · [Regression](../reports/decomp-cast-stage-acceptance.json). From the repository root run `python tools/decomp_casts.py --output /tmp/decomp-replay.json`; add `--seed-offset 19609` for the independent requests. `--case decomp-31x1024-bfloat16 --verify-only` runs just the small witness without timing.
