@@ -147,6 +147,19 @@ def check(until, report):
             ],
         )
     )
+    sealed = sorted((ROOT / "reports").glob("campaign-*.json.gz"))
+    if sealed:
+        commands.append(
+            (
+                "offline_campaign_evidence",
+                [
+                    sys.executable,
+                    str(ROOT / "tools/campaign_snapshot.py"),
+                    "verify",
+                    *map(str, sealed),
+                ],
+            )
+        )
     for name, cmd in commands:
         left = until - time.time() - 3
         if left < 1:

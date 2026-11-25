@@ -59,3 +59,16 @@ New campaign workers stage tuning in memory: only after all three backends pass 
 ### Inspect an exported model without building a binary
 
 From the repo, `python examples/export_scores.py /tmp/scores.pt2` creates a small CPU-authored example. `python -m sparkfuse inspect /tmp/scores.pt2` prints IR, bindings, source digest and ABI; `python -m sparkfuse emit /tmp/scores.pt2 --out /tmp/scores-cuda --layout warp --vec 4 --cache` writes `kernel.cu`, `graph.txt` and `manifest.json` to a **new** directory. `examples/generated/score-softmax/` is a checked-in example. Emission neither times nor launches the kernel, and does not package weights. The CLI's default is an explicit scalar block reference schedule, not a tuned winner. PyTorch deserializes the archive: use only trusted files. The CPU-authored example and rejection/no-overwrite tests run with GPUs hidden.
+
+### Audit the overnight search offline (no PyTorch or GPU required)
+
+The [general panel](../reports/campaign-mid-general.md) and [attention-score panel](../reports/campaign-mid-attention.md) are sealed prefixes, not final results. Each links to a gzipped JSON containing the index and the original worker evidence for every indexed case, including rejected schedules, slower cases and failures. Private home-directory prefixes in diagnostic strings are replaced by `$HOME/`. Later successful retests do not erase an earlier failure. Historical workers without a source archive remain explicitly unattributed to an exact source tree; an available compiler key is not a substitute for that tree.
+
+```bash
+python3 tools/campaign_snapshot.py verify reports/campaign-mid-general.json.gz reports/campaign-mid-attention.json.gz
+python3 tools/report.py reports/campaign-mid-attention.json.gz /tmp/attention-audit.md
+```
+
+Verification rebuilds per-case device and synchronized host medians from samples, checks discovery winners and five-round holdout admissions, enforces exactness records for visible residuals/logits, and compares the resulting compiler-specific counts and ratios to the stored summary. It checks the SHA-256 of the *source files* in each referenced archive without extracting them. This audits stored measurements; it does not re-execute GPU kernels or cryptographically attest to the machine that ran them. Warm CUDA Graph replay time is never mixed with normal synchronized host latency. There is no cross-compiler speedup figure. Each panel can be copied offline together with its sibling `sources/` directory.
+
+For a new campaign use `python3 tools/report.py .runtime/RUN /tmp/output/report.md`; this writes a companion `.json.gz` and deduplicated sources. A live snapshot reads one complete newline-delimited index prefix, ignores uncommitted tail bytes and unindexed workers, and records whether the supervisor's counts, last completed ID and stop state agreed when observed. A running capture must not be described as a completed run.

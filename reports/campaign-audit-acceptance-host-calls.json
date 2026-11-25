@@ -1,0 +1,765 @@
+{
+  "scope": "Single random-weight module, BF16, batch=1, width=768; fresh output allocation and per-call device synchronization. No CUDA Graph wrapping of the host measurements. Device numbers use separate hot replay. Not full-model or service latency.",
+  "torch": "2.13.0+cu130",
+  "device": "NVIDIA GB10",
+  "transformers": "4.51.3",
+  "case": "bert",
+  "seq": 33,
+  "weight_seed": 29771,
+  "input_seeds": [
+    701,
+    5497,
+    25843,
+    38629,
+    47221
+  ],
+  "compiler": "351981d945009d054bdd2e8b70b91341eb688749cd7ee9ac28baa1f05285c0bc",
+  "provenance": {
+    "git_head_at_capture": "06795513d451983519e40f4a5c3096249f474d61",
+    "source_tree_sha256": "84e88bca9b40acc56a8633ae6eacdc5e4ec7103cffee8f645150ad8f737fbad5",
+    "archive": "sources/84e88bca9b40acc56a8633ae6eacdc5e4ec7103cffee8f645150ad8f737fbad5.tar.gz"
+  },
+  "regions": [
+    {
+      "ops": [
+        "div",
+        "softmax"
+      ],
+      "module": "_sparkfuse_region_0",
+      "live_ins": [
+        "matmul"
+      ],
+      "live_outs": [
+        "softmax"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "warp_xor",
+        "cache": true,
+        "vec": 1
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add",
+        "layer_norm"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 101376
+      },
+      "module": "_sparkfuse_region_1_0",
+      "live_ins": [
+        "attention_output_layer_norm_weight",
+        "attention_output_layer_norm_bias",
+        "hidden_states",
+        "dropout_1"
+      ],
+      "live_outs": [
+        "layer_norm"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block_welford",
+        "cache": true,
+        "vec": 4
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "add_1",
+        "layer_norm_1"
+      ],
+      "split": {
+        "component": "1",
+        "original_rejection": "no legal insertion point between live-ins and live-outs",
+        "covered_ops": 4,
+        "planned_regions": 2,
+        "logical_output_bytes": 101376
+      },
+      "module": "_sparkfuse_region_1_1",
+      "live_ins": [
+        "output_layer_norm_weight",
+        "output_layer_norm_bias",
+        "getitem_1",
+        "dropout_2"
+      ],
+      "live_outs": [
+        "layer_norm_1"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block_welford",
+        "cache": true,
+        "vec": 4
+      },
+      "host_backend": "native"
+    },
+    {
+      "ops": [
+        "gelu"
+      ],
+      "fallback": "below minimum region size"
+    }
+  ],
+  "rewrites": {
+    "mixed_fast": [
+      {
+        "node": "linear",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "linear_1",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "view",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "linear_2",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "view_1",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute_1",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "view_2",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute_2",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "transpose",
+        "from": "aten.transpose.int",
+        "to": "transpose"
+      },
+      {
+        "node": "matmul",
+        "from": "aten.matmul.default",
+        "to": "matmul"
+      },
+      {
+        "node": "dropout",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      },
+      {
+        "node": "matmul_1",
+        "from": "aten.matmul.default",
+        "to": "matmul"
+      },
+      {
+        "node": "permute_3",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "contiguous",
+        "from": "aten.contiguous.default",
+        "to": "contiguous"
+      },
+      {
+        "node": "view_3",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "linear_3",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "dropout_1",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      },
+      {
+        "node": "linear_4",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "gelu",
+        "from": "aten.gelu.default",
+        "to": "gelu"
+      },
+      {
+        "node": "linear_5",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "dropout_2",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      }
+    ],
+    "export_fast": [
+      {
+        "node": "linear",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "linear_1",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "view",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "linear_2",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "view_1",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute_1",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "view_2",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "permute_2",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "transpose",
+        "from": "aten.transpose.int",
+        "to": "transpose"
+      },
+      {
+        "node": "matmul",
+        "from": "aten.matmul.default",
+        "to": "matmul"
+      },
+      {
+        "node": "dropout",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      },
+      {
+        "node": "matmul_1",
+        "from": "aten.matmul.default",
+        "to": "matmul"
+      },
+      {
+        "node": "permute_3",
+        "from": "aten.permute.default",
+        "to": "permute"
+      },
+      {
+        "node": "contiguous",
+        "from": "aten.contiguous.default",
+        "to": "contiguous"
+      },
+      {
+        "node": "view_3",
+        "from": "aten.view.default",
+        "to": "view"
+      },
+      {
+        "node": "linear_3",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "dropout_1",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      },
+      {
+        "node": "linear_4",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "gelu",
+        "from": "aten.gelu.default",
+        "to": "gelu"
+      },
+      {
+        "node": "linear_5",
+        "from": "aten.linear.default",
+        "to": "linear"
+      },
+      {
+        "node": "dropout_2",
+        "from": "aten.dropout.default",
+        "to": "identity (eval dropout)"
+      }
+    ]
+  },
+  "mixed_fx_before": "graph():\n    %attention_self_query_weight : [num_users=1] = get_attr[target=attention.self.query.weight]\n    %attention_self_query_bias : [num_users=1] = get_attr[target=attention.self.query.bias]\n    %attention_self_key_weight : [num_users=1] = get_attr[target=attention.self.key.weight]\n    %attention_self_key_bias : [num_users=1] = get_attr[target=attention.self.key.bias]\n    %attention_self_value_weight : [num_users=1] = get_attr[target=attention.self.value.weight]\n    %attention_self_value_bias : [num_users=1] = get_attr[target=attention.self.value.bias]\n    %attention_output_dense_weight : [num_users=1] = get_attr[target=attention.output.dense.weight]\n    %attention_output_dense_bias : [num_users=1] = get_attr[target=attention.output.dense.bias]\n    %attention_output_layer_norm_weight : [num_users=1] = get_attr[target=attention.output.LayerNorm.weight]\n    %attention_output_layer_norm_bias : [num_users=1] = get_attr[target=attention.output.LayerNorm.bias]\n    %intermediate_dense_weight : [num_users=1] = get_attr[target=intermediate.dense.weight]\n    %intermediate_dense_bias : [num_users=1] = get_attr[target=intermediate.dense.bias]\n    %output_dense_weight : [num_users=1] = get_attr[target=output.dense.weight]\n    %output_dense_bias : [num_users=1] = get_attr[target=output.dense.bias]\n    %output_layer_norm_weight : [num_users=1] = get_attr[target=output.LayerNorm.weight]\n    %output_layer_norm_bias : [num_users=1] = get_attr[target=output.LayerNorm.bias]\n    %hidden_states : [num_users=5] = placeholder[target=hidden_states]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states,), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_query_weight, %attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_key_weight, %attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [1, 33, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %attention_self_value_weight, %attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [1, 33, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [1, 33, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%permute_2, %transpose), kwargs = {})\n    %_sparkfuse_region_0 : [num_users=1] = call_module[target=_sparkfuse_region_0](args = (%matmul,), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_0, 0), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%getitem, 0.1, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_function[target=torch.ops.aten.permute.default](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%contiguous, [1, 33, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%view_3, %attention_output_dense_weight, %attention_output_dense_bias), kwargs = {})\n    %dropout_1 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_3, 0.1, False), kwargs = {})\n    %_sparkfuse_region_1_0 : [num_users=1] = call_module[target=_sparkfuse_region_1_0](args = (%attention_output_layer_norm_weight, %attention_output_layer_norm_bias, %hidden_states, %dropout_1), kwargs = {})\n    %getitem_1 : [num_users=2] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_0, 0), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%getitem_1, %intermediate_dense_weight, %intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%gelu, %output_dense_weight, %output_dense_bias), kwargs = {})\n    %dropout_2 : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%linear_5, 0.1, False), kwargs = {})\n    %_sparkfuse_region_1_1 : [num_users=1] = call_module[target=_sparkfuse_region_1_1](args = (%output_layer_norm_weight, %output_layer_norm_bias, %getitem_1, %dropout_2), kwargs = {})\n    %getitem_2 : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_1, 0), kwargs = {})\n    return (getitem_2,)",
+  "mixed_fx_after": "graph():\n    %attention_self_query_weight : [num_users=1] = get_attr[target=attention.self.query.weight]\n    %attention_self_query_bias : [num_users=1] = get_attr[target=attention.self.query.bias]\n    %attention_self_key_weight : [num_users=1] = get_attr[target=attention.self.key.weight]\n    %attention_self_key_bias : [num_users=1] = get_attr[target=attention.self.key.bias]\n    %attention_self_value_weight : [num_users=1] = get_attr[target=attention.self.value.weight]\n    %attention_self_value_bias : [num_users=1] = get_attr[target=attention.self.value.bias]\n    %attention_output_dense_weight : [num_users=1] = get_attr[target=attention.output.dense.weight]\n    %attention_output_dense_bias : [num_users=1] = get_attr[target=attention.output.dense.bias]\n    %attention_output_layer_norm_weight : [num_users=1] = get_attr[target=attention.output.LayerNorm.weight]\n    %attention_output_layer_norm_bias : [num_users=1] = get_attr[target=attention.output.LayerNorm.bias]\n    %intermediate_dense_weight : [num_users=1] = get_attr[target=intermediate.dense.weight]\n    %intermediate_dense_bias : [num_users=1] = get_attr[target=intermediate.dense.bias]\n    %output_dense_weight : [num_users=1] = get_attr[target=output.dense.weight]\n    %output_dense_bias : [num_users=1] = get_attr[target=output.dense.bias]\n    %output_layer_norm_weight : [num_users=1] = get_attr[target=output.LayerNorm.weight]\n    %output_layer_norm_bias : [num_users=1] = get_attr[target=output.LayerNorm.bias]\n    %hidden_states : [num_users=5] = placeholder[target=hidden_states]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states,), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%hidden_states, %attention_self_query_weight, %attention_self_query_bias), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%hidden_states, %attention_self_key_weight, %attention_self_key_bias), kwargs = {})\n    %view : [num_users=1] = call_method[target=view](args = (%linear_1, [1, 33, 12, 64]), kwargs = {})\n    %permute : [num_users=1] = call_method[target=permute](args = (%view, [0, 2, 1, 3]), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%hidden_states, %attention_self_value_weight, %attention_self_value_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_method[target=view](args = (%linear_2, [1, 33, 12, 64]), kwargs = {})\n    %permute_1 : [num_users=1] = call_method[target=permute](args = (%view_1, [0, 2, 1, 3]), kwargs = {})\n    %view_2 : [num_users=1] = call_method[target=view](args = (%linear, [1, 33, 12, 64]), kwargs = {})\n    %permute_2 : [num_users=1] = call_method[target=permute](args = (%view_2, [0, 2, 1, 3]), kwargs = {})\n    %transpose : [num_users=1] = call_method[target=transpose](args = (%permute, -1, -2), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.matmul](args = (%permute_2, %transpose), kwargs = {})\n    %_sparkfuse_region_0 : [num_users=1] = call_module[target=_sparkfuse_region_0](args = (%matmul,), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_0, 0), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.matmul](args = (%getitem, %permute_1), kwargs = {})\n    %permute_3 : [num_users=1] = call_method[target=permute](args = (%matmul_1, [0, 2, 1, 3]), kwargs = {})\n    %contiguous : [num_users=1] = call_method[target=contiguous](args = (%permute_3,), kwargs = {})\n    %view_3 : [num_users=1] = call_method[target=view](args = (%contiguous, [1, 33, 768]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%view_3, %attention_output_dense_weight, %attention_output_dense_bias), kwargs = {})\n    %_sparkfuse_region_1_0 : [num_users=1] = call_module[target=_sparkfuse_region_1_0](args = (%attention_output_layer_norm_weight, %attention_output_layer_norm_bias, %hidden_states, %linear_3), kwargs = {})\n    %getitem_1 : [num_users=2] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_0, 0), kwargs = {})\n    %linear_4 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%getitem_1, %intermediate_dense_weight, %intermediate_dense_bias), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch._C._nn.gelu](args = (%linear_4,), kwargs = {})\n    %linear_5 : [num_users=1] = call_function[target=torch._C._nn.linear](args = (%gelu, %output_dense_weight, %output_dense_bias), kwargs = {})\n    %_sparkfuse_region_1_1 : [num_users=1] = call_module[target=_sparkfuse_region_1_1](args = (%output_layer_norm_weight, %output_layer_norm_bias, %getitem_1, %linear_5), kwargs = {})\n    %getitem_2 : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_1_1, 0), kwargs = {})\n    return (getitem_2,)",
+  "backends": {
+    "eager": {
+      "samples": [
+        {
+          "seed": 701,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 5497,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 25843,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 38629,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    "export": {
+      "samples": [
+        {
+          "seed": 701,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 5497,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 25843,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 38629,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    "export_fast": {
+      "samples": [
+        {
+          "seed": 701,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 5497,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 25843,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 38629,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    "mixed": {
+      "samples": [
+        {
+          "seed": 701,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 5497,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 25843,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 38629,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    "mixed_fast": {
+      "samples": [
+        {
+          "seed": 701,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 5497,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 25843,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 38629,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        },
+        {
+          "seed": 47221,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0,
+              "atol": 0
+            }
+          ]
+        }
+      ],
+      "passed": true
+    }
+  }
+}

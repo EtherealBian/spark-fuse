@@ -1,0 +1,256 @@
+{
+  "provenance": {
+    "git_head_at_capture": "06795513d451983519e40f4a5c3096249f474d61",
+    "source_tree_sha256": "84e88bca9b40acc56a8633ae6eacdc5e4ec7103cffee8f645150ad8f737fbad5",
+    "archive": "sources/84e88bca9b40acc56a8633ae6eacdc5e4ec7103cffee8f645150ad8f737fbad5.tar.gz"
+  },
+  "compiler": "351981d945009d054bdd2e8b70b91341eb688749cd7ee9ac28baa1f05285c0bc",
+  "torch": "2.13.0+cu130",
+  "transformers": "4.51.3",
+  "device": "NVIDIA GB10",
+  "dtype": "bfloat16",
+  "seq": 33,
+  "weight_seed": 9923,
+  "input_seeds": [
+    7841,
+    15319,
+    39133,
+    57829
+  ],
+  "proj": "gated-gelu_pytorch_tanh",
+  "activation": "PytorchGELUTanh",
+  "fx": "graph():\n    %p_wi_0_weight : [num_users=1] = placeholder[target=p_wi_0_weight]\n    %p_wi_1_weight : [num_users=1] = placeholder[target=p_wi_1_weight]\n    %p_wo_weight : [num_users=1] = placeholder[target=p_wo_weight]\n    %hidden_states : [num_users=2] = placeholder[target=hidden_states]\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_wi_0_weight), kwargs = {})\n    %gelu : [num_users=1] = call_function[target=torch.ops.aten.gelu.default](args = (%linear,), kwargs = {approximate: tanh})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_wi_1_weight), kwargs = {})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%gelu, %linear_1), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.ops.aten.dropout.default](args = (%mul, 0.0, False), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%dropout, %p_wo_weight), kwargs = {})\n    return (linear_2,)",
+  "regions": [
+    {
+      "ops": [
+        "gelu",
+        "mul"
+      ],
+      "module": "_sparkfuse_region_0",
+      "live_ins": [
+        "linear",
+        "linear_1"
+      ],
+      "live_outs": [
+        "mul"
+      ],
+      "schedule": {
+        "threads": 256,
+        "layout": "flat",
+        "cache": false,
+        "vec": 1
+      },
+      "host_backend": "native"
+    }
+  ],
+  "scope": "One random-weight T5DenseGatedActDense, batch 1, width 768, FFN 3072. Three linear projections stay ATen. No encoder/decoder or checkpoint throughput measurement.",
+  "backends": {
+    "eager": {
+      "samples": [
+        {
+          "seed": 7841,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 15319,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 39133,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 57829,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    "exported_aten": {
+      "samples": [
+        {
+          "seed": 7841,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 15319,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 39133,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 57829,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    "mixed": {
+      "samples": [
+        {
+          "seed": 7841,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 15319,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 39133,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 57829,
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 25344,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "passed": true
+    }
+  }
+}
