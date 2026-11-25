@@ -368,6 +368,24 @@ def check(until, report):
             ],
         )
     )
+    commands.append(
+        (
+            "packed_mean_bitwise",
+            [
+                sys.executable,
+                str(ROOT / "tools/packed_mean_panel.py"),
+                "--verify-only",
+                "--index",
+                "1",
+                "--index",
+                "5",
+                "--seed-offset",
+                "60317",
+                "--output",
+                str(report.with_name(report.stem + "-packed-mean.json")),
+            ],
+        )
+    )
     sealed = sorted((ROOT / "reports").glob("campaign-*.json.gz"))
     if sealed:
         commands.append(

@@ -72,6 +72,7 @@ def main(argv=None):
             "compact_mean",
             "mean_tree",
             "mean_cohort",
+            "mean_packed_tile",
         ),
         default="block",
     )

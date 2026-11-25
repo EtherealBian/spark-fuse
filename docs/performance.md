@@ -635,3 +635,32 @@ Default Inductor failed the isolated contract; `emulate_precision_casts=True` qu
 The cast-aware comparator qualifies for timing on **all 20 shapes**. On `256 × 6144`, its warm device median was **7.62 µs** versus **10.92 µs** for current SparkFuse (7.61 vs 11.02 on the independent timing seed). On `512 × 14336`, current SparkFuse took 200.70 vs 201.91 µs for cast-aware Inductor in the first run, 193.03 vs 202.24 in the second. These are single exported regions. Backend admission is evaluated before timing the uninstrumented output. Diagnostics run separately and all failed comparisons remain in the reports.
 
 [Selection and original comparisons](../reports/decomp-cast-catalog.json.gz) · [Replay](../reports/decomp-cast-replay-gb10.json) · [Independent inputs](../reports/decomp-cast-replay-heldout-gb10.json) · [Regression](../reports/decomp-cast-stage-acceptance.json). From the repository root run `python tools/decomp_casts.py --output /tmp/decomp-replay.json`; add `--seed-offset 19609` for the independent requests. `--case decomp-31x1024-bfloat16 --verify-only` runs just the small witness without timing.
+
+<a id="packed-mean"></a>
+
+### 残差 RMSNorm：低精度共享存储，保持 FP32 归约顺序 / Packed residual tile
+
+这个布局只匹配明确导出的运算链：两个 FP16/BF16 矩阵相加并舍入，升为 FP32 后做平方、行均值和归一化，舍回原精度后再乘一维权重。匹配的是有类型的依赖关系，而不是节点名或输入位置。残差也被返回时，生成器按图指定的位置多写一个输出。当前范围是连续的二维输入、至少 16 行、宽 1024–8160、宽度能整除所选向量、总计最多 2²⁴ 个元素。原生 `aten.rms_norm`、不符合的广播或额外可见的中间值仍走原路径；默认布局未改。
+
+一个线程块处理一行。先以两个窄元素为一组相加，把已舍入的残差留在共享内存里；再按原来的 128 条 FP32 累加序列计算平方和。每个 warp 自己完成最后 32 组求和，不需要第三次块级同步。最后从共享内存取回残差，升精度乘逆均方根，降精度，再做窄精度权重乘。非对齐但连续的视图有单独通路。对 `256 × 6144` 对齐 BF16，所选旧/新二进制的静态共享内存是 **25,732 / 13,440 字节**，SASS 有 **3 / 2 个块同步指令位置**。新对齐版本含 128 位全局读写；旧/新版本分别使用 20 / 28 个寄存器。这些是编译资源和静态指令，不能当作实际显存流量或单一加速原因。
+
+两种布局分别选型：旧组包含全部 10 种有序树/分组配置，新组包含所有合法的线程数 × 向量宽度。每种形状和地址条件分别在独立输入上选出双方最快者，随后冻结配置，再更换输入和权重。两轮共 **108 个不同请求**；时间对照要求三组未参与选型的输入上，每个可见输出都逐位相同。下表仅列冻结配置后的复验，单位 µs；每一列都是**正常调用、分配新输出、热地址 CUDA Graph 设备时间**。同步主机时间和预分配输出重放在原始报告中分列。
+
+| 形状、精度、输出 | 地址 | eager | 旧配置最优 | 新配置 | Inductor 保留精度转换 |
+|---|---|---:|---:|---:|---:|
+| 256 × 6144，BF16，归一化结果 | 对齐 | 135.56 | 11.02 | 8.97 | 7.75 |
+| 31 × 1024，BF16，归一化结果 | 偏移 | 12.22 | 2.33 | 2.07 | 4.03 |
+| 17 × 4100，FP16，同时输出残差 | 对齐 | 16.31 | 4.39 | 2.83 | 2.67 |
+| 33 × 2048，BF16，同时输出残差 | 对齐 | 13.75 | 3.35 | 2.35 | 2.67 |
+
+Across nine shape/dtype/output cases at two alignments, the frozen tile reduced the hot device median in **18/18** comparisons against the independently selected old schedules (**1.12–1.73×**, median **1.37×**); synchronized Python host medians improved in only **10/18**. Default Inductor passed no three-request *bitwise* gate in this repeat. Cast-aware Inductor qualified in **10/18** groups and was faster in **6** of those. Non-admission here is not necessarily an ordinary tolerance failure; every raw comparison includes both counts. These results describe a single exported region on GB10, not Transformer throughput.
+
+[Selection, parity and timings](../reports/packed-mean-discovery-gb10.json) · [Frozen schedules on new inputs](../reports/packed-mean-heldout-gb10.json) · [CUDA examples](../examples/generated/packed-mean) · [Static SASS and resources](../reports/packed-mean-sass-gb10.json) · [Sanitizer: memory/race/sync](../reports/packed-mean-sanitizer-gb10.txt) · [Regression: 728 tests, 28 checks](../reports/packed-mean-stage-acceptance.json).
+
+```bash
+source tools/env.sh
+python tools/packed_mean_panel.py --output /tmp/packed-primary.json
+python tools/packed_mean_panel.py --selection /tmp/packed-primary.json --seed-offset 21061 --output /tmp/packed-repeat.json
+python tools/inspect_packed_mean.py /tmp/packed-primary.json --cache "$SPARKFUSE_CACHE" --output /tmp/packed-sass.json
+bash tools/sanitize_packed_mean.sh
+```

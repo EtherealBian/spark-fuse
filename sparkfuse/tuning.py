@@ -3,7 +3,11 @@
 from contextlib import contextmanager
 from dataclasses import asdict
 from functools import lru_cache
-import hashlib, json, random, sqlite3, statistics
+import hashlib
+import json
+import random
+import sqlite3
+import statistics
 from pathlib import Path
 import torch
 from .ir import lower, Unsupported
@@ -22,6 +26,7 @@ def backend_id():
         "compact_mean.py",
         "mean_tree.py",
         "mean_cohort.py",
+        "packed_mean.py",
         "softmax.py",
         "layernorm.py",
         "runtime.py",
@@ -89,6 +94,16 @@ def candidates(p):
             Schedule(t, "mean_cohort", cache, 4)
             for t, cache in ((128, False), (128, True), (256, True), (512, True))
         ]
+    if cohort_eligible(p):
+        from .packed_mean import match
+
+        if match(p) is not None:
+            ordered.extend(
+                Schedule(t, "mean_packed_tile", True, v)
+                for t in (128, 256, 512)
+                for v in (2, 4, 8)
+                if p.width % v == 0
+            )
     if sensitive(p):
         return ordered
     choices = list(ordered)

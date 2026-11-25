@@ -39,9 +39,23 @@ class Schedule:
             "compact_mean",
             "mean_tree",
             "mean_cohort",
+            "mean_packed_tile",
             "flat",
         ):
             raise Unsupported("unknown schedule")
+        if self.layout == "mean_packed_tile":
+            from .packed_mean import match
+
+            if (
+                not self.cache
+                or self.threads not in (128, 256, 512)
+                or self.vec not in (2, 4, 8)
+                or p.width % self.vec
+                or match(p) is None
+            ):
+                raise Unsupported(
+                    "mean_packed_tile requires a supported explicit narrow residual RMSNorm, divisible packs and a qualified CTA"
+                )
         if self.layout == "mean_cohort":
             from .mean_tree import cohort_eligible
 
@@ -194,6 +208,11 @@ def generate(p, s):
 
         names = [rec(i) for i in targets]
         return "\n".join(lines), names
+
+    if s.layout == "mean_packed_tile":
+        from .packed_mean import generate_packed_mean
+
+        return generate_packed_mean(p, s)
 
     if s.layout == "mean_cohort":
         from .mean_cohort import generate_cohort

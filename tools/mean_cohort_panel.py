@@ -45,7 +45,7 @@ def run():
         ref = m(*a)
         ep = torch.export.export(m, a)
         emit = compile_export(ep)
-        grid = candidates(emit.plan)
+        grid = [s for s in candidates(emit.plan) if s.layout in ("mean_tree", "mean_cohort")]
         rng.shuffle(grid)
         builds = {}
         trials = []
