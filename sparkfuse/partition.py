@@ -217,6 +217,7 @@ def partition_export(
     paired_head_repeats=False,
     framework_softmax=False,
     ordered_scores=None,
+    cache_fanout=False,
 ):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
     if ordered_scores not in (None, "loop", "slots", "guarded") or (
@@ -239,6 +240,10 @@ def partition_export(
         from .rotary import fuse_pairs
 
         records.extend(fuse_pairs(gm, device, host_backend))
+    if cache_fanout:
+        from .cache_fanout import fuse_cache_fanout
+
+        records.extend(fuse_cache_fanout(gm, device, host_backend))
     if paired_appends:
         from .cache_append import fuse_appends
 

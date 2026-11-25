@@ -1,0 +1,298 @@
+{
+  "device": "NVIDIA GB10",
+  "torch": "2.13.0+cu130",
+  "transformers": "4.51.3",
+  "dtype": "torch.bfloat16",
+  "batch": 2,
+  "sequence": 97,
+  "heads": 12,
+  "kv_heads": 2,
+  "random_weights_seed": 641,
+  "attention": "eager implementation, explicit additive causal mask, no KV cache/checkpoint/decoder benchmark",
+  "graph": "graph():\n    %p_q_proj_weight : [num_users=1] = placeholder[target=p_q_proj_weight]\n    %p_q_proj_bias : [num_users=1] = placeholder[target=p_q_proj_bias]\n    %p_k_proj_weight : [num_users=1] = placeholder[target=p_k_proj_weight]\n    %p_k_proj_bias : [num_users=1] = placeholder[target=p_k_proj_bias]\n    %p_v_proj_weight : [num_users=1] = placeholder[target=p_v_proj_weight]\n    %p_v_proj_bias : [num_users=1] = placeholder[target=p_v_proj_bias]\n    %p_o_proj_weight : [num_users=1] = placeholder[target=p_o_proj_weight]\n    %hidden_states : [num_users=3] = placeholder[target=hidden_states]\n    %position_embeddings_0 : [num_users=1] = placeholder[target=position_embeddings_0]\n    %position_embeddings_1 : [num_users=1] = placeholder[target=position_embeddings_1]\n    %attention_mask : [num_users=1] = placeholder[target=attention_mask]\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_q_proj_weight, %p_q_proj_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [2, 97, -1, 128]), kwargs = {})\n    %transpose : [num_users=3] = call_function[target=torch.ops.aten.transpose.int](args = (%view, 1, 2), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_k_proj_weight, %p_k_proj_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [2, 97, -1, 128]), kwargs = {})\n    %transpose_1 : [num_users=3] = call_function[target=torch.ops.aten.transpose.int](args = (%view_1, 1, 2), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %p_v_proj_weight, %p_v_proj_bias), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [2, 97, -1, 128]), kwargs = {})\n    %transpose_2 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%view_2, 1, 2), kwargs = {})\n    %unsqueeze : [num_users=2] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%position_embeddings_0, 1), kwargs = {})\n    %unsqueeze_1 : [num_users=2] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%position_embeddings_1, 1), kwargs = {})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%transpose, %unsqueeze), kwargs = {})\n    %slice_1 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose, 3, 0, 64), kwargs = {})\n    %slice_2 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose, 3, 64, 9223372036854775807), kwargs = {})\n    %neg : [num_users=1] = call_function[target=torch.ops.aten.neg.default](args = (%slice_2,), kwargs = {})\n    %cat : [num_users=1] = call_function[target=torch.ops.aten.cat.default](args = ([%neg, %slice_1], -1), kwargs = {})\n    %mul_1 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%cat, %unsqueeze_1), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul, %mul_1), kwargs = {})\n    %mul_2 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%transpose_1, %unsqueeze), kwargs = {})\n    %slice_3 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose_1, 3, 0, 64), kwargs = {})\n    %slice_4 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose_1, 3, 64, 9223372036854775807), kwargs = {})\n    %neg_1 : [num_users=1] = call_function[target=torch.ops.aten.neg.default](args = (%slice_4,), kwargs = {})\n    %cat_1 : [num_users=1] = call_function[target=torch.ops.aten.cat.default](args = ([%neg_1, %slice_3], -1), kwargs = {})\n    %mul_3 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%cat_1, %unsqueeze_1), kwargs = {})\n    %add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_2, %mul_3), kwargs = {})\n    %unsqueeze_2 : [num_users=1] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%add_1, 2), kwargs = {})\n    %expand : [num_users=1] = call_function[target=torch.ops.aten.expand.default](args = (%unsqueeze_2, [2, 2, 6, 97, 128]), kwargs = {})\n    %reshape : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%expand, [2, 12, 97, 128]), kwargs = {})\n    %unsqueeze_3 : [num_users=1] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%transpose_2, 2), kwargs = {})\n    %expand_1 : [num_users=1] = call_function[target=torch.ops.aten.expand.default](args = (%unsqueeze_3, [2, 2, 6, 97, 128]), kwargs = {})\n    %reshape_1 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%expand_1, [2, 12, 97, 128]), kwargs = {})\n    %transpose_3 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%reshape, 2, 3), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%add, %transpose_3), kwargs = {})\n    %mul_4 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%matmul, 0.08838834764831845), kwargs = {})\n    %alias : [num_users=1] = call_function[target=torch.ops.aten.alias.default](args = (%attention_mask,), kwargs = {})\n    %add_2 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_4, %alias), kwargs = {})\n    %softmax : [num_users=2] = call_function[target=torch.ops.aten.softmax.int](args = (%add_2, -1, torch.float32), kwargs = {})\n    %_assert_tensor_metadata_default : [num_users=0] = call_function[target=torch.ops.aten._assert_tensor_metadata.default](args = (%softmax,), kwargs = {dtype: torch.float32, device: cuda:0, layout: torch.strided})\n    %to : [num_users=1] = call_function[target=torch.ops.aten.to.dtype](args = (%softmax, torch.bfloat16), kwargs = {})\n    %dropout : [num_users=2] = call_function[target=torch.ops.aten.dropout.default](args = (%to, 0.0, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %reshape_1), kwargs = {})\n    %transpose_4 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%matmul_1, 1, 2), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%transpose_4,), kwargs = {})\n    %reshape_2 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%contiguous, [2, 97, -1]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%reshape_2, %p_o_proj_weight), kwargs = {})\n    return (linear_3, dropout)",
+  "mixed_graph": "graph():\n    %q_proj_weight : [num_users=1] = get_attr[target=q_proj.weight]\n    %q_proj_bias : [num_users=1] = get_attr[target=q_proj.bias]\n    %k_proj_weight : [num_users=1] = get_attr[target=k_proj.weight]\n    %k_proj_bias : [num_users=1] = get_attr[target=k_proj.bias]\n    %v_proj_weight : [num_users=1] = get_attr[target=v_proj.weight]\n    %v_proj_bias : [num_users=1] = get_attr[target=v_proj.bias]\n    %o_proj_weight : [num_users=1] = get_attr[target=o_proj.weight]\n    %hidden_states : [num_users=4] = placeholder[target=hidden_states]\n    %position_embeddings_0 : [num_users=2] = placeholder[target=position_embeddings_0]\n    %position_embeddings_1 : [num_users=2] = placeholder[target=position_embeddings_1]\n    %attention_mask : [num_users=2] = placeholder[target=attention_mask]\n    %_guards_fn : [num_users=0] = call_module[target=_guards_fn](args = (%hidden_states, %position_embeddings_0, %position_embeddings_1, %attention_mask), kwargs = {})\n    %linear : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %q_proj_weight, %q_proj_bias), kwargs = {})\n    %view : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear, [2, 97, -1, 128]), kwargs = {})\n    %transpose : [num_users=3] = call_function[target=torch.ops.aten.transpose.int](args = (%view, 1, 2), kwargs = {})\n    %linear_1 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %k_proj_weight, %k_proj_bias), kwargs = {})\n    %view_1 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_1, [2, 97, -1, 128]), kwargs = {})\n    %transpose_1 : [num_users=3] = call_function[target=torch.ops.aten.transpose.int](args = (%view_1, 1, 2), kwargs = {})\n    %linear_2 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%hidden_states, %v_proj_weight, %v_proj_bias), kwargs = {})\n    %view_2 : [num_users=1] = call_function[target=torch.ops.aten.view.default](args = (%linear_2, [2, 97, -1, 128]), kwargs = {})\n    %transpose_2 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%view_2, 1, 2), kwargs = {})\n    %unsqueeze : [num_users=2] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%position_embeddings_0, 1), kwargs = {})\n    %unsqueeze_1 : [num_users=2] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%position_embeddings_1, 1), kwargs = {})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%transpose, %unsqueeze), kwargs = {})\n    %slice_1 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose, 3, 0, 64), kwargs = {})\n    %slice_2 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose, 3, 64, 9223372036854775807), kwargs = {})\n    %neg : [num_users=1] = call_function[target=torch.ops.aten.neg.default](args = (%slice_2,), kwargs = {})\n    %cat : [num_users=1] = call_function[target=torch.ops.aten.cat.default](args = ([%neg, %slice_1], -1), kwargs = {})\n    %mul_1 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%cat, %unsqueeze_1), kwargs = {})\n    %add : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul, %mul_1), kwargs = {})\n    %mul_2 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%transpose_1, %unsqueeze), kwargs = {})\n    %slice_3 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose_1, 3, 0, 64), kwargs = {})\n    %slice_4 : [num_users=1] = call_function[target=torch.ops.aten.slice.Tensor](args = (%transpose_1, 3, 64, 9223372036854775807), kwargs = {})\n    %neg_1 : [num_users=1] = call_function[target=torch.ops.aten.neg.default](args = (%slice_4,), kwargs = {})\n    %cat_1 : [num_users=1] = call_function[target=torch.ops.aten.cat.default](args = ([%neg_1, %slice_3], -1), kwargs = {})\n    %mul_3 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%cat_1, %unsqueeze_1), kwargs = {})\n    %add_1 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_2, %mul_3), kwargs = {})\n    %unsqueeze_2 : [num_users=1] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%add_1, 2), kwargs = {})\n    %expand : [num_users=1] = call_function[target=torch.ops.aten.expand.default](args = (%unsqueeze_2, [2, 2, 6, 97, 128]), kwargs = {})\n    %reshape : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%expand, [2, 12, 97, 128]), kwargs = {})\n    %unsqueeze_3 : [num_users=1] = call_function[target=torch.ops.aten.unsqueeze.default](args = (%transpose_2, 2), kwargs = {})\n    %expand_1 : [num_users=1] = call_function[target=torch.ops.aten.expand.default](args = (%unsqueeze_3, [2, 2, 6, 97, 128]), kwargs = {})\n    %reshape_1 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%expand_1, [2, 12, 97, 128]), kwargs = {})\n    %transpose_3 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%reshape, 2, 3), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%add, %transpose_3), kwargs = {})\n    %alias : [num_users=1] = call_function[target=torch.ops.aten.alias.default](args = (%attention_mask,), kwargs = {})\n    %_sparkfuse_region_4 : [num_users=1] = call_module[target=_sparkfuse_region_4](args = (%matmul, %alias), kwargs = {})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%_sparkfuse_region_4, 0), kwargs = {})\n    %dropout : [num_users=2] = call_function[target=torch.ops.aten.dropout.default](args = (%getitem, 0.0, False), kwargs = {})\n    %matmul_1 : [num_users=1] = call_function[target=torch.ops.aten.matmul.default](args = (%dropout, %reshape_1), kwargs = {})\n    %transpose_4 : [num_users=1] = call_function[target=torch.ops.aten.transpose.int](args = (%matmul_1, 1, 2), kwargs = {})\n    %contiguous : [num_users=1] = call_function[target=torch.ops.aten.contiguous.default](args = (%transpose_4,), kwargs = {})\n    %reshape_2 : [num_users=1] = call_function[target=torch.ops.aten.reshape.default](args = (%contiguous, [2, 97, -1]), kwargs = {})\n    %linear_3 : [num_users=1] = call_function[target=torch.ops.aten.linear.default](args = (%reshape_2, %o_proj_weight), kwargs = {})\n    return (linear_3, dropout)",
+  "regions": [
+    {
+      "ops": [
+        "mul",
+        "mul_1",
+        "add"
+      ],
+      "fallback": "arg0: requires contiguous layout"
+    },
+    {
+      "ops": [
+        "neg"
+      ],
+      "fallback": "below minimum region size"
+    },
+    {
+      "ops": [
+        "mul_2",
+        "mul_3",
+        "add_1"
+      ],
+      "fallback": "arg0: requires contiguous layout"
+    },
+    {
+      "ops": [
+        "neg_1"
+      ],
+      "fallback": "below minimum region size"
+    },
+    {
+      "ops": [
+        "mul_4",
+        "add_2",
+        "softmax",
+        "_assert_tensor_metadata_default",
+        "to"
+      ],
+      "module": "_sparkfuse_region_4",
+      "live_ins": [
+        "matmul",
+        "alias"
+      ],
+      "live_outs": [
+        "to"
+      ],
+      "schedule": {
+        "threads": 128,
+        "layout": "block",
+        "cache": true,
+        "vec": 1
+      },
+      "host_backend": "native"
+    }
+  ],
+  "backends": {
+    "eager": {
+      "checks": [
+        {
+          "seed": 64,
+          "parity": "pass",
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 297984,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            },
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 225816,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 939,
+          "parity": "pass",
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 297984,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            },
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 225816,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "device": {
+        "median_us": 190.25950133800507,
+        "p10_us": 161.23099625110626,
+        "p90_us": 215.01150727272034,
+        "samples_us": [
+          167.10400581359863,
+          161.71449422836304,
+          177.9875010251999,
+          215.01150727272034,
+          217.34550595283508,
+          210.76850593090057,
+          211.12750470638275,
+          190.25950133800507,
+          161.23099625110626
+        ]
+      },
+      "host": {
+        "median_us": 214.707,
+        "p10_us": 212.739,
+        "p90_us": 216.835,
+        "samples_us": [
+          722.724,
+          238.962,
+          215.762,
+          212.819,
+          213.619,
+          213.699,
+          213.523,
+          215.267,
+          214.819,
+          216.835,
+          215.235,
+          215.443,
+          214.851,
+          214.914,
+          214.803,
+          212.851,
+          213.219,
+          211.348,
+          219.138,
+          215.155,
+          213.699,
+          211.523,
+          212.931,
+          214.707,
+          212.787,
+          214.691,
+          212.739,
+          215.107,
+          212.851,
+          208.723,
+          216.707
+        ]
+      }
+    },
+    "sparkfuse_mixed": {
+      "checks": [
+        {
+          "seed": 64,
+          "parity": "pass",
+          "errors": [
+            {
+              "max_abs": 0.00048828125,
+              "mean_abs": 1.1226437550639778e-07,
+              "unequal": 458,
+              "finite_pairs": 297984,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            },
+            {
+              "max_abs": 6.103515625e-05,
+              "mean_abs": 5.405742396464378e-10,
+              "unequal": 2,
+              "finite_pairs": 225816,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        },
+        {
+          "seed": 939,
+          "parity": "pass",
+          "errors": [
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 297984,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            },
+            {
+              "max_abs": 0.0,
+              "mean_abs": 0.0,
+              "unequal": 0,
+              "finite_pairs": 225816,
+              "matched_nan": 0,
+              "matched_posinf": 0,
+              "matched_neginf": 0,
+              "rtol": 0.012,
+              "atol": 0.0002
+            }
+          ]
+        }
+      ],
+      "device": {
+        "median_us": 157.34949707984924,
+        "p10_us": 156.85349702835083,
+        "p90_us": 161.5000069141388,
+        "samples_us": [
+          156.85349702835083,
+          156.9959968328476,
+          158.01650285720825,
+          163.55200111865997,
+          157.0120006799698,
+          157.34949707984924,
+          157.11750090122223,
+          157.60700404644012,
+          161.5000069141388
+        ]
+      },
+      "host": {
+        "median_us": 229.506,
+        "p10_us": 226.45,
+        "p90_us": 250.385,
+        "samples_us": [
+          737.267,
+          350.442,
+          240.77,
+          288.766,
+          250.385,
+          232.018,
+          226.994,
+          230.578,
+          229.058,
+          230.05,
+          230.098,
+          226.45,
+          232.962,
+          225.426,
+          226.21,
+          227.986,
+          230.242,
+          226.899,
+          230.658,
+          229.922,
+          228.194,
+          228.45,
+          227.666,
+          227.378,
+          229.346,
+          235.202,
+          228.402,
+          229.506,
+          241.601,
+          226.066,
+          227.106
+        ]
+      }
+    }
+  }
+}

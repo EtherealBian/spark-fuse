@@ -402,3 +402,27 @@ python tools/qwen_cached_decode.py --score-panel --guard-panel --past 1024 1535 
   --seed-offset 64219 --profile --emit-dir /tmp/guarded-cuda --output /tmp/whole-layer.json
 bash tools/sanitize_bf16_quotient.sh
 ```
+
+### 一次读取同时生成缓存和 GEMM 输入 / Four-output KV cache fusion
+
+`partition_export(ep, cache_fanout=True)` 识别两条 `cat → unsqueeze → expand → reshape` 分支。若更新后的 K/V 缓存仍有其他用户，它为每个输入数据包生成一次读取，同时写出 **K 缓存、V 缓存、展开后的 K、展开后的 V**；后面两个仍是原矩阵乘法需要的稠密输入。四个张量各自拥有新存储，保留对外可见的视图关系，不改 GEMM 的形状或乘加顺序。缓存仅在头复制内部使用、两分支有依赖或布局不合格时，不做这项合并。
+
+[真实 Qwen2 输入的独立子图](../reports/qwen-cache-fanout-slice-gb10.json)核对了 HF 返回的缓存与原始两次 GEMM 收到的操作数。对预填 2047 后的第一步（B2、2 个 KV 头、12 个查询头、D128），两个复制 kernel → 一个，逻辑读取从 **8 MiB → 4 MiB**，写入仍为 **28 MiB**。这些是按索引与张量大小计算的有效载荷，不是硬件 DRAM 计数。对通过逐位、步幅、存储独立性和输入不变检查的后端，同机 GPU 热时间如下（µs，第一步）：
+
+| 预填长度 | eager | Inductor | 分开复制 | 四输出融合 |
+|---:|---:|---:|---:|---:|
+| 31 | 7.267 | 3.592 | 2.552 | 1.643 |
+| 1024 | 88.096 | 83.117 | 81.589 | 79.165 |
+| 2047 | 179.392 | 167.525 | 171.688 | 165.717 |
+
+[整层两步对照](../reports/qwen-decode-cache-fanout-gb10.json)固定旋转、分数调度、其余融合 CUDA 和两次 GEMM。预填 1024 时分开 / 合并的第一步 **574.488 / 571.637 µs**、第二步 **572.005 / 569.259 µs**；预填 2047 时却是 **687.376 / 692.317 µs**、**698.109 / 707.240 µs**。五个前缀分别用五条留出轨迹验证两步，隐藏态、概率、两份缓存均匹配。Inductor 通过独立复制子图的门槛，但未通过整层门槛，因此没有整层 Inductor 延迟。**单独复制更快，不足以把它设为整层默认。**
+
+**English.** This opt-in functional rewrite reads one packet and writes the fresh cache plus each dense query-head replica. It does not alias a returned cache to a GEMM operand, compress the cache, or change either matmul. The warmed four-output copy region was faster than the two-kernel control at all six tested step/layout combinations, including both token-major and head-major cache inputs. Whole-layer timings did not consistently improve. See the [emitted CUDA](../examples/generated/cache-fanout), [Compute Sanitizer](../reports/cache-fanout-sanitizer-gb10.txt), and [independent-weight release checks](../reports/cache-fanout-stage-acceptance.json).
+
+```bash
+source tools/env.sh
+python tools/cache_fanout_slice.py --output /tmp/fanout-slice.json
+python tools/qwen_cached_decode.py --fanout-panel --past 31 255 1024 1535 2047 \
+  --seed-offset 80831 --profile --emit-dir /tmp/fanout-cuda --output /tmp/fanout-layer.json
+bash tools/sanitize_cache_fanout.sh
+```

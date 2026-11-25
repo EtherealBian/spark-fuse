@@ -197,6 +197,25 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "qwen_decode_cache_fanout",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_cached_decode.py"),
+                    "--past",
+                    "63",
+                    "1024",
+                    "2047",
+                    "--verify-only",
+                    "--fanout-panel",
+                    "--seed-offset",
+                    "86783",
+                    "--output",
+                    str(report.with_name(report.stem + "-fanout.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (

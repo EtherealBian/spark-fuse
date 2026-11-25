@@ -163,6 +163,7 @@ def run(
     framework_softmax=False,
     score_panel=False,
     guard_panel=False,
+    fanout_panel=False,
 ):
     export = trajectory(model, rope, length, 60401 + offset)
     graphs = []
@@ -185,12 +186,18 @@ def run(
             ]
         if guard_panel:
             variants.append(("guarded", True, True, False, "guarded"))
+        if fanout_panel:
+            variants = [
+                ("separate", True, True, False, "slots"),
+                ("fanout", True, True, False, "slots"),
+            ]
         for name, enable, repeat, keep, order in variants:
             gm, records = partition_export(
                 ep,
                 host_backend="native",
                 rotary_pairs=True,
                 paired_appends=enable,
+                cache_fanout=name == "fanout",
                 paired_head_repeats=repeat,
                 framework_softmax=keep,
                 ordered_scores=order,
@@ -201,9 +208,11 @@ def run(
             stage[name] = gm
             appends = [r for r in records if r.get("kind") == "paired_append"]
             reps = [r for r in records if r.get("kind") == "paired_head_repeat"]
+            fan = [r for r in records if r.get("kind") == "cache_fanout"]
             assert (
-                len(appends) == int(enable)
-                and len(reps) == int(repeat)
+                len(fan) == int(name == "fanout")
+                and len(appends) == int(enable and not fan)
+                and len(reps) == int(repeat and not fan)
                 and any(r.get("kind") == "rotary_pair" for r in records)
             )
             if score_panel:
@@ -227,6 +236,18 @@ def run(
                     if emit_dir:
                         emit_dir.mkdir(parents=True, exist_ok=True)
                         (emit_dir / f"p{length}-step{i + 1}-{name}.cu").write_text(src)
+            elif fanout_panel:
+                hits = fan or [*appends, *reps]
+                for r in hits:
+                    src = gm.get_submodule(r["module"]).program.source
+                    assert sha256(src.encode()).hexdigest() == r["cuda_sha256"]
+                    if emit_dir:
+                        emit_dir.mkdir(parents=True, exist_ok=True)
+                        (emit_dir / f"p{length}-step{i + 1}-{r['kind']}.cu").write_text(src)
+                for r in records:
+                    if r.get("module") and "schedule" in r and "kind" not in r:
+                        src = gm.get_submodule(r["module"]).kernel.source
+                        r["cuda_sha256"] = sha256(src.encode()).hexdigest()
             elif enable:
                 hit = (reps or appends)[0]
                 src = gm.get_submodule(hit["module"]).program.source
@@ -362,12 +383,19 @@ def main():
     p.add_argument(
         "--guard-panel", action="store_true", help="add guarded BF16 rounding to the score panel"
     )
+    p.add_argument(
+        "--fanout-panel",
+        action="store_true",
+        help="compare two cache copy kernels with a single four-output kernel, leaving GEMMs and exact score policy fixed",
+    )
     p.add_argument("--profile", action="store_true")
     p.add_argument("--emit-dir", type=Path)
     p.add_argument("--output", type=Path, required=True)
     a = p.parse_args()
     if min(a.past) < 2 or len(set(a.past)) != len(a.past):
         p.error("distinct prefix lengths >=2 required")
+    if a.fanout_panel and (a.guard_panel or a.score_panel or a.head_repeats or a.framework_softmax):
+        p.error("--fanout-panel defines its own ablation")
     if a.guard_panel and not a.score_panel:
         p.error("--guard-panel requires --score-panel")
     if a.score_panel and (a.head_repeats or a.framework_softmax):
@@ -390,6 +418,7 @@ def main():
         framework_softmax=a.framework_softmax,
         score_panel=a.score_panel,
         guard_panel=a.guard_panel,
+        fanout_panel=a.fanout_panel,
         profile=a.profile,
         provenance=capture(ROOT / ".runtime/decode-audit/sources"),
         cases=[],
@@ -407,6 +436,7 @@ def main():
             a.framework_softmax,
             a.score_panel,
             a.guard_panel,
+            a.fanout_panel,
         )
         doc["cases"].append(c)
         print(
