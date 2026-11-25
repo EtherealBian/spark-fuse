@@ -307,10 +307,16 @@ class ResidentExecutable:
             self._bad_storage = host._ResidentBadStorage
             self._bad_layout = host._ResidentBadLayout
             lib, entry = None, 0
-            if metadata.get("slot_copy_backend") == "cuda":
+            slots = metadata.get("slot_copy_backend") == "cuda"
+            fresh = metadata.get("fresh_copy_backend") == "cuda"
+            if slots or fresh:
                 from .slot_copy import prepare
 
-                lib, entry, metadata["slot_copy"] = prepare(self._outputs, dev)
+                lib, entry, copy_plan = prepare(self._outputs, dev)
+                if slots:
+                    metadata["slot_copy"] = copy_plan
+                if fresh:
+                    metadata["fresh_copy"] = copy_plan
             native = host._ResidentIO(
                 static,
                 tuple(self._outputs),
@@ -321,8 +327,9 @@ class ResidentExecutable:
                 protected,
                 lib,
                 entry,
+                slots,
             )
-            self._native_io = native.run
+            self._native_io = native.run_fused if fresh else native.run
             self._native_into = native.run_into
 
     def _guard(self):
@@ -455,6 +462,7 @@ def capture_export(
     int8_rhs_layout=None,
     request_backend="python",
     slot_copy_backend="aten",
+    fresh_copy_backend="aten",
 ):
     """Capture a deterministic ATen export or its SparkFuse partition, with a private weight snapshot.
 
@@ -468,6 +476,8 @@ def capture_export(
     in a single host call. Other output contracts remain supported by the default Python path.
     slot_copy_backend="cuda" optionally compiles one byte-copy kernel for run_into() with
     1..32 independent fresh outputs. It never changes the ordinary fresh-output call.
+    fresh_copy_backend="cuda" separately opts the fresh call into that copy grid. Each
+    output still owns an independent allocation; the default is one ATen clone per output.
     """
     return _capture_export(
         ep,
@@ -480,6 +490,7 @@ def capture_export(
         int8_rhs_layout=int8_rhs_layout,
         request_backend=request_backend,
         slot_copy_backend=slot_copy_backend,
+        fresh_copy_backend=fresh_copy_backend,
     )
 
 
@@ -497,11 +508,16 @@ def _capture_export(
     request_backend="python",
     packed_descriptor=None,
     slot_copy_backend="aten",
+    fresh_copy_backend="aten",
 ):
     if slot_copy_backend not in ("aten", "cuda") or (
         slot_copy_backend == "cuda" and request_backend != "native"
     ):
         raise ValueError("choose aten slot copies, or cuda with native request IO")
+    if fresh_copy_backend not in ("aten", "cuda") or (
+        fresh_copy_backend == "cuda" and request_backend != "native"
+    ):
+        raise ValueError("choose aten fresh copies, or cuda with native request IO")
     if request_backend not in ("python", "native"):
         raise ValueError("choose python or native request backend")
     if backend not in ("aten", "mixed") or (backend == "aten" and partition_options):
@@ -655,6 +671,7 @@ def _capture_export(
                 backend=backend,
                 request_backend=request_backend,
                 slot_copy_backend=slot_copy_backend,
+                fresh_copy_backend=fresh_copy_backend,
                 staging_and_state_bytes=used,
                 int8_rhs_layout=int8_rhs_layout,
                 frozen_int8_weights=inventory,

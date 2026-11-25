@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "fresh_cuda_output_transport",
+            [
+                sys.executable,
+                str(ROOT / "tools/fresh_transport_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-fresh-transport.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "fused_slot_copy_transport",
             [
                 sys.executable,

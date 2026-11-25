@@ -32,11 +32,12 @@ class ResidentIO {
  public:
   ResidentIO(py::tuple staged, py::tuple outputs, py::object replay,
              std::vector<Shape> strides, py::object plain, py::object parameter, py::tuple protected_tensors,
-             py::object slot_lib, uintptr_t slot_entry)
+             py::object slot_lib, uintptr_t slot_entry, bool cuda_slots)
       : replay_(std::move(replay)), plain_(std::move(plain)), parameter_(std::move(parameter)),
         slot_lib_(std::move(slot_lib)), slot_launch_(reinterpret_cast<SlotLaunch>(slot_entry)),
-        strides_(std::move(strides)) {
-    if (bool(slot_launch_) == slot_lib_.is_none() || (slot_launch_ && outputs.size() > 32))
+        cuda_slots_(cuda_slots), strides_(std::move(strides)) {
+    if (bool(slot_launch_) == slot_lib_.is_none() || (cuda_slots_ && !slot_launch_) ||
+        (slot_launch_ && outputs.size() > 32))
       throw py::value_error("invalid slot-copy binding");
     if (!staged.size() || !outputs.size() || strides_.size() != staged.size() ||
         !PyCallable_Check(replay_.ptr())) throw py::value_error("invalid resident bindings");
@@ -65,6 +66,25 @@ class ResidentIO {
     py::tuple result(outputs_.size());
     for (size_t i = 0; i < outputs_.size(); ++i)
       result[i] = py::reinterpret_steal<py::object>(THPVariable_Wrap(outputs_[i].clone()));
+    return result;
+  }
+
+  // New tensors keep separate StorageImpls. Batch only the byte transfers, never the allocations.
+  py::tuple run_fused(const py::args& args) const {
+    const auto stream = validate_inputs(args);
+    if (!slot_launch_) throw BadLayout("fresh CUDA transport was not prepared");
+    py::tuple result(outputs_.size());
+    void* ptr[64];
+    for (size_t i = 0; i < outputs_.size(); ++i) {
+      const auto& src = outputs_[i];
+      // Captured ABI guarantees whole contiguous storage. Preserve singleton strides as well.
+      auto dst = at::empty_strided(src.sizes(), src.strides(), src.options());
+      ptr[i] = dst.data_ptr(); ptr[outputs_.size() + i] = src.data_ptr();
+      result[i] = py::reinterpret_steal<py::object>(THPVariable_Wrap(std::move(dst)));
+    }
+    stage_and_replay(args, stream);
+    // Newly allocated on the current owner stream; no cross-stream borrower to record here.
+    C10_CUDA_CHECK(static_cast<cudaError_t>(slot_launch_(ptr, int(outputs_.size()), stream.stream())));
     return result;
   }
 
@@ -97,7 +117,7 @@ class ResidentIO {
       forbidden.push_back(current);
     }
     stage_and_replay(args, stream);
-    if (slot_launch_) {
+    if (cuda_slots_) {
       // The generated schedule was specialized to these private outputs' byte counts.
       // Only caller addresses vary; all destination spans were validated before staging.
       void* ptr[64];
@@ -161,6 +181,7 @@ class ResidentIO {
   }
   py::object replay_, plain_, parameter_, slot_lib_;
   SlotLaunch slot_launch_;
+  bool cuda_slots_;
   std::vector<Shape> strides_;
   std::vector<at::Tensor> inputs_, outputs_;
   std::vector<c10::weak_intrusive_ptr<c10::StorageImpl>> protected_;
@@ -173,7 +194,8 @@ void bind_resident_io(py::module_& m) {
   py::register_exception<BadStorage>(m,"_ResidentBadStorage");
   py::register_exception<BadLayout>(m,"_ResidentBadLayout");
   py::class_<ResidentIO>(m,"_ResidentIO")
-    .def(py::init<py::tuple,py::tuple,py::object,std::vector<Shape>,py::object,py::object,py::tuple,py::object,uintptr_t>())
+    .def(py::init<py::tuple,py::tuple,py::object,std::vector<Shape>,py::object,py::object,py::tuple,py::object,uintptr_t,bool>())
     .def("run", &ResidentIO::run)
+    .def("run_fused", &ResidentIO::run_fused)
     .def("run_into", &ResidentIO::run_into);
 }

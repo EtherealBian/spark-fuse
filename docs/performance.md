@@ -1030,3 +1030,19 @@ with replay_request_policy(ep, new_example, new_check, "choice.json", objective=
 ```
 
 The [12-case report](../reports/request-policy-gb10.json) contains the timings, actual rewrites, selected arms, paired votes, held-out results and setup cost. On this panel selection took 220–603 ms; winner-only recapture took 62–160 ms. Using the observed holdout savings, the extra tuning cost over building the independent arm breaks even at roughly 13k–85k requests. These are estimates for a warm process, not a latency guarantee. Reusing a receipt still captures a new graph, validates two previously unseen inputs, and needs the same static context. Receipts are checksummed local records, not an authentication mechanism; pass only trusted files. Run `python tools/request_policy_panel.py --output /tmp/policy.json` in the Transformers environment and `bash tools/sanitize_request_policy.sh` for the regression checks.
+
+<a id="fresh-transport"></a>
+### 返回 21 个独占结果，而不要求调用方预分配 / Fresh outputs in one copy launch
+
+`capture_export(..., request_backend="native", fresh_copy_backend="cuda")` 为每个结果单独分配张量，再用一次 CUDA 发射从常驻图的私有缓冲区写回。返回值保留设备、dtype、形状、步长以及独立存储；下一次请求或关闭执行句柄都不会影响已返回的结果。该选项仅用于 1–32 个独占、连续的整存储输出。已有的 `slot_copy_backend` 只控制 `run_into`；两个选项互不改变对方的默认行为。
+
+| 33 行、21 个可见输出，默认 stream | 逐个 ATen clone | 原生分配 + 一个 CUDA kernel | Python 分配 + CUDA `run_into` |
+|---|---:|---:|---:|
+| 单请求，种子 1661987（µs） | 120.05 | 63.98 | 71.90 |
+| 八请求排队，每请求（µs） | 117.77 | 49.78 | 59.54 |
+| 单请求，种子 1674131（µs） | 119.53 | 64.57 | 71.94 |
+| 八请求排队，每请求（µs） | 117.23 | 49.99 | 60.11 |
+
+三条路径都为八次请求分配了 **168** 个 CUDA 张量，保留了同样的 7,168,000 字节。收益来自减少逐张量拷贝发射，不能声称减少分配。profiler 中，ATen 的 23 次设备拷贝变为 2 次输入拷贝和 1 个输出 kernel。三个大输出的 prefill 例不总是受益：在显式 stream 上，同步延迟 50.98 → 53.37 µs，排队时则是 43.86 → 41.02 µs（种子 1674131）。需要最低分配开销的调用方仍可使用前述预分配接口。
+
+All three arms return fresh, independently owned tensors. The [complete panel](../reports/fresh-transport-gb10.json) covers two seeds, three projection graphs, default and explicit streams, and six single-output controls. The projections reuse the archived CPU INT32 oracle's matching inputs and outputs; all public tensors are checked before and after the handles close. Run `python tools/fresh_transport_panel.py --output /tmp/fresh.json` and `bash tools/sanitize_fresh_transport.sh` to reproduce the [memory and synchronization checks](../reports/fresh-transport-sanitizer-gb10.txt).
