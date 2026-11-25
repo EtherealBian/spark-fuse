@@ -6,6 +6,8 @@
 - **后端与实测选型**：按行分配线程块、每个 warp 独立处理一行，或线性遍历逐元素图。对只输出行统计量的均值归约，新增[单线程写回的 CUDA 布局](examples/generated/compact-mean/compact_mean.cu)。向量读写支持非对齐地址和奇数宽尾部。搜索线程数、向量宽度和跨归约复用，使用另一组输入交错复测后才采纳配置。
 - **真实框架集成**：在 Hugging Face 单层上验证融合结果。Qwen2 的可选 Q/K 旋转融合把同一解码层的发射数从 [28 降到 19](reports/qwen-decoder-rotary-gb10.json)（BF16，序列长 65）。[带 KV 缓存的两步解码](reports/qwen-decode-cache-gb10.json)也验证了隐藏态、注意力概率和新 K/V。BERT 的残差 + LayerNorm 在 [32 组独立输入与权重](reports/bert-layer-affine-holdout-gb10.json)上逐元素匹配 eager；T5 门控 GELU 把 FFN 发射数从 [12 降到 4](reports/t5-gate-profiler-gb10.json)。矩阵乘法仍交给 PyTorch。这些实验使用随机权重。
 
+[Q/K/V 布局实验](docs/performance.md#split-copy3)：让三个独立输出保留各自的存储，把三次显式拷贝合为一次 CUDA 发射。
+
 ### 跑一个例子
 
 需要 Linux、支持目标 GPU 的 CUDA 工具链（含 `nvcc`）和 CUDA 版 PyTorch；实测环境为 GB10 / CUDA 13.0 / PyTorch 2.13.0+cu130。以下命令从仓库根目录运行：
@@ -43,3 +45,5 @@ BF16、`32 × 1536`、残差可见的 RMSNorm。单位为 µs，报告的是**�
 SparkFuse compiles functional PyTorch inference regions into inspectable CUDA on NVIDIA DGX Spark. Its typed IR supports elementwise DAGs and one last-axis collective region (mean, stable softmax, or affine LayerNorm). Output liveness controls global writes. The tuner can choose a single-writer reduction when only row statistics escape; [paired measurements](reports/compact-mean-panel.json) include aligned and offset inputs. The heterogeneous path keeps unsupported operations in PyTorch. A complete Qwen2 decoder layer, a BERT encoder layer and T5 gated feed-forward blocks are tested with random weights, not a pretrained checkpoint. The [cached Qwen2 decode experiment](reports/qwen-decode-cache-gb10.json) follows two single-token calls with real K/V carried between them. Device replay and synchronized host latency are reported separately. The table above reports warm device replay, not Python latency or end-to-end model speedup.
 
 An optional ATen host launcher supports static and bounded variable-row exports without changing the generated kernel. A separate bounded-row entry point compiles an entire packed SwiGLU gate to a guarded native call. See [performance evidence](docs/performance.md) for fresh-output host latency, address rotation, and odd-width vector results, including regressions.
+
+[QKV layout study](docs/performance.md#split-copy3): three explicit copies become one CUDA launch without aliasing the outputs or changing GEMM arithmetic.

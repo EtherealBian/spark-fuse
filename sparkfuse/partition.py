@@ -220,6 +220,7 @@ def partition_export(
     cache_fanout=False,
     packed_gates=False,
     packed_gate_schedule="adaptive",
+    split_copies=False,
 ):
     """Functional inference only. Return (mixed FX module, auditable region decisions)."""
     if ordered_scores not in (None, "loop", "slots", "guarded") or (
@@ -244,6 +245,10 @@ def partition_export(
         if schema is not None and schema.is_mutable:
             raise Unsupported("requires functional graph without mutations")
     records = []
+    if split_copies:
+        from .split_copy import fuse_split_copies
+
+        records.extend(fuse_split_copies(gm, device, host_backend))
     if packed_gates:
         from .packed_swiglu import fuse_packed_swiglu
 

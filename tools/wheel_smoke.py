@@ -33,7 +33,17 @@ with torch.inference_mode():
     for n in (1,3,31):
         x=torch.randn(n,30,device='cuda',dtype=torch.float16)
         assert all(torch.equal(a.view(torch.int16),b.view(torch.int16)) for a,b in zip(r(x),gate(x),strict=True))
-print(json.dumps({'bounded_packed_rows':[1,3,31],'import_origin_verified':True,'torch':str(torch.__version__),'device':torch.cuda.get_device_name(),'shape':[17,129],'dtype':'bfloat16','host':'native','seed':721,'passed':True}))
+from sparkfuse.partition import partition_export
+class Copies(torch.nn.Module):
+    def forward(self, x):
+        return tuple(y.clone(memory_format=torch.contiguous_format) for y in x.split([16,8,8],-1))
+with torch.inference_mode():
+    m=Copies(); x=torch.randn(2,1,32,device='cuda',dtype=torch.bfloat16)
+    g,rr=partition_export(torch.export.export(m,(x,)),split_copies=True,host_backend='native')
+    assert [r.get('kind') for r in rr].count('split_copy3') == 1
+    y=g(x); assert len({a.untyped_storage().data_ptr() for a in (x,*y)})==4
+    assert all(a.stride()==b.stride() and torch.equal(a.view(torch.int16),b.view(torch.int16)) for a,b in zip(y,m(x),strict=True))
+print(json.dumps({'split_copy_widths':[16,8,8],'bounded_packed_rows':[1,3,31],'import_origin_verified':True,'torch':str(torch.__version__),'device':torch.cuda.get_device_name(),'shape':[17,129],'dtype':'bfloat16','host':'native','seed':721,'passed':True}))
 """
 
 

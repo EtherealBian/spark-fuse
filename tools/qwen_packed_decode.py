@@ -100,12 +100,12 @@ def variants(orig, packed, args, verify_only, emit_dir):
     return paths, dict(original=str(ep.graph), packed=str(pp.graph), variants=summaries)
 
 
-def run(m, p, rope, prefix, offset, verify_only, emit_dir):
+def run(m, p, rope, prefix, offset, verify_only, emit_dir, *, variant_builder=variants):
     export = trajectory(m, rope, prefix, 60401 + offset)
     stages = []
     graphs = []
     for args, _ in export:
-        paths, g = variants(m, p, args, verify_only, emit_dir)
+        paths, g = variant_builder(m, p, args, verify_only, emit_dir)
         stages.append(paths)
         graphs.append(g)
     seeds = [s + offset for s in (60527, 60637, 60733, 60869, 60943)]

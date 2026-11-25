@@ -233,6 +233,22 @@ def check(until, report):
                 ],
             )
         )
+        commands.append(
+            (
+                "qwen_qkv_checkpoint_layout",
+                [
+                    opt,
+                    str(ROOT / "tools/qwen_qkv_layout.py"),
+                    "--past",
+                    "127",
+                    "--verify-only",
+                    "--seed-offset",
+                    "91733",
+                    "--output",
+                    str(report.with_name(report.stem + "-qkv-layout.json")),
+                ],
+            )
+        )
         for proj in ("gated-gelu", "gated-gelu_pytorch_tanh"):
             commands.append(
                 (

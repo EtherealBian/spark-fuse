@@ -534,3 +534,24 @@ All values in µs. At two rows the **device** medians of static FX and static na
 Each timing is the median of seven shuffled windows on the last input, after all three inputs for that weight and case passed the private bitwise gate. Weight packing, RoPE and cache writes are outside these timings. The report retains first mismatching indices, BF16 encodings, output layouts and launched kernel names even for rejected candidates; the latter are not timed. These are projection measurements, not layer acceleration or generation throughput.
 
 [Raw inputs' hashes, mismatches, traces and timing samples](../reports/qwen-qkv-projection-admission-gb10.json) · [Release checks](../reports/qkv-admission-stage-acceptance.json). Reproduce on DGX Spark with `python tools/qkv_projection_audit.py --output /tmp/qkv.json` in the Transformers-enabled project environment.
+
+<a id="split-copy3"></a>
+
+### 三路独立输出：一个 CUDA 拷贝 kernel / Three fresh outputs, one launch
+
+Q/K/V 的两个问题可以分开：宽 GEMM 是否与原来三个 GEMM 数值相同，以及**已有宽张量**怎么交付给需要三块独立存储的后继。新 pass `partition_export(ep, split_copies=True)` 只做后者：识别末轴 `split([w0,w1,w2], -1)` 后三次显式 `clone(memory_format=torch.contiguous_format)`，生成一个按位复制的 CUDA kernel。它不改变任何矩阵乘法。三个目的张量分别分配，没有隐藏工作区；若图还返回未复制的切片，该切片仍与输入共享存储。地址及三段宽度允许时最多搬 16 字节，对偏移地址退回较窄的指令。保留默认关闭。
+
+两行 BF16 解码、宽度 `[1536,256,256]`、第一组权重和前缀 127：只测三路拷贝，eager **4.88 µs / 3 次发射**，Inductor **2.82 µs / 3 次**，SparkFuse **1.73 µs / 1 次**。这是设备时间。同步主机时间次序不同：eager **25.09 µs**，完整 FX 路径 **33.70 µs**，同一 CUDA 的原生入口 **11.78 µs**。不能把原生入口与任意混合图的 Python 调用混为一谈。
+
+Then we traced the copies through a real single-layer Qwen2 decode. The fixture holds one packed QKV weight and one packed bias, with no stale copy. Three independent `linear` calls over **row slices of those parameters** reproduced the HF projection bits and strides on every tested prefill and decode input, including the known 127-token counterexample to the wide GEMM. This is a tested fallback for the fixture, not a universal admission rule. Only the decode study uses a wide GEMM; HF prefill initializes the cache. Each backend carries its own first-step output into the second step, on five held-out trajectories per weight and prefix.
+
+| Prefix 1,024 · device µs | HF eager | Original direct hybrid | Re-export control, original weights | One bank, 3 GEMMs | Wide GEMM, strided views | Wide GEMM, 3 clones | Wide GEMM, 1 copy kernel |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Weight 141144 · step 1 | 616.43 | 569.59 | 579.34 | 578.32 | 586.72 | 567.48 | 562.96 |
+| Weight 141144 · step 2 | 609.72 | 577.56 | 580.06 | 580.53 | 581.38 | 566.28 | 563.72 |
+| Weight 147096 · step 1 | 616.48 | 569.25 | 581.06 | 579.14 | 585.07 | 568.95 | 564.82 |
+| Weight 147096 · step 2 | 609.15 | 577.39 | 579.73 | 580.46 | 582.39 | 568.47 | 564.22 |
+
+Why copy at all? The private strided views miss both the dense-input rotary and cache-append fusions (38 kernels). Three clones restore them (31); horizontally fusing the same copies retains both passes (29). The fair isolation of the new pass is **31 vs 29**, not 48 vs 29. Re-exporting the unchanged graph itself alters partition coverage (30 launches vs the direct compiler’s 17), so both controls are reported. All four layer outputs met the exact bits/strides gate for SparkFuse. Layer-level Inductor did not meet its predeclared accuracy gate and has no latency entry; it did pass the independent copy-only gate. Layer-forward time is not model throughput.
+
+[First weight, raw windows and FX](../reports/qkv-layout-layer-gb10.json) · [Independent weight](../reports/qkv-layout-layer-heldout-gb10.json) · [CUDA sources](../examples/generated/split-copy3) · [Sanitizer](../reports/split-copy3-sanitizer-gb10.txt) · [Release suite](../reports/split-copy3-stage-acceptance.json). Reproduce with `python tools/qwen_qkv_layout.py --seed-offset 86783 --past 127 1024 --output /tmp/qkv-layout.json` and `bash tools/sanitize_split_copy.sh`.
