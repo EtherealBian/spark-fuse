@@ -1002,3 +1002,31 @@ Across two random-weight seeds, three lengths and eight held-out requests per ca
 The API accepts up to 32 independent, full-storage output tensors. It checks all destinations before staging, records allocator stream use and increments regular tensors' version counters. Both transports made zero new CUDA allocations across eight queued requests after the ring was created. The two seeds, three projection shapes and two stream types matched the archived quantized eager outputs byte for byte. The [timing report](../reports/fused-slot-gb10.json) includes all seven shuffled windows per case, setup costs, and direct CUDA controls. In a single-output ReLU control with a roughly 16 MiB result, queued latency moved from 397.53 to 399.01 µs on one seed, and from 405.27 to 388.34 µs on the other. These results support opting in for multi-output workloads; they do not establish a universal improvement for a single large copy.
 
 After `source tools/env.sh`, run `python tools/fused_slot_panel.py --output /tmp/fused-slot.json`. The explicit-stream driver control uses CUDA 13's batch API; `--smoke` checks the two product paths without that control. Run `bash tools/sanitize_fused_slots.sh` for the [sanitizer checks](../reports/fused-slot-sanitizer-gb10.txt), including unaligned pointers, protected bytes around the destinations, tile boundaries and the 32-output limit.
+
+<a id="whole-request-policy"></a>
+## 应该按哪个请求目标编译？ / Selecting a lowering for a complete request
+
+`select_request_policy` 面向固定权重、固定形状的 W8A8 服务。三个候选分别独立计算每个投影的量化、让各投影共享一次量化、或在共享后把 Q/K/V 打包成一次整数 GEMM。计时从传入新地址的张量开始，到原生入口写回独占结果并同步结束。可选择每次等待（`latency`），或连续提交八次再等待（`queue8`，报告每请求微秒）。这与测一个 CUDA kernel 的耗时不同。
+
+| BERT，33 个 token，包含残差加法 | 权重种子 | 独立量化 → 选中的打包方案，独立留出集（µs/请求） |
+|---|---:|---:|
+| 同步一次 | 1840921 | 99.93 → 86.01 |
+| 八次排队 | 1840921 | 90.85 → 77.75 |
+| 同步一次 | 1851289 | 100.29 → 85.53 |
+| 八次排队 | 1851289 | 92.86 → 78.55 |
+
+12 组正式测量都选中了打包，但没有把它写成默认方案。每组先用 5 个窗口提名；另一批输入上 7 个窗口至少赢 6 次，且配对中位加速达到 1.03× 才可换掉基线。第三组 8 个输入只验收、不参与决策。每一组都逐字节核对 hidden state 和 attention probabilities，并检查输出不共享存储。相同图但权重、形状、设备、精度设置或优化目标发生变化，不能使用旧记录。报告里保留了所有候选的样本。
+
+```python
+from sparkfuse.serving_policy import select_request_policy, replay_request_policy
+
+# Every request is a tuple of tensors with the same static descriptor, different storage and content.
+exe, receipt = select_request_policy(ep, example, check, train8, confirm8, audit8,
+                                     objective="queue8", receipt_path="choice.json")
+with exe:
+    result = exe(*live_request)
+with replay_request_policy(ep, new_example, new_check, "choice.json", objective="queue8") as cached:
+    result = cached(*live_request)
+```
+
+The [12-case report](../reports/request-policy-gb10.json) contains the timings, actual rewrites, selected arms, paired votes, held-out results and setup cost. On this panel selection took 220–603 ms; winner-only recapture took 62–160 ms. Using the observed holdout savings, the extra tuning cost over building the independent arm breaks even at roughly 13k–85k requests. These are estimates for a warm process, not a latency guarantee. Reusing a receipt still captures a new graph, validates two previously unseen inputs, and needs the same static context. Receipts are checksummed local records, not an authentication mechanism; pass only trusted files. Run `python tools/request_policy_panel.py --output /tmp/policy.json` in the Transformers environment and `bash tools/sanitize_request_policy.sh` for the regression checks.

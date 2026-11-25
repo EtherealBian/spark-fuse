@@ -150,6 +150,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "whole_request_policy_selection",
+                [
+                    opt,
+                    str(ROOT / "tools/request_policy_panel.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-request-policy.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "quantized_bert_encoder_layer",
                 [
                     opt,
