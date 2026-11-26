@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "model": "Qwen/Qwen2.5-72B-Instruct-GGUF",
+  "revision": "7ca3bc388f97b264c4283bc9bf1055e2abc38441",
+  "format": "Q4_K_M",
+  "verified_weight_bytes": 44010465472,
+  "runtime": {
+    "llama_cpp_revision": "66d65ec29ba7c440cbc31b6f63b74a17b536ba65",
+    "server_sha256": "364610626d8d25963f59ad4d90ed9d711b1d7a4b96da1fc1d8029b0925f57c22",
+    "runtime_lib_sha256": {
+      "libggml-base.so.0.9.7": "af69d39f55a6c30c83ebfb85b6f05627a4f5c755537c21ed79aa709bb7d45c9a",
+      "libggml-cpu.so.0.9.7": "0c287f06ed4f7ace8c8bd7894a52d584d686e790eae29542e4b54e68cf4cc29d",
+      "libggml-cuda.so.0.9.7": "dd471f6a5472b0a3b3b1417a28484b52dc0b2e99b4908c02fdaf1b48275e0445",
+      "libggml.so.0.9.7": "8d500db937531b588b1336fbba4b3e777f06465b4b227464babb7e20b143e5dc",
+      "libllama.so.0.0.8183": "6a56028354135da83f8bd6fd285ec4e22f6deeb788d41ec441d05ff75a843d70",
+      "libmtmd.so.0.0.8183": "58304190dbfae641c938c1a6cd6b28243e95650e61bd40cc3831faed9503dd81"
+    },
+    "driver": "580.173.02",
+    "eog_token_ids": [
+      128247,
+      151643,
+      151645,
+      151662,
+      151663,
+      151664
+    ],
+    "device": "NVIDIA GB10",
+    "gpu_layers_including_output": 81
+  },
+  "evidence_sha256": {
+    "pilot-exclusion.json": "e91c3f74a9ab4fd5c239c48df0f64a2e0ea28c4bd65733895691701ba7ee6df0",
+    "prefix-checkpoint.json": "21239699b39cc8ceb648a3966ae7a469b4dd02a010966ab8d0c64c921068ae1e",
+    "prefix-rows.json": "6f8aca8b6dc147a5be5fdc17544d1028821a19f057e92cac797361b20b404dce",
+    "prefix-runtime.json": "c041d5b14968f52fd596b00f8d5da01ba1c515b5d0c09487642c5ad0ddd047a6",
+    "routing-checkpoint.json": "21239699b39cc8ceb648a3966ae7a469b4dd02a010966ab8d0c64c921068ae1e",
+    "routing-inputs.json": "09fd0a1d9ebc08ad0e7b31ae4dade871f26fa39bccc89d4036f05bc7061138ed",
+    "routing-rows.json": "e610b1196ccaf55de02c4cac8f21b3d9af7f3254dc559819fb8f6db7d60af765",
+    "routing-runtime.json": "f456f18c0d43fe98f78f4cef9a009636daff718eb57dd2272f8954f52ec8e9f2"
+  },
+  "panels": {
+    "prefix": {
+      "schema": 1,
+      "output_tokens_per_request": 24,
+      "cases": {
+        "256": {
+          "pairs": 4,
+          "exact_token_pairs": 3,
+          "all_tokens_exact": false,
+          "reused_range": [
+            239,
+            241
+          ],
+          "cold": {
+            "prompt_ms": 753.2864999999999,
+            "decode_ms": 5188.7845,
+            "wall_ms": 5944.665391463786
+          },
+          "reuse": {
+            "prompt_ms": 279.0425,
+            "decode_ms": 5184.531,
+            "wall_ms": 5466.4580640383065
+          },
+          "median_paired_wall_ms_saved": 479.96521228924394
+        },
+        "2048": {
+          "pairs": 4,
+          "exact_token_pairs": 4,
+          "all_tokens_exact": true,
+          "reused_range": [
+            2031,
+            2033
+          ],
+          "cold": {
+            "prompt_ms": 6072.029,
+            "decode_ms": 5297.7345000000005,
+            "wall_ms": 11372.629009187222
+          },
+          "reuse": {
+            "prompt_ms": 285.53499999999997,
+            "decode_ms": 5292.388,
+            "wall_ms": 5578.98233179003
+          },
+          "median_paired_wall_ms_saved": 5794.5025293156505
+        }
+      },
+      "all_tokens_exact": false
+    },
+    "routing": {
+      "schema": 1,
+      "prompt_tokens_per_request": 1024,
+      "generated_tokens_per_request": 16,
+      "patterns": {
+        "alternating": {
+          "request_pairs": 12,
+          "exact_token_pairs": 12,
+          "estimator": "median of two six-request trace totals",
+          "round_robin": {
+            "reused": 4056.0,
+            "processed": 2088.0,
+            "wall_ms": 27703.157195821404,
+            "prompt_ms": 7143.656999999999,
+            "decode_ms": 20547.521
+          },
+          "affinity": {
+            "reused": 4056.0,
+            "processed": 2088.0,
+            "wall_ms": 27740.134734660387,
+            "prompt_ms": 7149.422500000001,
+            "decode_ms": 20579.707000000002
+          }
+        },
+        "switchback": {
+          "request_pairs": 12,
+          "exact_token_pairs": 11,
+          "estimator": "median of two six-request trace totals",
+          "round_robin": {
+            "reused": 0.0,
+            "processed": 6144.0,
+            "wall_ms": 38842.75388624519,
+            "prompt_ms": 18196.5345,
+            "decode_ms": 20633.7395
+          },
+          "affinity": {
+            "reused": 4056.0,
+            "processed": 2088.0,
+            "wall_ms": 27762.932579033077,
+            "prompt_ms": 7165.062,
+            "decode_ms": 20587.334000000003
+          }
+        }
+      },
+      "all_tokens_exact": false
+    }
+  },
+  "excluded": {
+    "request_only_eos": {
+      "case": "indigo",
+      "input_tokens": 256,
+      "cold_tokens": 24,
+      "reuse_tokens": 15,
+      "premature_terminal_id": 151643,
+      "included_in_timings": false
+    }
+  },
+  "all_tokens_exact": false
+}
