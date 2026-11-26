@@ -1,0 +1,90 @@
+{
+  "schema": "sparkfuse.glm45-feasibility.v1",
+  "model": "unsloth/GLM-4.5-GGUF",
+  "revision": "d4573659be99a9eb1ada9abd5d0df6d8afc5a3a4",
+  "verified_weight_bytes": 97047546752,
+  "backend_placement_layers_including_output": 94,
+  "header_blocks_including_nextn": 93,
+  "header_nextn_predict_layers": 1,
+  "backend_cuda_model_mib": 90370.51,
+  "reference_runtime_sha256": "2b396205c9d65dfc5ac469b29a2f863401289e0b4b57a9baa36cebc93046affd",
+  "runtime": {
+    "llama_cpp_revision": "66d65ec29ba7c440cbc31b6f63b74a17b536ba65",
+    "server_sha256": "364610626d8d25963f59ad4d90ed9d711b1d7a4b96da1fc1d8029b0925f57c22",
+    "runtime_lib_sha256": {
+      "libggml-base.so.0.9.7": "af69d39f55a6c30c83ebfb85b6f05627a4f5c755537c21ed79aa709bb7d45c9a",
+      "libggml-cpu.so.0.9.7": "0c287f06ed4f7ace8c8bd7894a52d584d686e790eae29542e4b54e68cf4cc29d",
+      "libggml-cuda.so.0.9.7": "dd471f6a5472b0a3b3b1417a28484b52dc0b2e99b4908c02fdaf1b48275e0445",
+      "libggml.so.0.9.7": "8d500db937531b588b1336fbba4b3e777f06465b4b227464babb7e20b143e5dc",
+      "libllama.so.0.0.8183": "6a56028354135da83f8bd6fd285ec4e22f6deeb788d41ec441d05ff75a843d70",
+      "libmtmd.so.0.0.8183": "58304190dbfae641c938c1a6cd6b28243e95650e61bd40cc3831faed9503dd81"
+    },
+    "driver": "580.173.02",
+    "eog_token_ids": [
+      151329,
+      151336,
+      151338
+    ],
+    "device": "NVIDIA GB10",
+    "gpu_layers_including_output": 94
+  },
+  "system_memory_observations": {
+    "schema": 2,
+    "source": "Linux /proc/meminfo MemAvailable (system-wide, sampled once per second; not GPU peak)",
+    "floor_bytes": 6442450944,
+    "reason": "workload-finished",
+    "samples": 415,
+    "min_available_bytes": 28594139136,
+    "below": 0,
+    "phases": {
+      "loading": {
+        "samples": 363,
+        "min_available_bytes": 28675379200
+      },
+      "requests": {
+        "samples": 52,
+        "min_available_bytes": 28594139136
+      }
+    }
+  },
+  "serving": {
+    "cases": {
+      "128": {
+        "wall_ms": 2587.8436733037233,
+        "decode_ms": 1356.356,
+        "prompt_ms": 1220.3685,
+        "repeated_greedy_exact": 2,
+        "paired_cases": 2,
+        "first_different_token": [
+          null,
+          null
+        ]
+      },
+      "1024": {
+        "wall_ms": 9809.216259047389,
+        "decode_ms": 1398.9724999999999,
+        "prompt_ms": 8394.557499999999,
+        "repeated_greedy_exact": 2,
+        "paired_cases": 2,
+        "first_different_token": [
+          null,
+          null
+        ]
+      }
+    },
+    "output_per_request": 16,
+    "scope": "Four synthetic prompts, repeated in reverse order in one process. Warm weights, cold prompt KV. No quality or cross-model speed comparison."
+  },
+  "matching_repeat_pairs": 4,
+  "tested_repeatability_gate": true,
+  "evidence_sha256": {
+    "header-budget.json": "394727c7c7ac97cf9ad3454a19bb2d4914deb563e671f24fa79eb73916acfb21",
+    "checkpoint.json": "9eb98de6191d6261d60dde57ae0a88874edc172d482c9cd317f69bc7b1b5e09a",
+    "runtime.json": "bf5902feb0f4585d1f2f34b1a1d1cb6c81cf213266ef4b30db56fb73bb72c5d4",
+    "memory-guard.json": "c8dd4ea03763772aeed181f552d1aa535bce904c1baf64cd8590d564d20cb9d0",
+    "admission-transfer.json": "0969423bd201454f7a556a8926dad4bba3037c5d1bfe8b932d6f3e6dc16a613e",
+    "admission.json": "b5694dac9f72825d1eb40c6db5071f33ed400e880268862bd5f7f70685d2990e",
+    "rows.json": "99092834e6977eb3c48b93b4d2dbd8083cbb203dd196db4f680e53824e0f2433"
+  },
+  "scope": "Pinned mixed UD-IQ1_S on one GB10. Counterbalanced fixed-length cold prompts; all-layer placement is a backend receipt, not a claim that the NextN/MTP layer ran. No natural-language accuracy or equivalence to higher precision; backend model buffer is not peak memory."
+}
