@@ -50,3 +50,21 @@ DGX Spark 运行 Qwen2.5-72B-Instruct 的 Q4_K_M 版本。12 个 GGUF 分片共 
 [原始输入、输出与运行回执](../reports/qwen72b/) · [复算汇总](../reports/qwen72b/summary.json) · [重新运行实验](../benchmarks/quant_serving/README.md)。用 Python 3.11+ 在 CPU 上运行 `python3 benchmarks/quant_serving/audit_bundle.py 72b reports/qwen72b`。汇总从原始记录重算，不读取发布的 summary；同时核对权重指纹、实际映射的推理库、槽位、逐请求 token 和计时。
 
 **English.** A single DGX Spark runs the dense 72B model in Q4_K_M using upstream llama.cpp CUDA. SparkFuse dispatches requests and audits the evidence. The paired single-slot test measures prefix reuse; the two-slot test contrasts round-robin and prefix affinity on an alternating control and a switchback trace. Results above are local serial request timings, not concurrent throughput or a quality benchmark. On the switchback trace, affinity reduced six-request prefill work from 6,144 to 2,088 tokens; 11 of 12 paired outputs matched. The single-slot 256-token cohort also contains a disagreement.
+
+<a id="cold-streaming"></a>
+## 两个请求同时就绪：串行发还是并发发？
+
+单台 DGX Spark、同一个两槽服务。每波两条请求同时就绪，实验交换串行与并发策略的顺序，重复时交换串行先发的槽。每次固定输出 16 个 token、关闭前缀缓存。下表从两请求共同就绪时刻计时，包含串行时后发请求的等待。
+
+| 输入长度（token） | 两请求都完成（秒）：串行 / 并发 | 较晚收到首 token（秒）：串行 / 并发 | 输出完全相同 |
+|---|---:|---:|---:|
+| 512 + 512 | 9.81 / 6.89 | 6.41 / 3.48 | 2/4 |
+| 256 + 2,048 | 13.68 / 11.62 | 10.27 / 8.15 | 4/4 |
+
+每格是两波的中位数。保留每个原生 SSE 输出的 token ID 和相对到达时间；可分别复核从共同就绪到首 token 的耗时、从单次发送到首 token 的耗时、客户端请求重叠和首个输出分歧。没有测生产尾延迟，也不能用客户端重叠证明 GPU 内核同时执行。
+
+[原始流式时间线及环境回执](../reports/qwen72b/stream/) · CPU 重算：`python3 benchmarks/quant_serving/audit_stream.py reports/qwen72b/stream`。复跑：`PANEL=stream OUT=.runtime/stream-01 bash benchmarks/quant_serving/run72.sh`，另需同文所述的 `WEIGHTS` 与 `SERVER`。
+
+**English.** Compare serial and concurrent dispatch of two ready, cold requests. Client timestamps distinguish time spent waiting for dispatch from time spent waiting after posting. Two repetitions per shape; this is not a saturated-throughput or P99 benchmark.
+
+四组配对波次中，串行和并发的逐 token 输出共 6/8 对一致。 此结果不支持把并发发送当作保证逐 token 等价的默认策略。首轮采集因客户端错误地要求中间事件携带最终槽号而被排除；[采集记录](../reports/qwen72b/stream/collection.json)说明修正和排除范围。

@@ -8,8 +8,8 @@ busy=$(nvidia-smi --query-compute-apps=pid --format=csv,noheader); if [[ -n "$bu
 python3 -B "$B/verify_lock.py" "$B/qwen72b-q4km.lock.json" "$WEIGHTS" > "$OUT/checkpoint.json"
 case "${PANEL:-prefix}" in
     prefix|catalog) slots=1; ctx=4096 ;;
-    routing) slots=2; ctx=8192 ;;
-    *) echo 'PANEL must be prefix, catalog or routing'; exit 2 ;;
+    routing|stream) slots=2; ctx=8192 ;;
+    *) echo 'PANEL must be prefix, catalog, routing or stream'; exit 2 ;;
 esac
 PORT=$(python3 -c 'import socket; s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1]);s.close()')
 "$SERVER" --model "$WEIGHTS/qwen2.5-72b-instruct-q4_k_m-00001-of-00012.gguf" --host 127.0.0.1 --port "$PORT" --parallel "$slots" --ctx-size "$ctx" --batch-size 512 --ubatch-size 128 --gpu-layers all --flash-attn on --cache-ram 0 --no-webui --no-context-shift >"$OUT/server.private.log" 2>&1 &
@@ -21,6 +21,9 @@ SPARKFUSE_EOG_IDS=$(python3 -c 'import json,sys;print(json.dumps(json.load(open(
 if [[ "${PANEL:-prefix}" == prefix ]]; then
     python3 -B "$B/prefix_replay.py" --port "$PORT" --output "$OUT/rows.json"
     python3 -B "$B/audit_replay.py" "$OUT/rows.json" > "$OUT/summary.json.partial"
+elif [[ "$PANEL" == stream ]]; then
+    python3 -B "$B/stream_wave.py" run --port "$PORT" --runtime "$OUT/runtime.json" --rows "$OUT/rows.json"
+    python3 -B "$B/audit_stream.py" "$OUT" > "$OUT/summary.json.partial"
 elif [[ "$PANEL" == catalog ]]; then
     base=${SOURCE_DIR:-reports/qwen72b}
     source_rows=$(python3 -B "$B/audit_catalog.py" source "$OUT" "$base")

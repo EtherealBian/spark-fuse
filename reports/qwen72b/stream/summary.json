@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "model": "Qwen/Qwen2.5-72B-Instruct-GGUF",
+  "revision": "7ca3bc388f97b264c4283bc9bf1055e2abc38441",
+  "verified_weight_bytes": 44010465472,
+  "runtime": {
+    "llama_cpp_revision": "66d65ec29ba7c440cbc31b6f63b74a17b536ba65",
+    "server_sha256": "364610626d8d25963f59ad4d90ed9d711b1d7a4b96da1fc1d8029b0925f57c22",
+    "runtime_lib_sha256": {
+      "libggml-base.so.0.9.7": "af69d39f55a6c30c83ebfb85b6f05627a4f5c755537c21ed79aa709bb7d45c9a",
+      "libggml-cpu.so.0.9.7": "0c287f06ed4f7ace8c8bd7894a52d584d686e790eae29542e4b54e68cf4cc29d",
+      "libggml-cuda.so.0.9.7": "dd471f6a5472b0a3b3b1417a28484b52dc0b2e99b4908c02fdaf1b48275e0445",
+      "libggml.so.0.9.7": "8d500db937531b588b1336fbba4b3e777f06465b4b227464babb7e20b143e5dc",
+      "libllama.so.0.0.8183": "6a56028354135da83f8bd6fd285ec4e22f6deeb788d41ec441d05ff75a843d70",
+      "libmtmd.so.0.0.8183": "58304190dbfae641c938c1a6cd6b28243e95650e61bd40cc3831faed9503dd81"
+    },
+    "driver": "580.173.02",
+    "eog_token_ids": [
+      128247,
+      151643,
+      151645,
+      151662,
+      151663,
+      151664
+    ],
+    "device": "NVIDIA GB10",
+    "gpu_layers_including_output": 81
+  },
+  "evidence_sha256": {
+    "checkpoint.json": "7511205e26fa0895b4485df9adb17c05f33f10edf1babb246b4f312706536c31",
+    "runtime.json": "6e94ba6373d39164ed65ef2f469bdee8965dca1977c9923c007e17c30063bef2",
+    "rows.json": "9f75c5564da9fecc663c284279089337fe9b8f3653b47b05b0ca9d4d97342a10"
+  },
+  "panel": {
+    "cases": {
+      "balanced": {
+        "parallel": {
+          "wave_ms": 6890.27521,
+          "aggregate_output_tps": 4.644227439497299,
+          "slot0_ttft_ms": 1514.874287,
+          "slot1_ttft_ms": 3483.376239,
+          "inter_token_p50_ms": 226.3237855,
+          "client_overlap_ms": 6431.0796055,
+          "ready_to_last_stop_ms": 6891.0622834999995,
+          "ready_to_slot0_first_ms": 1515.7117440000002,
+          "ready_to_slot1_first_ms": 3484.2036884999998,
+          "slower_ready_to_first_ms": 3484.2036884999998,
+          "start_skew_ms": 0.09075949999999999,
+          "ready_to_last_output_tps": 4.643696797327449
+        },
+        "serial": {
+          "wave_ms": 9805.953764,
+          "aggregate_output_tps": 3.2633236622466777,
+          "slot0_ttft_ms": 1521.332925,
+          "slot1_ttft_ms": 1509.2344875,
+          "inter_token_p50_ms": 224.8162335,
+          "client_overlap_ms": 0.0,
+          "ready_to_last_stop_ms": 9806.00594,
+          "ready_to_slot0_first_ms": 3972.4268665,
+          "ready_to_slot1_first_ms": 3964.951333,
+          "slower_ready_to_first_ms": 6414.41812,
+          "start_skew_ms": 4906.706435,
+          "ready_to_last_output_tps": 3.263306296343211
+        },
+        "exact_output_pairs": 2,
+        "pairs": 4,
+        "paired_waves": [
+          {
+            "rep": 0,
+            "serial_leader": 0,
+            "first_different_token_by_slot": {
+              "0": 2,
+              "1": 1
+            },
+            "ready_to_last_saved_ms": 2919.003866,
+            "ready_to_first_saved_ms_by_slot": {
+              "0": 20.860864999999876,
+              "1": 2934.8439729999996
+            }
+          },
+          {
+            "rep": 1,
+            "serial_leader": 1,
+            "first_different_token_by_slot": {
+              "0": null,
+              "1": null
+            },
+            "ready_to_last_saved_ms": 2910.883447,
+            "ready_to_first_saved_ms_by_slot": {
+              "0": 4892.56938,
+              "1": -1973.3486839999998
+            }
+          }
+        ]
+      },
+      "mixed": {
+        "parallel": {
+          "wave_ms": 11619.994633,
+          "aggregate_output_tps": 2.754292265991331,
+          "slot0_ttft_ms": 1137.0404835,
+          "slot1_ttft_ms": 8148.044484,
+          "inter_token_p50_ms": 231.15215925,
+          "client_overlap_ms": 10581.309544,
+          "ready_to_last_stop_ms": 11620.9991135,
+          "ready_to_slot0_first_ms": 1138.1344275,
+          "ready_to_slot1_first_ms": 8149.1958115,
+          "slower_ready_to_first_ms": 8149.1958115,
+          "start_skew_ms": 0.2363105,
+          "ready_to_last_output_tps": 2.7540541364377407
+        },
+        "serial": {
+          "wave_ms": 13683.588077,
+          "aggregate_output_tps": 2.338568083578531,
+          "slot0_ttft_ms": 764.6864385,
+          "slot1_ttft_ms": 6078.0237595,
+          "inter_token_p50_ms": 228.10968874999998,
+          "client_overlap_ms": 0.0,
+          "ready_to_last_stop_ms": 13683.70434,
+          "ready_to_slot0_first_ms": 5525.0737215,
+          "ready_to_slot1_first_ms": 8160.690743,
+          "slower_ready_to_first_ms": 10265.375841500001,
+          "start_skew_ms": 6842.8217405,
+          "ready_to_last_output_tps": 2.3385482070615966
+        },
+        "exact_output_pairs": 4,
+        "pairs": 4,
+        "paired_waves": [
+          {
+            "rep": 0,
+            "serial_leader": 0,
+            "first_different_token_by_slot": {
+              "0": null,
+              "1": null
+            },
+            "ready_to_last_saved_ms": 2209.547371999999,
+            "ready_to_first_saved_ms_by_slot": {
+              "0": -744.922277,
+              "1": 2233.7723379999998
+            }
+          },
+          {
+            "rep": 1,
+            "serial_leader": 1,
+            "first_different_token_by_slot": {
+              "0": null,
+              "1": null
+            },
+            "ready_to_last_saved_ms": 1915.8630809999995,
+            "ready_to_first_saved_ms_by_slot": {
+              "0": 9518.800865000001,
+              "1": -2210.782475
+            }
+          }
+        ]
+      }
+    },
+    "scope": "Two fixed-length cold native SSE requests per wave on loopback. TTFT is first token-ID arrival; overlap is client-side in-flight overlap, not proof of GPU kernel concurrency. Ready-to-first starts from a shared client epoch before either request is dispatched; includes serial queuing and client scheduling. Per-request TTFT starts at that request's HTTP send. Two repetitions; no tail-latency or sustained-load estimate."
+  }
+}
