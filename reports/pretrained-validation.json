@@ -1,0 +1,54 @@
+{
+  "format": "sparkfuse.pretrained-validation.v1",
+  "regression": {
+    "command": "python -m pytest -q tests",
+    "passed": 1195,
+    "warnings": 174,
+    "seconds": 34.64
+  },
+  "panel_tests": {
+    "audit-tests.log": 8,
+    "gate-tests.log": 2
+  },
+  "cli_check": {
+    "prompt": "What is two plus two? Answer with one number.",
+    "eager": {
+      "revision": "c540970f9e29518b1d8f06ab8b24cba66ad77b6d",
+      "backend": "eager",
+      "decode_replay": false,
+      "input_tokens": 30,
+      "generated_ids": [
+        11613,
+        5519,
+        1378,
+        16819,
+        3040,
+        13,
+        151645
+      ],
+      "text": "Two plus two equals four."
+    },
+    "packed_graph": {
+      "revision": "c540970f9e29518b1d8f06ab8b24cba66ad77b6d",
+      "backend": "packed",
+      "decode_replay": true,
+      "input_tokens": 30,
+      "generated_ids": [
+        11613,
+        5519,
+        1378,
+        16819,
+        3040,
+        13,
+        151645
+      ],
+      "text": "Two plus two equals four."
+    }
+  },
+  "reports_sha256": {
+    "pretrained-qwen-gb10.json": "a03bec78481c28bff7cc281d8bb0d3595de64c0756f35fe49a546f239fb467b2",
+    "pretrained-qwen-audit.json": "71560ec6a88573382077ef83b63d9687e8a27cd6c498440a7798a6f09593e0af",
+    "pretrained-projections-gb10.json": "69fa0043cf13d00fccde7cef80192f72b20b8d685759546e327d2da1f322dbbb",
+    "pretrained-projections-audit.json": "b28e9ae87a3b08914fb96dfe2f798ed08f84c93d2ca3a483a56bfa6745fcbc61"
+  }
+}

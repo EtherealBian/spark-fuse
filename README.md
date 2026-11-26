@@ -18,13 +18,15 @@ SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 
 | [四层 BERT 编码器](docs/performance.md#stacked-bert)，33 个 token | 233 → 64 次 kernel 发射 | 仅 Q/K/V 使用 W8A8；逐层返回隐藏状态和注意力概率，8 个输出与量化 eager 逐字节一致 |
 | [21 输出诊断图](docs/performance.md#fused-slot-copy)，33 行 | 89.21 → 36.55 µs | 同步单请求，逐个写入预分配张量 → 一个 CUDA kernel 批量写入 |
 
-[单 token 解码](docs/performance.md#warp-decode)用 warp 寄存器计算分块注意力；[分页 KV](docs/performance.md#paged-decode)可直接查物理页，省去两次稠密缓存重建，并[按每行实际长度跳过空页](docs/performance.md#ragged-page)；[原生主机入口](docs/performance.md#page-host)减少单请求提交开销。[Qwen2、Llama、Mistral 单层](docs/performance.md#decoder-families)支持动态 KV 长度和[双缓存写回](docs/performance.md#dynamic-append)。若调用方要求**多层 KV 缓存逐字节一致**，可在导出图中[标记需要保护的输出](docs/performance.md#protected-stack)。模型实验使用随机权重，GEMM 仍交给 PyTorch。
+[单 token 解码](docs/performance.md#warp-decode)用 warp 寄存器计算分块注意力；[分页 KV](docs/performance.md#paged-decode)可直接查物理页，省去两次稠密缓存重建，并[按每行实际长度跳过空页](docs/performance.md#ragged-page)；[原生主机入口](docs/performance.md#page-host)减少单请求提交开销。[Qwen2、Llama、Mistral 单层](docs/performance.md#decoder-families)支持动态 KV 长度和[双缓存写回](docs/performance.md#dynamic-append)。若调用方要求**多层 KV 缓存逐字节一致**，可在导出图中[标记需要保护的输出](docs/performance.md#protected-stack)。这些单层与堆叠实验使用随机权重，GEMM 仍交给 PyTorch。
 
 [实测调度库](docs/performance.md#dispatch-replay)只复用图和运行环境都精确匹配的记录；未命中时使用默认实现。
 
 同一张[有界动态行数图](docs/performance.md#catalog-rows)可以在命中行数时运行静态特化 kernel，其余合法行数走通用路径。
 
 [09:00 截止验收](docs/acceptance.md#final-gb10-release)：1,183 项测试、63 道检查通过。截止后的动态行特化另有 64 道检查，单独计数。[通用搜索](reports/campaign-final-general.md)保留 2,490 个工单及负例；无 GPU 也可重建 1,237 个通过筛选的精确调度键。
+
+[完整预训练 Qwen2 的逐 token 解码](docs/pretrained-qwen.md)：合并 24 层 MLP 的两次投影后，32 / 128 token 提示的中位延迟从 7.04 / 7.20 降至 6.93 / 7.08 ms。两边都使用 CUDA Graph；额外权重占 399 MiB，未设为默认。
 
 ### 复现
 
@@ -44,7 +46,7 @@ python -m pytest -q
 
 SparkFuse turns functional regions of a `torch.export` inference graph into readable CUDA C++ on NVIDIA DGX Spark. It uses values consumed outside a region to decide what a kernel must write. For example, compare [RMSNorm alone](examples/generated/resnorm.cu) with [RMSNorm that also returns the residual](examples/generated/resnorm2.cu). The same [output visibility rule for KV-slot writes](docs/performance.md#slot-forward) avoids building cache banks that no caller reads. The mixed execution path leaves unsupported operators and matrix multiplications in PyTorch.
 
-[Warp-register decode](docs/performance.md#warp-decode) avoids KV-head expansion; [physical-page decode](docs/performance.md#paged-decode) also avoids two dense cache gathers and can [skip inactive pages per row](docs/performance.md#ragged-page). A [native caller](docs/performance.md#page-host) reduces submission overhead without changing the CUDA kernels. [Dynamic decoder layers](docs/performance.md#decoder-families) cover Qwen2, Llama and Mistral. A [multi-layer cache contract](docs/performance.md#protected-stack) preserves all returned KV bytes when later layers depend on earlier attention results. These are random-weight inference experiments, not model quality measurements. See the commands above for reproducible CUDA generation and three-way timing; the [performance notes](docs/performance.md) include regressions as well as wins.
+[Warp-register decode](docs/performance.md#warp-decode) avoids KV-head expansion; [physical-page decode](docs/performance.md#paged-decode) also avoids two dense cache gathers and can [skip inactive pages per row](docs/performance.md#ragged-page). A [native caller](docs/performance.md#page-host) reduces submission overhead without changing the CUDA kernels. [Dynamic decoder layers](docs/performance.md#decoder-families) cover Qwen2, Llama and Mistral. A [multi-layer cache contract](docs/performance.md#protected-stack) preserves all returned KV bytes when later layers depend on earlier attention results. These layer-level experiments use random weights. A separate [pretrained Qwen2 generation benchmark](docs/pretrained-qwen.md) includes full-model Inductor, matched CUDA Graph replay, exact token checks and P95 latency. See the commands above for reproducible CUDA generation and three-way timing; the [performance notes](docs/performance.md) include regressions as well as wins.
 
 An [exact-match schedule catalog](docs/performance.md#dispatch-replay) reuses admitted measurements; an unseen signature uses the default kernel.
 

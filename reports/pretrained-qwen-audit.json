@@ -1,0 +1,79 @@
+{
+  "cases": {
+    "128": {
+      "eligible": {
+        "eager": true,
+        "eager_replay": true,
+        "inductor": false,
+        "inductor_replay": false,
+        "sparkfuse": true,
+        "sparkfuse_replay": true
+      },
+      "primary": [
+        {
+          "baseline": "inductor",
+          "candidate": "sparkfuse",
+          "eligible": false,
+          "median_paired_ratio": 1.27816265329605,
+          "pooled_p50_ratio": 1.2767621532751072,
+          "pooled_p95_ratio": 1.2699565850243577,
+          "target_met": false,
+          "windows": 12,
+          "windows_at_least_10pct_faster": 0
+        },
+        {
+          "baseline": "inductor_replay",
+          "candidate": "sparkfuse_replay",
+          "eligible": false,
+          "median_paired_ratio": 1.1524167971723727,
+          "pooled_p50_ratio": 1.1513873242275623,
+          "pooled_p95_ratio": 1.1448406553379813,
+          "target_met": false,
+          "windows": 12,
+          "windows_at_least_10pct_faster": 0
+        }
+      ],
+      "requests": 72,
+      "timed_decode_tokens": 576
+    },
+    "32": {
+      "eligible": {
+        "eager": true,
+        "eager_replay": true,
+        "inductor": true,
+        "inductor_replay": true,
+        "sparkfuse": true,
+        "sparkfuse_replay": true
+      },
+      "primary": [
+        {
+          "baseline": "inductor",
+          "candidate": "sparkfuse",
+          "eligible": true,
+          "median_paired_ratio": 1.2676618927341892,
+          "pooled_p50_ratio": 1.264026726099702,
+          "pooled_p95_ratio": 1.2192688112650722,
+          "target_met": false,
+          "windows": 12,
+          "windows_at_least_10pct_faster": 0
+        },
+        {
+          "baseline": "inductor_replay",
+          "candidate": "sparkfuse_replay",
+          "eligible": true,
+          "median_paired_ratio": 1.137119631920418,
+          "pooled_p50_ratio": 1.1364454140834752,
+          "pooled_p95_ratio": 1.0999729578937039,
+          "target_met": false,
+          "windows": 12,
+          "windows_at_least_10pct_faster": 0
+        }
+      ],
+      "requests": 72,
+      "timed_decode_tokens": 576
+    }
+  },
+  "deployment_target_met": false,
+  "format": "sparkfuse.pretrained-qwen-audit.v1",
+  "measured_report_sha256": "a03bec78481c28bff7cc281d8bb0d3595de64c0756f35fe49a546f239fb467b2"
+}
