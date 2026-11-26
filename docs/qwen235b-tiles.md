@@ -38,3 +38,5 @@ python3 -B "$B/tile_timing_proof.py" "$LOCK" "$R" "$BASE" > "$R/timing-proof.jso
 ```
 
 **English.** Physical prefill microbatch size is the only intervention. Absolute medians describe each prompt; the decision uses paired order-specific timing and token equality. The first invalid stdout stream stays outside all timing cohorts. The report does not establish text quality, peak GPU memory or concurrent serving throughput.
+
+[自然停止下的流式实测：更快的微批会不会改变答案？](qwen235b-natural.md)
