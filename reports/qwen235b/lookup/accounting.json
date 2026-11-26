@@ -1,0 +1,114 @@
+{
+  "schema": "sparkfuse.lookup-account.v1",
+  "families": {
+    "copy": {
+      "orders": [
+        {
+          "comparison_order": "off_then_on",
+          "cases": 2,
+          "baseline_ms": 6855.477243,
+          "lookup_ms": 3846.7172950000004,
+          "observed_wall_saving_fraction": 0.4388840982693347,
+          "identical_outputs": 2,
+          "baseline_delivered": 80,
+          "lookup_delivered": 80,
+          "lookup_backend_predicted": 83,
+          "backend_minus_delivered": 3,
+          "drafted": 72,
+          "accepted": 68,
+          "proposal_acceptance": 0.9444444444444444
+        },
+        {
+          "comparison_order": "on_then_off",
+          "cases": 2,
+          "baseline_ms": 6323.603575,
+          "lookup_ms": 3327.748177,
+          "observed_wall_saving_fraction": 0.4737576229230973,
+          "identical_outputs": 2,
+          "baseline_delivered": 80,
+          "lookup_delivered": 80,
+          "lookup_backend_predicted": 83,
+          "backend_minus_delivered": 3,
+          "drafted": 72,
+          "accepted": 68,
+          "proposal_acceptance": 0.9444444444444444
+        }
+      ],
+      "preregistered_case_passes": 0,
+      "both_cases_pass": false
+    },
+    "edit": {
+      "orders": [
+        {
+          "comparison_order": "off_then_on",
+          "cases": 2,
+          "baseline_ms": 6932.418097,
+          "lookup_ms": 5133.959145999999,
+          "observed_wall_saving_fraction": 0.2594273637042005,
+          "identical_outputs": 2,
+          "baseline_delivered": 89,
+          "lookup_delivered": 89,
+          "lookup_backend_predicted": 93,
+          "backend_minus_delivered": 4,
+          "drafted": 80,
+          "accepted": 53,
+          "proposal_acceptance": 0.6625
+        },
+        {
+          "comparison_order": "on_then_off",
+          "cases": 2,
+          "baseline_ms": 7288.269571,
+          "lookup_ms": 5530.000135,
+          "observed_wall_saving_fraction": 0.24124648778032964,
+          "identical_outputs": 2,
+          "baseline_delivered": 89,
+          "lookup_delivered": 89,
+          "lookup_backend_predicted": 93,
+          "backend_minus_delivered": 4,
+          "drafted": 80,
+          "accepted": 53,
+          "proposal_acceptance": 0.6625
+        }
+      ],
+      "preregistered_case_passes": 0,
+      "both_cases_pass": false
+    },
+    "new": {
+      "orders": [
+        {
+          "comparison_order": "off_then_on",
+          "cases": 2,
+          "baseline_ms": 6925.381917999999,
+          "lookup_ms": 6962.7436689999995,
+          "observed_wall_saving_fraction": -0.005394901168250588,
+          "identical_outputs": 2,
+          "baseline_delivered": 94,
+          "lookup_delivered": 94,
+          "lookup_backend_predicted": 94,
+          "backend_minus_delivered": 0,
+          "drafted": 0,
+          "accepted": 0,
+          "proposal_acceptance": null
+        },
+        {
+          "comparison_order": "on_then_off",
+          "cases": 2,
+          "baseline_ms": 6888.152477,
+          "lookup_ms": 6824.356093,
+          "observed_wall_saving_fraction": 0.009261755487123713,
+          "identical_outputs": 2,
+          "baseline_delivered": 94,
+          "lookup_delivered": 94,
+          "lookup_backend_predicted": 94,
+          "backend_minus_delivered": 0,
+          "drafted": 0,
+          "accepted": 0,
+          "proposal_acceptance": null
+        }
+      ],
+      "preregistered_case_passes": 0,
+      "both_cases_pass": false
+    }
+  },
+  "scope": "Each order sums the two measured prompts in that family, not independently concurrent requests. Ratios use sums. Accepted drafts are not evidence of faster delivery or identical output; read both comparison orders and the original per-case acceptance gate."
+}

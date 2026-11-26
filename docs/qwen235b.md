@@ -37,3 +37,5 @@ SERVER="$SERVER" WEIGHTS="$WEIGHTS" TRANSFER_RECEIPT=.runtime/before-fetch-235.j
 **English.** This is a single-Spark feasibility and greedy repeatability run for one pinned two-shard Q2_K model. Raw input/output IDs, server and client timing, the mapped inference-library hashes, admissions, and sampled system memory are archived for independent review. The 16-token fixed-length test does not measure answer quality or GPU allocation peaks.
 
 [清单修改后的回答与缓存复核（八组配对）](qwen235b-revision.md)。
+
+[235B 查找式推测解码：四次启动、三类提示](qwen235b-lookup.md)。
