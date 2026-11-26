@@ -4,6 +4,10 @@
 
 SparkFuse 在 NVIDIA DGX Spark（GB10）上把 PyTorch 导出的推理子图编译成 CUDA C++。它读取 `torch.export` 计算图，判断哪些算子可以共用一次 GPU 启动、哪些中间张量必须写回。未被接管的算子仍由 PyTorch 执行。
 
+[![DGX Spark 实测总览：四层 BERT 的 Q/K/V 投影打包、Qwen2.5-32B 长前缀复用与量化 GLM-4.5 355B 单机推理](https://raw.githubusercontent.com/EtherealBian/etherealbian.github.io/47131b7447cab51bac660e3c509eb7a2074daaae/assets/plates/sparkfuse-system.webp)](https://etherealbian.github.io/work/spark-fuse.html)
+
+设备摄影：[Daniel Lu（dllu）](https://commons.wikimedia.org/wiki/File:Nvidia_DGX_Spark_oblique_view_dllu.jpg)。照片已去背，合成图同按 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) 发布。
+
 ## 一层 BERT，三次投影怎样变成一次？
 
 Query、Key、Value 读取同一份隐藏状态。SparkFuse 每层只量化一次输入，再把三个 `768 × 768` 的 INT8 权重沿列拼成 `768 × 2304`。一次整数矩阵乘法算完三个投影，一个 CUDA 后处理内核分别写回 Q、K、V。注意力和前馈网络继续走 PyTorch。
