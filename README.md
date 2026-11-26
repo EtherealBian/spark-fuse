@@ -1,25 +1,39 @@
 # PyTorch → CUDA 推理编译器 · SparkFuse
 
-[English](#english) · [快速上手](docs/quickstart.md) · [实测与复现](docs/findings.md) · [项目主页](https://etherealbian.github.io/work/spark-fuse.html)
+[English](#english) · [项目图解](https://etherealbian.github.io/work/spark-fuse.html) · [实测与复现](docs/findings.md)
 
-SparkFuse 是为 **NVIDIA DGX Spark（GB10）** 编写的单 GPU 推理子图编译器。它从 `torch.export` 图生成 CUDA C++，把不支持的算子交给 PyTorch。仓库还收录了同一台机器上的整模型推理实验。
+SparkFuse 在 NVIDIA DGX Spark（GB10）上把 PyTorch 导出的推理子图编译成 CUDA C++。它读取 `torch.export` 计算图，判断哪些算子可以共用一次 GPU 启动、哪些中间张量必须写回。未被接管的算子仍由 PyTorch 执行。
 
-## 代表性结果
+## 一层 BERT，三次投影怎样变成一次？
 
-| 实验 | 单机实测 |
-|---|---|
-| [四层 BERT · 编译器](docs/performance.md#stacked-bert) | Q/K/V 共用输入量化，再合并投影。33-token 前向的 CUDA kernel 发射从 **233 次减至 64 次**；8 个留出请求的全部返回值与量化 eager 逐字节一致。 |
-| [Qwen2.5-32B · 前缀复用](docs/prefix32-closeout.md) | 两条 2,048-token 输入共享 1,536 个 token，各生成 8 个。计入快照准备，两组提示的双请求总耗时均从 **约 9.44 秒降至 7.66 秒**，全词表 BF16 分数逐字节一致。 |
-| [GLM-4.5 355B · 单机推理](docs/glm45-355b.md) | 使用 llama.cpp CUDA 加载 UD-IQ1_S 量化权重。128-token 输入、固定生成 16 个 token，本机 HTTP 耗时中位数为 **2.588 秒**（模型已加载）。 |
+Query、Key、Value 读取同一份隐藏状态。SparkFuse 每层只量化一次输入，再把三个 `768 × 768` 的 INT8 权重沿列拼成 `768 × 2304`。一次整数矩阵乘法算完三个投影，一个 CUDA 后处理内核分别写回 Q、K、V。注意力和前馈网络继续走 PyTorch。
 
-## 阅读与复现
+单机实测：四层 BERT，batch 1，33 个 token，仅 Q/K/V 使用 W8A8。下表统计的是整次前向的 GPU 内核启动次数。
 
-- **看编译器：**从[一个残差子图](docs/quickstart.md)开始，对照[只输出归一化结果](examples/generated/resnorm.cu)和[同时写回残差](examples/generated/resnorm2.cu)的 CUDA 源码。第一个例子只需 Linux CPU 和 PyTorch。
-- **看实验：**[实测索引](docs/findings.md)按编译器、整模型和服务后端整理了测试条件、原始记录和复跑入口。
-- **复核已发布结果：**在仓库根目录运行 `bash audit/replay-key-results.sh`。需要 Linux、Bash、Python 3.11+ 和 `cmp`，无需 GPU 或权重。
+| 量化 PyTorch 基线 | 三个投影独立量化 | 每层共享输入量化 | 再合并每层的三次矩阵乘法 |
+| ---: | ---: | ---: | ---: |
+| 233 | 88 | 72 | 64 |
+
+每层都返回隐藏状态和注意力概率。8 个留出请求中，每个请求的 8 个返回张量均与量化基线逐字节一致。[实验方法](docs/performance.md#stacked-bert) · [导出图、内核名称和原始计数](reports/stacked-bert-gb10.json)
+
+## 从哪里动手
+
+- 想看生成的代码：打开[残差归一化示例](docs/quickstart.md)。只改模型的 `return`，对照[只返回归一化结果](examples/generated/resnorm.cu)和[同时返回残差](examples/generated/resnorm2.cu)两份 CUDA 源码，看第二个输出指针为什么出现。生成源码这一步只需 Linux CPU 和 PyTorch，不下载权重。
+- 想核对上表：在仓库根目录运行 `python3 -m pytest -q tests/test_stacked_bert_evidence.py`（Python 3.11+、pytest，无需 GPU）。它检查两组权重的归档计数、每层的权重布局和输出校验记录，不重新计时。
+
+## 同一台机器上的整模型实验
+
+这些是独立的推理实验，不计入编译器加速成绩。
+
+| 问题 | 测量结果 |
+| --- | --- |
+| [Qwen2.5-32B BF16：两条请求能否共用前缀？](docs/prefix32-closeout.md) | 每条输入 2,048 个 token，共享前 1,536 个，各生成 8 个。计入快照准备，两组提示的双请求总耗时都从约 9.44 秒降至 7.66 秒；各步全词表分数逐字节一致。 |
+| [GLM-4.5 355B：量化模型在单机上的请求耗时？](docs/glm45-355b.md) | 使用 llama.cpp CUDA 和 UD-IQ1_S 权重。模型已加载，输入 128 个 token、生成 16 个，本机 HTTP 请求耗时中位数为 2.588 秒。 |
 
 ## English
 
-SparkFuse compiles regions of `torch.export` inference graphs to CUDA C++ on a single NVIDIA DGX Spark. In a four-layer BERT forward pass, sharing input quantization and merging Q/K/V projections reduced kernel launches from **233 to 64**. A separate BF16 32B experiment reused 1,536 prefix tokens across two 2,048-token requests: pair time fell from **9.44 s to 7.66 s**, including snapshot preparation, with byte-identical logits across eight generation steps. The quantized 355B study uses the llama.cpp CUDA backend.
+SparkFuse compiles supported regions of a `torch.export` inference graph to CUDA C++ on one NVIDIA DGX Spark. In a four-layer BERT encoder, Q, K and V read the same activation. The compiler quantizes it once per layer, packs the three INT8 weights into one matrix, then writes three separate BF16 outputs. Attention and the feed-forward network stay in PyTorch.
 
-Start with the [example](docs/quickstart.md), inspect the [generated kernels](examples/generated/), or use the [experiment index](docs/findings.md#english) to replay the recorded results.
+At batch 1 and 33 tokens, a full forward pass went from 233 GPU kernel launches to 64. All eight returned tensors matched quantized eager execution byte for byte on each of eight held-out requests. [Inspect the measurements](docs/performance.md#stacked-bert) or [generate CUDA from a small residual block](docs/quickstart.md).
+
+The [32B prefix-reuse study](docs/prefix32-closeout.md) and [355B quantized serving study](docs/glm45-355b.md) are separate runtime experiments. The [experiment index](docs/findings.md#english) distinguishes replaying the saved evidence on CPU from rerunning a benchmark on the GPU.
