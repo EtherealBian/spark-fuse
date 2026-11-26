@@ -1,0 +1,413 @@
+{
+  "schema": "sparkfuse.cross-manifest.v1",
+  "glm_reference_sha256": "efd8f86414c75a38646bcd9423b277458819c029009f960341d612e96a29f81b",
+  "qwen_reference_sha256": "aa4c302ee6beb43fcaadb3bbddf8ab658d0ce4bd92e6fcf3f5dc4c7145045612",
+  "glm_evidence_sha256": {
+    "header-budget.json": "394727c7c7ac97cf9ad3454a19bb2d4914deb563e671f24fa79eb73916acfb21",
+    "checkpoint.json": "9eb98de6191d6261d60dde57ae0a88874edc172d482c9cd317f69bc7b1b5e09a",
+    "runtime.json": "bf5902feb0f4585d1f2f34b1a1d1cb6c81cf213266ef4b30db56fb73bb72c5d4",
+    "memory-guard.json": "9a2b4af52a2eefa8aafde139c9fa3c2895b98f1c78451ddb085bcc581344af37",
+    "admission.json": "c828f8a142bc5a0d429596de4c2f2079cb7c13e30e535ccf1f74e1dbf7d580d7",
+    "admission-transfer.json": "0969423bd201454f7a556a8926dad4bba3037c5d1bfe8b932d6f3e6dc16a613e",
+    "rows.json": "acc33f50d48687ae5ef9efa0bc124860c6afda448a2eed4c6f868cc2aee728fa",
+    "timing.json": "0a3ea1497536ca7555a29de215dec8faf6bbe01d626ce0b9c7bf4f0ca3cd0b20"
+  },
+  "glm_serving": {
+    "cases": {
+      "16:early:0": {
+        "expected": "MAPLE",
+        "stale": "TEAL",
+        "input_tokens": 166,
+        "first_changed_token_1based": 52,
+        "matched_output_ids": true,
+        "arms": {
+          "cold": {
+            "verdict": "other",
+            "prompt_ms": 1795.226,
+            "target_wall_ms": 2245.937547,
+            "primer_and_target_wall_ms": 5070.082971,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": false
+          },
+          "reuse": {
+            "verdict": "other",
+            "prompt_ms": 1124.075,
+            "target_wall_ms": 1576.038123,
+            "primer_and_target_wall_ms": 3823.0460919999996,
+            "actual_cached": 51,
+            "natural_eos": true,
+            "primer_correct": false
+          }
+        }
+      },
+      "16:early:1": {
+        "expected": "TEAL",
+        "stale": "MAPLE",
+        "input_tokens": 166,
+        "first_changed_token_1based": 52,
+        "matched_output_ids": true,
+        "arms": {
+          "reuse": {
+            "verdict": "other",
+            "prompt_ms": 1144.901,
+            "target_wall_ms": 1595.066795,
+            "primer_and_target_wall_ms": 3850.967484,
+            "actual_cached": 51,
+            "natural_eos": true,
+            "primer_correct": false
+          },
+          "cold": {
+            "verdict": "other",
+            "prompt_ms": 1799.003,
+            "target_wall_ms": 2247.748232,
+            "primer_and_target_wall_ms": 4498.725445,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": false
+          }
+        }
+      },
+      "16:late:0": {
+        "expected": "COBALT",
+        "stale": "PEARL",
+        "input_tokens": 169,
+        "first_changed_token_1based": 140,
+        "matched_output_ids": true,
+        "arms": {
+          "reuse": {
+            "verdict": "other",
+            "prompt_ms": 506.745,
+            "target_wall_ms": 1060.049629,
+            "primer_and_target_wall_ms": 3411.076418,
+            "actual_cached": 139,
+            "natural_eos": true,
+            "primer_correct": false
+          },
+          "cold": {
+            "verdict": "other",
+            "prompt_ms": 1845.328,
+            "target_wall_ms": 2384.045994,
+            "primer_and_target_wall_ms": 4688.2614539999995,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": false
+          }
+        }
+      },
+      "16:late:1": {
+        "expected": "PEARL",
+        "stale": "COBALT",
+        "input_tokens": 169,
+        "first_changed_token_1based": 140,
+        "matched_output_ids": true,
+        "arms": {
+          "cold": {
+            "verdict": "other",
+            "prompt_ms": 1845.803,
+            "target_wall_ms": 2295.718038,
+            "primer_and_target_wall_ms": 4690.978292,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": false
+          },
+          "reuse": {
+            "verdict": "other",
+            "prompt_ms": 510.088,
+            "target_wall_ms": 959.188646,
+            "primer_and_target_wall_ms": 3350.0862740000002,
+            "actual_cached": 139,
+            "natural_eos": true,
+            "primer_correct": false
+          }
+        }
+      },
+      "96:early:0": {
+        "expected": "VIOLET",
+        "stale": "CORAL",
+        "input_tokens": 800,
+        "first_changed_token_1based": 52,
+        "matched_output_ids": false,
+        "arms": {
+          "reuse": {
+            "verdict": "other",
+            "prompt_ms": 7112.434,
+            "target_wall_ms": 8137.521567,
+            "primer_and_target_wall_ms": 16981.940887,
+            "actual_cached": 51,
+            "natural_eos": false,
+            "primer_correct": false
+          },
+          "cold": {
+            "verdict": "other",
+            "prompt_ms": 7839.601,
+            "target_wall_ms": 8846.805982,
+            "primer_and_target_wall_ms": 17668.77322,
+            "actual_cached": 0,
+            "natural_eos": false,
+            "primer_correct": false
+          }
+        }
+      },
+      "96:early:1": {
+        "expected": "CORAL",
+        "stale": "VIOLET",
+        "input_tokens": 799,
+        "first_changed_token_1based": 52,
+        "matched_output_ids": false,
+        "arms": {
+          "cold": {
+            "verdict": "other",
+            "prompt_ms": 7845.095,
+            "target_wall_ms": 8853.313951,
+            "primer_and_target_wall_ms": 17699.571203,
+            "actual_cached": 0,
+            "natural_eos": false,
+            "primer_correct": false
+          },
+          "reuse": {
+            "verdict": "other",
+            "prompt_ms": 7134.532,
+            "target_wall_ms": 8158.931441,
+            "primer_and_target_wall_ms": 17013.850657,
+            "actual_cached": 51,
+            "natural_eos": false,
+            "primer_correct": false
+          }
+        }
+      },
+      "96:late:0": {
+        "expected": "JADE",
+        "stale": "MAPLE",
+        "input_tokens": 799,
+        "first_changed_token_1based": 771,
+        "matched_output_ids": false,
+        "arms": {
+          "cold": {
+            "verdict": "other",
+            "prompt_ms": 7931.765,
+            "target_wall_ms": 8941.730814,
+            "primer_and_target_wall_ms": 17333.734035,
+            "actual_cached": 0,
+            "natural_eos": false,
+            "primer_correct": false
+          },
+          "reuse": {
+            "verdict": "other",
+            "prompt_ms": 539.977,
+            "target_wall_ms": 1001.468562,
+            "primer_and_target_wall_ms": 9382.879304,
+            "actual_cached": 770,
+            "natural_eos": true,
+            "primer_correct": false
+          }
+        }
+      },
+      "96:late:1": {
+        "expected": "MAPLE",
+        "stale": "JADE",
+        "input_tokens": 799,
+        "first_changed_token_1based": 771,
+        "matched_output_ids": true,
+        "arms": {
+          "reuse": {
+            "verdict": "other",
+            "prompt_ms": 527.64,
+            "target_wall_ms": 991.831794,
+            "primer_and_target_wall_ms": 9923.372014999999,
+            "actual_cached": 770,
+            "natural_eos": true,
+            "primer_correct": false
+          },
+          "cold": {
+            "verdict": "other",
+            "prompt_ms": 7919.476,
+            "target_wall_ms": 8381.219961,
+            "primer_and_target_wall_ms": 17322.574797,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": false
+          }
+        }
+      }
+    },
+    "totals": {
+      "cold": {
+        "correct": 0,
+        "stale": 0,
+        "other": 8,
+        "natural_eos": 5,
+        "primer_correct": 0,
+        "target_wall_median_ms": 5382.6329775
+      },
+      "reuse": {
+        "correct": 0,
+        "stale": 0,
+        "other": 8,
+        "natural_eos": 6,
+        "primer_correct": 0,
+        "target_wall_median_ms": 1318.0438760000002
+      }
+    },
+    "exact_token_pairs": 5,
+    "pairs": 8,
+    "scope": "Eight edited synthetic manifests in both cache policies: one paired observation per target, not an accuracy benchmark. Correct/stale/other score the entire whitespace-trimmed answer against this revision and its predecessor. Natural EOS, no forced answer or masked tokens. Target wall excludes tokenization and detokenization; primer+target is also reported. Upstream llama.cpp supplies inference."
+  },
+  "matched_tasks": {
+    "cold": {
+      "qwen_row_glm_column": {
+        "correct": {
+          "correct": 0,
+          "stale": 0,
+          "other": 8
+        },
+        "stale": {
+          "correct": 0,
+          "stale": 0,
+          "other": 0
+        },
+        "other": {
+          "correct": 0,
+          "stale": 0,
+          "other": 0
+        }
+      },
+      "paired_verdicts": [
+        {
+          "case": "16:early:0",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": true
+        },
+        {
+          "case": "16:early:1",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": true
+        },
+        {
+          "case": "16:late:0",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": true
+        },
+        {
+          "case": "16:late:1",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": true
+        },
+        {
+          "case": "96:early:0",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": false
+        },
+        {
+          "case": "96:early:1",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": false
+        },
+        {
+          "case": "96:late:0",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": false
+        },
+        {
+          "case": "96:late:1",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": true
+        }
+      ]
+    },
+    "reuse": {
+      "qwen_row_glm_column": {
+        "correct": {
+          "correct": 0,
+          "stale": 0,
+          "other": 8
+        },
+        "stale": {
+          "correct": 0,
+          "stale": 0,
+          "other": 0
+        },
+        "other": {
+          "correct": 0,
+          "stale": 0,
+          "other": 0
+        }
+      },
+      "paired_verdicts": [
+        {
+          "case": "16:early:0",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": true
+        },
+        {
+          "case": "16:early:1",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": true
+        },
+        {
+          "case": "16:late:0",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": true
+        },
+        {
+          "case": "16:late:1",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": true
+        },
+        {
+          "case": "96:early:0",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": false
+        },
+        {
+          "case": "96:early:1",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": false
+        },
+        {
+          "case": "96:late:0",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": true
+        },
+        {
+          "case": "96:late:1",
+          "qwen_verdict": "correct",
+          "glm_verdict": "other",
+          "qwen_eos": true,
+          "glm_eos": true
+        }
+      ]
+    }
+  },
+  "scope": "Eight paired synthetic manifest revisions. Same messages and strict whole-answer scoring, native tokenizer/template per model, natural EOS or 12 generated tokens. No stripping reasoning or punctuation; capped or unformatted answers may score other. Do not compare cross-tokenizer IDs, general quality, model scale or precision in isolation."
+}
