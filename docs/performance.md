@@ -1326,3 +1326,29 @@ B4 / G2 / D64, BF16, 4093 slots, seed 4374611. The first three columns are hot-d
 | both | 59.91 | 51.47 | 48.73 | 69.88 | 8,384,512 |
 
 Without returned banks, eager / Inductor / SparkFuse made 8 / 6 / 1 launches; peak allocator increases were 8,385,536 / 4,193,280 / 2,048 bytes. Returning both dense banks removes most of the timing advantage. Across both capacities, four visibility modes and two seeds, all three paths matched an independent CPU integer-storage oracle byte-for-byte on **128 requests**; the checks also verify storage ownership. [Raw windows and input/output hashes](../reports/slot-forward-gb10.json) · [sanitizer runs](../reports/slot-forward-sanitizer-gb10.txt) · [regression gates](../reports/slot-forward-stage-acceptance.json). Rerun `python tools/slot_forward_panel.py --output /tmp/slot-forward.json`.
+
+<a id="dispatch-replay"></a>
+### Replay measured static schedules on fresh allocations
+
+The trusted example bundle deliberately selects 12 previous workers: ten qualified non-default schedules, one retained default and one failed attempt. Import verifies 9 source archives and reconstructs a new SQLite file without running CUDA. The replay below uses 12 distinct graph/environment signatures: ten exact hits, a retained-default case and an unseen shape. Each sees eight fresh inputs. Missing, rejected, unarchived or incompatible entries are not generalized to similar shapes. This selected sample is not the full search or a win-rate estimate for other models.
+
+Device replay medians in µs. The final column includes host submission and completion while rotating input addresses; a dash denotes a backend not admitted for timing.
+
+| case / rows / width / dtype | route | eager device | default device | catalog device | Inductor device | catalog rotating sync |
+|---|---|---:|---:|---:|---:|---:|
+| resnorm / 1 / 768 / float32 | exact | 3.51 | 3.35 | 1.99 | 1.65 | 81.31 |
+| resnorm / 32 / 768 / bfloat16 | exact | 3.35 | 3.36 | 2.13 | 1.98 | 81.22 |
+| resnorm2 / 1 / 768 / float16 | exact | 3.51 | 3.35 | 2.07 | 1.77 | 84.70 |
+| resnorm2 / 32 / 768 / bfloat16 | exact | 3.35 | 3.50 | 2.13 | 2.00 | 84.61 |
+| mean / 1 / 1536 / float16 | exact | 3.02 | 3.36 | 1.86 | 1.75 | 79.95 |
+| mean / 32 / 768 / float16 | exact | 3.35 | 2.60 | 1.75 | 1.73 | 79.62 |
+| gate / 1 / 768 / float16 | exact | 3.20 | 1.77 | 1.71 | 1.71 | 80.83 |
+| gate / 32 / 1536 / float16 | exact | 2.82 | 2.02 | 1.86 | 1.72 | 80.06 |
+| decomp / 1 / 768 / float32 | exact | 7.62 | 3.35 | 2.07 | 1.85 | 81.77 |
+| decomp / 32 / 768 / float32 | exact | 8.30 | 3.35 | 2.14 | 2.18 | 81.87 |
+| gate / 48 / 1024 / float32 | default | 2.84 | 2.17 | 2.15 | 1.81 | 81.32 |
+| resnorm2 / 7 / 1009 / bfloat16 | default | 5.56 | 4.18 | 4.18 | 2.15 | 87.24 |
+
+On the ten exact hits, the catalog had a lower device median than the compiled default in **10/10** eligible pairs, and than Inductor in **2/10**. On rotating synchronized requests the corresponding counts were **9/10** and **0/10**. A discovery win against the default is not an end-to-end latency guarantee. Baselines were checked independently; missing baselines are not wins.
+
+[Raw inputs, admission, binaries and seven timing windows](../reports/dispatch-replay-gb10.json) · [sanitizers](../reports/dispatch-replay-sanitizer-gb10.txt) · [regression gates](../reports/dispatch-replay-stage-acceptance.json). Rerun `python tools/dispatch_replay_panel.py --output /tmp/dispatch-replay.json`.

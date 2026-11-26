@@ -20,6 +20,8 @@ SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 
 
 [单 token 解码](docs/performance.md#warp-decode)用 warp 寄存器计算分块注意力；[分页 KV](docs/performance.md#paged-decode)可直接查物理页，省去两次稠密缓存重建，并[按每行实际长度跳过空页](docs/performance.md#ragged-page)；[原生主机入口](docs/performance.md#page-host)减少单请求提交开销。[Qwen2、Llama、Mistral 单层](docs/performance.md#decoder-families)支持动态 KV 长度和[双缓存写回](docs/performance.md#dynamic-append)。若调用方要求**多层 KV 缓存逐字节一致**，可在导出图中[标记需要保护的输出](docs/performance.md#protected-stack)。模型实验使用随机权重，GEMM 仍交给 PyTorch。
 
+[实测调度库](docs/performance.md#dispatch-replay)只复用图和运行环境都精确匹配的记录；未命中时使用默认实现。
+
 ### 复现
 
 Linux、CUDA 版 PyTorch；构建 CUDA kernel 需要 `nvcc`，原生主机入口还需要 C++17 编译器。实测环境：GB10 / CUDA 13.0 / PyTorch 2.13.0+cu130。从仓库根目录运行：
@@ -39,3 +41,5 @@ python -m pytest -q
 SparkFuse turns functional regions of a `torch.export` inference graph into readable CUDA C++ on NVIDIA DGX Spark. It uses values consumed outside a region to decide what a kernel must write. For example, compare [RMSNorm alone](examples/generated/resnorm.cu) with [RMSNorm that also returns the residual](examples/generated/resnorm2.cu). The same [output visibility rule for KV-slot writes](docs/performance.md#slot-forward) avoids building cache banks that no caller reads. The mixed execution path leaves unsupported operators and matrix multiplications in PyTorch.
 
 [Warp-register decode](docs/performance.md#warp-decode) avoids KV-head expansion; [physical-page decode](docs/performance.md#paged-decode) also avoids two dense cache gathers and can [skip inactive pages per row](docs/performance.md#ragged-page). A [native caller](docs/performance.md#page-host) reduces submission overhead without changing the CUDA kernels. [Dynamic decoder layers](docs/performance.md#decoder-families) cover Qwen2, Llama and Mistral. A [multi-layer cache contract](docs/performance.md#protected-stack) preserves all returned KV bytes when later layers depend on earlier attention results. These are random-weight inference experiments, not model quality measurements. See the commands above for reproducible CUDA generation and three-way timing; the [performance notes](docs/performance.md) include regressions as well as wins.
+
+An [exact-match schedule catalog](docs/performance.md#dispatch-replay) reuses admitted measurements; an unseen signature uses the default kernel.

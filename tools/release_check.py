@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "sealed_catalog_gpu_replay",
+            [
+                sys.executable,
+                str(ROOT / "tools/dispatch_replay_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-dispatch-replay.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "functional_cache_slot_forward",
             [
                 sys.executable,
