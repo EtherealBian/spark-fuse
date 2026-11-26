@@ -1,4 +1,4 @@
-# SparkFuse
+# PyTorch → CUDA 推理编译器 · SparkFuse
 
 [English](#english) · [快速上手](docs/quickstart.md) · [实测与复现](docs/findings.md) · [项目主页](https://etherealbian.github.io/work/spark-fuse.html)
 
