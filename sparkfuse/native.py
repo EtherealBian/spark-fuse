@@ -102,14 +102,14 @@ def native_dispatch(kernel):
     return _native_dispatch(kernel, None)
 
 
-def _native_dispatch(kernel, row_bounds):
+def _native_dispatch(kernel, row_bounds, *, specials=()):
     p = kernel.plan
     desc = [p.vals[i] for i in p.inputs + p.outputs]
     out_spec = kernel.ep.call_spec.out_spec
     in_spec = kernel.ep.call_spec.in_spec
     num = {"f32": 0, "f16": 1, "bf16": 2, "i8": 3, "i32": 4}
     host = _extension()._Plan(
-        kernel.lib,
+        (kernel.lib, *(lib for _, lib in specials)) if specials else kernel.lib,
         ctypes.cast(kernel.lib.launch, ctypes.c_void_p).value,
         kernel.device.index,
         p.rows,
@@ -126,6 +126,14 @@ def _native_dispatch(kernel, row_bounds):
         out_spec.is_leaf(),
         *(row_bounds or (0, 0)),
         getattr(kernel, "input_strides", ()),
+        *(
+            (
+                [n for n, _ in specials],
+                [ctypes.cast(lib.launch, ctypes.c_void_p).value for _, lib in specials],
+            )
+            if specials
+            else ()
+        ),
     )
     raw = host.run
     plain_out = out_spec.is_leaf() or (

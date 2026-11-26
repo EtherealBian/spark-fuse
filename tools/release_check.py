@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "native_multiversion_exact_rows",
+            [
+                sys.executable,
+                str(ROOT / "tools/catalog_rows_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-catalog-rows.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "sealed_catalog_gpu_replay",
             [
                 sys.executable,

@@ -1,0 +1,653 @@
+{
+ "smoke": true,
+ "device": "NVIDIA GB10",
+ "torch": "2.13.0+cu130",
+ "cuda": "13.0",
+ "provenance": {
+  "git_head_at_capture": "9d1113a8e42f68fa35d22290bc5144a1d4f0efa6",
+  "source_tree_sha256": "f6d7bca7e2c43a7a90cf60f3a7a71a164fb9a6f8cb9e0c7407794d57fcd8c3ac",
+  "archive": "sources/f6d7bca7e2c43a7a90cf60f3a7a71a164fb9a6f8cb9e0c7407794d57fcd8c3ac.tar.gz"
+ },
+ "cases": [
+  {
+   "config": [
+    4,
+    2,
+    31,
+    64,
+    "fp16"
+   ],
+   "visible": [
+    true,
+    false
+   ],
+   "seed": 4392751,
+   "patterns": [
+    "equal",
+    "different",
+    "mixed",
+    "endpoints"
+   ],
+   "setup": {
+    "wall_ms": 69.191626,
+    "retained_allocator_delta_bytes": 0,
+    "peak_allocator_increase_bytes": 133632
+   },
+   "binary": {
+    "source_sha256": "12b3b59941645e34f0aa13dbd8953294455fe87e3c8235c6d15717a57aa8031e",
+    "binary_sha256": "4159c508d1271d46c9e95aeff4f228a74b97c278d96f11189570d7ff7dfa46f8",
+    "entries": {
+     "_ZN39_GLOBAL__N__b693a2fd_9_kernel_cu_launch5slotsItEEvPKT_S3_S3_S3_PKiS5_PS1_S6_S6_S6_": {
+      "registers": 18,
+      "stack_bytes": 0,
+      "shared_bytes": 0,
+      "local_bytes": 0
+     },
+     "_ZN39_GLOBAL__N__b693a2fd_9_kernel_cu_launch5slotsIjEEvPKT_S3_S3_S3_PKiS5_PS1_S6_S6_S6_": {
+      "registers": 18,
+      "stack_bytes": 0,
+      "shared_bytes": 0,
+      "local_bytes": 0
+     },
+     "_ZN39_GLOBAL__N__b693a2fd_9_kernel_cu_launch5slotsI5uint4EEvPKT_S4_S4_S4_PKiS6_PS2_S7_S7_S7_": {
+      "registers": 26,
+      "stack_bytes": 0,
+      "shared_bytes": 0,
+      "local_bytes": 0
+     }
+    },
+    "sass": {
+     "_ZN39_GLOBAL__N__b693a2fd_9_kernel_cu_launch5slotsItEEvPKT_S3_S3_S3_PKiS5_PS1_S6_S6_S6_": {
+      "BRA": 2,
+      "EXIT": 3,
+      "IADD3": 6,
+      "IMAD": 7,
+      "IMAD.SHL.U32": 1,
+      "IMAD.WIDE": 8,
+      "IMAD.WIDE.U32": 4,
+      "ISETP.GT.AND": 1,
+      "ISETP.GT.U32.AND": 1,
+      "ISETP.NE.AND": 2,
+      "LDC": 2,
+      "LDC.64": 12,
+      "LDCU.64": 1,
+      "LDG.E": 3,
+      "LDG.E.U16": 6,
+      "LEA.HI": 3,
+      "LOP3.LUT": 10,
+      "NOP": 15,
+      "PRMT": 4,
+      "S2R": 1,
+      "S2UR": 1,
+      "SHF.R.S32.HI": 2,
+      "SHF.R.U32.HI": 8,
+      "STG.E.U16": 3,
+      "VIMNMX.S32": 6
+     },
+     "_ZN39_GLOBAL__N__b693a2fd_9_kernel_cu_launch5slotsIjEEvPKT_S3_S3_S3_PKiS5_PS1_S6_S6_S6_": {
+      "BRA": 2,
+      "EXIT": 3,
+      "IADD3": 6,
+      "IMAD": 7,
+      "IMAD.SHL.U32": 1,
+      "IMAD.WIDE": 8,
+      "IMAD.WIDE.U32": 4,
+      "ISETP.GT.AND": 1,
+      "ISETP.GT.U32.AND": 1,
+      "ISETP.NE.AND": 2,
+      "LDC": 2,
+      "LDC.64": 12,
+      "LDCU.64": 1,
+      "LDG.E": 9,
+      "LEA.HI": 3,
+      "LOP3.LUT": 10,
+      "NOP": 15,
+      "PRMT": 4,
+      "S2R": 1,
+      "S2UR": 1,
+      "SHF.R.S32.HI": 2,
+      "SHF.R.U32.HI": 8,
+      "STG.E": 3,
+      "VIMNMX.S32": 6
+     },
+     "_ZN39_GLOBAL__N__b693a2fd_9_kernel_cu_launch5slotsI5uint4EEvPKT_S4_S4_S4_PKiS6_PS2_S7_S7_S7_": {
+      "BRA": 3,
+      "EXIT": 5,
+      "IADD3": 6,
+      "IMAD": 7,
+      "IMAD.SHL.U32": 1,
+      "IMAD.WIDE": 9,
+      "IMAD.WIDE.U32": 4,
+      "ISETP.GT.AND": 1,
+      "ISETP.GT.U32.AND": 1,
+      "ISETP.NE.AND": 2,
+      "LDC": 2,
+      "LDC.64": 13,
+      "LDCU.64": 1,
+      "LDG.E": 3,
+      "LDG.E.128": 6,
+      "LEA.HI": 3,
+      "LOP3.LUT": 10,
+      "NOP": 15,
+      "PRMT": 4,
+      "S2R": 1,
+      "S2UR": 1,
+      "SHF.R.S32.HI": 2,
+      "SHF.R.U32.HI": 8,
+      "STG.E.128": 6,
+      "VIMNMX.S32": 6
+     }
+    }
+   },
+   "export_graph_sha256": "5cf353282f332a1f61eae4c77d411b39080284617a471330aeec54400580fc60",
+   "inputs": [
+    [
+     "83796eafd0cc763d7948ba2a293bc5063f3915b162a26491b4ed4f0b058de329",
+     "36b5a5ee4ab92119be7aee0d17ff50e234de37551fd7faa552f4aeeb7b450c0b",
+     "da7fd96ebd93ea07bafa9bb5d0833f1d80dfe5c378ee970d1bfbb1cf69944817",
+     "fb6ac11f17387d11a3dabc57aa762c6d90c9082128bf2d21a998eb38cd77ae88",
+     "606ae8604f6946da4f93c1612ef39c11bebd4c40e288784ae81fcefe5dd018ca",
+     "606ae8604f6946da4f93c1612ef39c11bebd4c40e288784ae81fcefe5dd018ca"
+    ],
+    [
+     "6e1fbfdde7ba071fe0164e3f1daf3907ea59ca4cbcd6f834aa35165d5e460b90",
+     "2873000c604d43090fc6285a37070591f23b9b2a92f7974459660cfb4e86f044",
+     "6b3c7af3ccf72b2f1bb153afed94afd792bc6820e9e957f175f7b5845aadaece",
+     "2612819813f30cf9f041b2d92d89a654a8e80006a13d94c6ef2fdc7d4396ab48",
+     "f55fbfad81801fd9bbdcd6b6233f10342d66f067e5e48580fb0ee1a0fa130a8d",
+     "db5a9f7c4d002aec276007305cd4cd0a5eb8953bcbeb47e6bd2d2c773bb2e235"
+    ],
+    [
+     "9c34ae1eebe7f6dc2dfc6b057edb226a7447a2af1c26bdfebd2e61218bb8f13b",
+     "c93366e7ca5220c798fe5e0b11506d80e604ec4f1997923bab19c4e854b95e31",
+     "11892c5cfe3b39852cbc084c369b378435f17350d039a091da5e046283385059",
+     "2ca125d1ac8e1216bb53de5f92750af503a99d18892519061b25bb9e3216fc2c",
+     "cc0bf5b24476a9d3085fc80db5fbaf5f872a61a732320cc026586b707e2aa0f1",
+     "ee11c2155eaa737ac7ef90af945ed2e57ab3e464c5dcdf090f4ad3aba10b0749"
+    ],
+    [
+     "ace1c953701e1348d43b41d327d79e890e485928cb5cc22d385f9a995fa53362",
+     "08ed4e2be6b003f9595c06a779dbb03afe8dc28ba63d60f12590f39e20524585",
+     "f64fd304070fc24475deedb53ed27a18e196e7dd5a4ac20a582c4ab058aa97a4",
+     "eed6f9088b597377200ea9ab92d3f8225ab60f64285b2b276bcff344ba66f03f",
+     "e32d2691742446dd97dbc91950135b606bdda5d157ac2a79c2571f5788f1a34d",
+     "c66856d3622ef1af1acca8762554ca873b9ea946fc38967d2d42caba297dc8d7"
+    ]
+   ],
+   "oracle": [
+    [
+     "da7fd96ebd93ea07bafa9bb5d0833f1d80dfe5c378ee970d1bfbb1cf69944817",
+     "fb6ac11f17387d11a3dabc57aa762c6d90c9082128bf2d21a998eb38cd77ae88",
+     "f271a4608e879c26dbda0879b5636c6334626e0f0c2c01ad430e2e2a865f99fb"
+    ],
+    [
+     "a595546b6daf101ea0a8651421aeb83fbac5a6806451395d8b124a32c1b89caa",
+     "449a08753183d409eac25a0c001a5d1e1c7ef98834ff9fc60299188047ed6467",
+     "960eb2f6387506e06bdf95d31b230297ec6cea4af8f6f167c8078e2d34adf26b"
+    ],
+    [
+     "819a7e2ce6bd2576e0f607e697b154b76d409f23c0634df016029e134fa557b3",
+     "e196df09d0a6156948d607f8f5e1753259830bdd36315c43495a2a12c9486b16",
+     "7c14ca7ebe462dcd2b9eb0dab97daec104ce8857ccd82e1ec5f75554222b8539"
+    ],
+    [
+     "ec5f2e8bf6d1e18682b2e323ba04a2525f642c5477154e35afcf6d500b7ba182",
+     "71db7d9e4d23298eef9ff0babd538a579e954c7bfb417bddab55208221db217a",
+     "b7807fe6614036b8db69bf71a592f91aa0cf4afe7e9c954d2e7b8985e59f9a63"
+    ]
+   ],
+   "gates": {
+    "eager": {
+     "all_live": true,
+     "rows": [
+      {
+       "hashes": [
+        "da7fd96ebd93ea07bafa9bb5d0833f1d80dfe5c378ee970d1bfbb1cf69944817",
+        "fb6ac11f17387d11a3dabc57aa762c6d90c9082128bf2d21a998eb38cd77ae88",
+        "f271a4608e879c26dbda0879b5636c6334626e0f0c2c01ad430e2e2a865f99fb"
+       ],
+       "matches": [
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "a595546b6daf101ea0a8651421aeb83fbac5a6806451395d8b124a32c1b89caa",
+        "449a08753183d409eac25a0c001a5d1e1c7ef98834ff9fc60299188047ed6467",
+        "960eb2f6387506e06bdf95d31b230297ec6cea4af8f6f167c8078e2d34adf26b"
+       ],
+       "matches": [
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "819a7e2ce6bd2576e0f607e697b154b76d409f23c0634df016029e134fa557b3",
+        "e196df09d0a6156948d607f8f5e1753259830bdd36315c43495a2a12c9486b16",
+        "7c14ca7ebe462dcd2b9eb0dab97daec104ce8857ccd82e1ec5f75554222b8539"
+       ],
+       "matches": [
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "ec5f2e8bf6d1e18682b2e323ba04a2525f642c5477154e35afcf6d500b7ba182",
+        "71db7d9e4d23298eef9ff0babd538a579e954c7bfb417bddab55208221db217a",
+        "b7807fe6614036b8db69bf71a592f91aa0cf4afe7e9c954d2e7b8985e59f9a63"
+       ],
+       "matches": [
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      }
+     ],
+     "admitted": true
+    },
+    "slot_forward": {
+     "all_live": true,
+     "rows": [
+      {
+       "hashes": [
+        "da7fd96ebd93ea07bafa9bb5d0833f1d80dfe5c378ee970d1bfbb1cf69944817",
+        "fb6ac11f17387d11a3dabc57aa762c6d90c9082128bf2d21a998eb38cd77ae88",
+        "f271a4608e879c26dbda0879b5636c6334626e0f0c2c01ad430e2e2a865f99fb"
+       ],
+       "matches": [
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "a595546b6daf101ea0a8651421aeb83fbac5a6806451395d8b124a32c1b89caa",
+        "449a08753183d409eac25a0c001a5d1e1c7ef98834ff9fc60299188047ed6467",
+        "960eb2f6387506e06bdf95d31b230297ec6cea4af8f6f167c8078e2d34adf26b"
+       ],
+       "matches": [
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "819a7e2ce6bd2576e0f607e697b154b76d409f23c0634df016029e134fa557b3",
+        "e196df09d0a6156948d607f8f5e1753259830bdd36315c43495a2a12c9486b16",
+        "7c14ca7ebe462dcd2b9eb0dab97daec104ce8857ccd82e1ec5f75554222b8539"
+       ],
+       "matches": [
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "ec5f2e8bf6d1e18682b2e323ba04a2525f642c5477154e35afcf6d500b7ba182",
+        "71db7d9e4d23298eef9ff0babd538a579e954c7bfb417bddab55208221db217a",
+        "b7807fe6614036b8db69bf71a592f91aa0cf4afe7e9c954d2e7b8985e59f9a63"
+       ],
+       "matches": [
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      }
+     ],
+     "admitted": true
+    }
+   },
+   "inductor_backend_calls": 0,
+   "hot": {},
+   "rotating": null,
+   "allocation": {}
+  },
+  {
+   "config": [
+    4,
+    2,
+    31,
+    64,
+    "fp16"
+   ],
+   "visible": [
+    true,
+    true
+   ],
+   "seed": 4392751,
+   "patterns": [
+    "equal",
+    "different",
+    "mixed",
+    "endpoints"
+   ],
+   "setup": {
+    "wall_ms": 4.226686,
+    "retained_allocator_delta_bytes": 0,
+    "peak_allocator_increase_bytes": 197120
+   },
+   "binary": {
+    "source_sha256": "9487a67e2b50c97070e7907930bbf23f821fc253b7ee941a6693efbb88bba6f7",
+    "binary_sha256": "93f14bbb84139bffbeb1a6dc2ed08fd2db8ed63aa8718286abda00dde5d5a042",
+    "entries": {
+     "_ZN39_GLOBAL__N__6ff37539_9_kernel_cu_launch5slotsItEEvPKT_S3_S3_S3_PKiS5_PS1_S6_S6_S6_": {
+      "registers": 18,
+      "stack_bytes": 0,
+      "shared_bytes": 0,
+      "local_bytes": 0
+     },
+     "_ZN39_GLOBAL__N__6ff37539_9_kernel_cu_launch5slotsIjEEvPKT_S3_S3_S3_PKiS5_PS1_S6_S6_S6_": {
+      "registers": 18,
+      "stack_bytes": 0,
+      "shared_bytes": 0,
+      "local_bytes": 0
+     },
+     "_ZN39_GLOBAL__N__6ff37539_9_kernel_cu_launch5slotsI5uint4EEvPKT_S4_S4_S4_PKiS6_PS2_S7_S7_S7_": {
+      "registers": 26,
+      "stack_bytes": 0,
+      "shared_bytes": 0,
+      "local_bytes": 0
+     }
+    },
+    "sass": {
+     "_ZN39_GLOBAL__N__6ff37539_9_kernel_cu_launch5slotsItEEvPKT_S3_S3_S3_PKiS5_PS1_S6_S6_S6_": {
+      "BRA": 3,
+      "EXIT": 4,
+      "IADD3": 11,
+      "IMAD": 11,
+      "IMAD.SHL.U32": 2,
+      "IMAD.WIDE": 8,
+      "IMAD.WIDE.U32": 8,
+      "ISETP.GT.AND": 1,
+      "ISETP.GT.U32.AND": 2,
+      "ISETP.NE.AND": 3,
+      "LDC": 2,
+      "LDC.64": 16,
+      "LDCU.64": 1,
+      "LDG.E": 4,
+      "LDG.E.U16": 8,
+      "LEA.HI": 4,
+      "LOP3.LUT": 18,
+      "NOP": 8,
+      "PRMT": 7,
+      "S2R": 1,
+      "S2UR": 1,
+      "SHF.R.S32.HI": 2,
+      "SHF.R.U32.HI": 15,
+      "STG.E.U16": 4,
+      "VIMNMX.S32": 8
+     },
+     "_ZN39_GLOBAL__N__6ff37539_9_kernel_cu_launch5slotsIjEEvPKT_S3_S3_S3_PKiS5_PS1_S6_S6_S6_": {
+      "BRA": 3,
+      "EXIT": 4,
+      "IADD3": 11,
+      "IMAD": 11,
+      "IMAD.SHL.U32": 2,
+      "IMAD.WIDE": 8,
+      "IMAD.WIDE.U32": 8,
+      "ISETP.GT.AND": 1,
+      "ISETP.GT.U32.AND": 2,
+      "ISETP.NE.AND": 3,
+      "LDC": 2,
+      "LDC.64": 16,
+      "LDCU.64": 1,
+      "LDG.E": 12,
+      "LEA.HI": 4,
+      "LOP3.LUT": 18,
+      "NOP": 8,
+      "PRMT": 7,
+      "S2R": 1,
+      "S2UR": 1,
+      "SHF.R.S32.HI": 2,
+      "SHF.R.U32.HI": 15,
+      "STG.E": 4,
+      "VIMNMX.S32": 8
+     },
+     "_ZN39_GLOBAL__N__6ff37539_9_kernel_cu_launch5slotsI5uint4EEvPKT_S4_S4_S4_PKiS6_PS2_S7_S7_S7_": {
+      "BRA": 5,
+      "EXIT": 7,
+      "IADD3": 11,
+      "IMAD": 11,
+      "IMAD.SHL.U32": 2,
+      "IMAD.WIDE": 9,
+      "IMAD.WIDE.U32": 8,
+      "ISETP.GT.AND": 1,
+      "ISETP.GT.U32.AND": 2,
+      "ISETP.NE.AND": 3,
+      "LDC": 2,
+      "LDC.64": 17,
+      "LDCU.64": 1,
+      "LDG.E": 4,
+      "LDG.E.128": 8,
+      "LEA.HI": 4,
+      "LOP3.LUT": 18,
+      "NOP": 13,
+      "PRMT": 7,
+      "S2R": 1,
+      "S2UR": 1,
+      "SHF.R.S32.HI": 2,
+      "SHF.R.U32.HI": 15,
+      "STG.E.128": 8,
+      "VIMNMX.S32": 8
+     }
+    }
+   },
+   "export_graph_sha256": "cad8b4deeef078e6ada19c45d4c0b712a6631384b0e1d58121457b1f24d4c9e1",
+   "inputs": [
+    [
+     "83796eafd0cc763d7948ba2a293bc5063f3915b162a26491b4ed4f0b058de329",
+     "36b5a5ee4ab92119be7aee0d17ff50e234de37551fd7faa552f4aeeb7b450c0b",
+     "da7fd96ebd93ea07bafa9bb5d0833f1d80dfe5c378ee970d1bfbb1cf69944817",
+     "fb6ac11f17387d11a3dabc57aa762c6d90c9082128bf2d21a998eb38cd77ae88",
+     "606ae8604f6946da4f93c1612ef39c11bebd4c40e288784ae81fcefe5dd018ca",
+     "606ae8604f6946da4f93c1612ef39c11bebd4c40e288784ae81fcefe5dd018ca"
+    ],
+    [
+     "6e1fbfdde7ba071fe0164e3f1daf3907ea59ca4cbcd6f834aa35165d5e460b90",
+     "2873000c604d43090fc6285a37070591f23b9b2a92f7974459660cfb4e86f044",
+     "6b3c7af3ccf72b2f1bb153afed94afd792bc6820e9e957f175f7b5845aadaece",
+     "2612819813f30cf9f041b2d92d89a654a8e80006a13d94c6ef2fdc7d4396ab48",
+     "f55fbfad81801fd9bbdcd6b6233f10342d66f067e5e48580fb0ee1a0fa130a8d",
+     "db5a9f7c4d002aec276007305cd4cd0a5eb8953bcbeb47e6bd2d2c773bb2e235"
+    ],
+    [
+     "9c34ae1eebe7f6dc2dfc6b057edb226a7447a2af1c26bdfebd2e61218bb8f13b",
+     "c93366e7ca5220c798fe5e0b11506d80e604ec4f1997923bab19c4e854b95e31",
+     "11892c5cfe3b39852cbc084c369b378435f17350d039a091da5e046283385059",
+     "2ca125d1ac8e1216bb53de5f92750af503a99d18892519061b25bb9e3216fc2c",
+     "cc0bf5b24476a9d3085fc80db5fbaf5f872a61a732320cc026586b707e2aa0f1",
+     "ee11c2155eaa737ac7ef90af945ed2e57ab3e464c5dcdf090f4ad3aba10b0749"
+    ],
+    [
+     "ace1c953701e1348d43b41d327d79e890e485928cb5cc22d385f9a995fa53362",
+     "08ed4e2be6b003f9595c06a779dbb03afe8dc28ba63d60f12590f39e20524585",
+     "f64fd304070fc24475deedb53ed27a18e196e7dd5a4ac20a582c4ab058aa97a4",
+     "eed6f9088b597377200ea9ab92d3f8225ab60f64285b2b276bcff344ba66f03f",
+     "e32d2691742446dd97dbc91950135b606bdda5d157ac2a79c2571f5788f1a34d",
+     "c66856d3622ef1af1acca8762554ca873b9ea946fc38967d2d42caba297dc8d7"
+    ]
+   ],
+   "oracle": [
+    [
+     "da7fd96ebd93ea07bafa9bb5d0833f1d80dfe5c378ee970d1bfbb1cf69944817",
+     "fb6ac11f17387d11a3dabc57aa762c6d90c9082128bf2d21a998eb38cd77ae88",
+     "f271a4608e879c26dbda0879b5636c6334626e0f0c2c01ad430e2e2a865f99fb",
+     "f47d0495c7805c9533edb5f2acd185ac51fb3ea0cf0b0693b7844bb36fa4a43a"
+    ],
+    [
+     "a595546b6daf101ea0a8651421aeb83fbac5a6806451395d8b124a32c1b89caa",
+     "449a08753183d409eac25a0c001a5d1e1c7ef98834ff9fc60299188047ed6467",
+     "960eb2f6387506e06bdf95d31b230297ec6cea4af8f6f167c8078e2d34adf26b",
+     "c10c952f75a2020c538669336ff87b46175d55918635e87446cf0dc968893442"
+    ],
+    [
+     "819a7e2ce6bd2576e0f607e697b154b76d409f23c0634df016029e134fa557b3",
+     "e196df09d0a6156948d607f8f5e1753259830bdd36315c43495a2a12c9486b16",
+     "7c14ca7ebe462dcd2b9eb0dab97daec104ce8857ccd82e1ec5f75554222b8539",
+     "29869182374344b2aafae059fd318d20bded05cd6ce3130d7178918300550dc5"
+    ],
+    [
+     "ec5f2e8bf6d1e18682b2e323ba04a2525f642c5477154e35afcf6d500b7ba182",
+     "71db7d9e4d23298eef9ff0babd538a579e954c7bfb417bddab55208221db217a",
+     "b7807fe6614036b8db69bf71a592f91aa0cf4afe7e9c954d2e7b8985e59f9a63",
+     "9caf2c0ed3cd77598b758f4b8ca1fb780c04b243605771a8e324f4adc74c702e"
+    ]
+   ],
+   "gates": {
+    "eager": {
+     "all_live": true,
+     "rows": [
+      {
+       "hashes": [
+        "da7fd96ebd93ea07bafa9bb5d0833f1d80dfe5c378ee970d1bfbb1cf69944817",
+        "fb6ac11f17387d11a3dabc57aa762c6d90c9082128bf2d21a998eb38cd77ae88",
+        "f271a4608e879c26dbda0879b5636c6334626e0f0c2c01ad430e2e2a865f99fb",
+        "f47d0495c7805c9533edb5f2acd185ac51fb3ea0cf0b0693b7844bb36fa4a43a"
+       ],
+       "matches": [
+        true,
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "a595546b6daf101ea0a8651421aeb83fbac5a6806451395d8b124a32c1b89caa",
+        "449a08753183d409eac25a0c001a5d1e1c7ef98834ff9fc60299188047ed6467",
+        "960eb2f6387506e06bdf95d31b230297ec6cea4af8f6f167c8078e2d34adf26b",
+        "c10c952f75a2020c538669336ff87b46175d55918635e87446cf0dc968893442"
+       ],
+       "matches": [
+        true,
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "819a7e2ce6bd2576e0f607e697b154b76d409f23c0634df016029e134fa557b3",
+        "e196df09d0a6156948d607f8f5e1753259830bdd36315c43495a2a12c9486b16",
+        "7c14ca7ebe462dcd2b9eb0dab97daec104ce8857ccd82e1ec5f75554222b8539",
+        "29869182374344b2aafae059fd318d20bded05cd6ce3130d7178918300550dc5"
+       ],
+       "matches": [
+        true,
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "ec5f2e8bf6d1e18682b2e323ba04a2525f642c5477154e35afcf6d500b7ba182",
+        "71db7d9e4d23298eef9ff0babd538a579e954c7bfb417bddab55208221db217a",
+        "b7807fe6614036b8db69bf71a592f91aa0cf4afe7e9c954d2e7b8985e59f9a63",
+        "9caf2c0ed3cd77598b758f4b8ca1fb780c04b243605771a8e324f4adc74c702e"
+       ],
+       "matches": [
+        true,
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      }
+     ],
+     "admitted": true
+    },
+    "slot_forward": {
+     "all_live": true,
+     "rows": [
+      {
+       "hashes": [
+        "da7fd96ebd93ea07bafa9bb5d0833f1d80dfe5c378ee970d1bfbb1cf69944817",
+        "fb6ac11f17387d11a3dabc57aa762c6d90c9082128bf2d21a998eb38cd77ae88",
+        "f271a4608e879c26dbda0879b5636c6334626e0f0c2c01ad430e2e2a865f99fb",
+        "f47d0495c7805c9533edb5f2acd185ac51fb3ea0cf0b0693b7844bb36fa4a43a"
+       ],
+       "matches": [
+        true,
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "a595546b6daf101ea0a8651421aeb83fbac5a6806451395d8b124a32c1b89caa",
+        "449a08753183d409eac25a0c001a5d1e1c7ef98834ff9fc60299188047ed6467",
+        "960eb2f6387506e06bdf95d31b230297ec6cea4af8f6f167c8078e2d34adf26b",
+        "c10c952f75a2020c538669336ff87b46175d55918635e87446cf0dc968893442"
+       ],
+       "matches": [
+        true,
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "819a7e2ce6bd2576e0f607e697b154b76d409f23c0634df016029e134fa557b3",
+        "e196df09d0a6156948d607f8f5e1753259830bdd36315c43495a2a12c9486b16",
+        "7c14ca7ebe462dcd2b9eb0dab97daec104ce8857ccd82e1ec5f75554222b8539",
+        "29869182374344b2aafae059fd318d20bded05cd6ce3130d7178918300550dc5"
+       ],
+       "matches": [
+        true,
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      },
+      {
+       "hashes": [
+        "ec5f2e8bf6d1e18682b2e323ba04a2525f642c5477154e35afcf6d500b7ba182",
+        "71db7d9e4d23298eef9ff0babd538a579e954c7bfb417bddab55208221db217a",
+        "b7807fe6614036b8db69bf71a592f91aa0cf4afe7e9c954d2e7b8985e59f9a63",
+        "9caf2c0ed3cd77598b758f4b8ca1fb780c04b243605771a8e324f4adc74c702e"
+       ],
+       "matches": [
+        true,
+        true,
+        true,
+        true
+       ],
+       "structure": true
+      }
+     ],
+     "admitted": true
+    }
+   },
+   "inductor_backend_calls": 0,
+   "hot": {},
+   "rotating": null,
+   "allocation": {}
+  }
+ ]
+}

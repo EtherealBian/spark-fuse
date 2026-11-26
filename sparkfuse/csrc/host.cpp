@@ -7,6 +7,7 @@
 #include <torch/csrc/autograd/python_variable.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <algorithm>
 #include <vector>
 #include <cstdint>
 
@@ -29,11 +30,18 @@ class HostPlan {
  public:
   HostPlan(py::object owner, uintptr_t entry, int device, int rows, size_t nin,
            std::vector<Shape> shapes, std::vector<int> types, bool leaf, int lo, int hi,
-           std::vector<Shape> strides)
+           std::vector<Shape> strides, std::vector<int> keys = {}, std::vector<uintptr_t> entries = {})
       : owner_(std::move(owner)), launch_(reinterpret_cast<Launch>(entry)),
         device_(device), rows_(rows), nin_(nin), shapes_(std::move(shapes)), strides_(std::move(strides)), leaf_(leaf), lo_(lo), hi_(hi), row_input_(nin) {
     if (!entry || rows<=0 || !nin || shapes_.size()<=nin || shapes_.size()!=types.size() ||
         (leaf && shapes_.size()!=nin+1)) throw py::value_error("invalid plan descriptor");
+    if (keys.size()!=entries.size() || keys.size()>32 || (!keys.empty() && !lo))
+      throw py::value_error("invalid row specialization table");
+    for (size_t i=0;i<keys.size();++i) {
+      if (keys[i]<lo || keys[i]>hi || (i && keys[i-1]>=keys[i]) || !entries[i])
+        throw py::value_error("invalid row specialization entry");
+      variants_.emplace_back(keys[i],reinterpret_cast<Launch>(entries[i]));
+    }
     if (!strides_.empty()) {
       if (strides_.size()!=nin || lo || hi) throw py::value_error("invalid static stride descriptor");
       for (size_t i=0;i<nin;++i) {
@@ -99,7 +107,13 @@ class HostPlan {
       else out.push_back(at::empty(shape,opts));
       ptrs.push_back(out.back().data_ptr());
     }
-    const int ec=launch_(ptrs.data(),rows,reinterpret_cast<void*>(stream.stream()));
+    Launch chosen=launch_;
+    if constexpr (Dynamic) {
+      auto it=std::lower_bound(variants_.begin(),variants_.end(),rows,
+          [](const auto& pair,int n){return pair.first<n;});
+      if(it!=variants_.end() && it->first==rows) chosen=it->second;
+    }
+    const int ec=chosen(ptrs.data(),rows,reinterpret_cast<void*>(stream.stream()));
     if(ec) throw std::runtime_error("CUDA launch returned "+std::to_string(ec));
     if(leaf_) return py::reinterpret_steal<py::object>(THPVariable_Wrap(out[0]));
     py::tuple result(out.size());
@@ -109,6 +123,7 @@ class HostPlan {
  private:
   py::object owner_; // Keeps the kernel shared object loaded, even if the compiler object dies.
   Launch launch_;
+  std::vector<std::pair<int,Launch>> variants_;
   c10::DeviceIndex device_;
   int rows_;
   size_t nin_;
@@ -129,5 +144,6 @@ PYBIND11_MODULE(_sparkfuse_host,m){
   bind_append_io(m);
   py::class_<HostPlan>(m,"_Plan")
     .def(py::init<py::object, uintptr_t, int, int, size_t, std::vector<Shape>,std::vector<int>,bool,int,int,std::vector<Shape>>())
+    .def(py::init<py::object, uintptr_t, int, int, size_t, std::vector<Shape>,std::vector<int>,bool,int,int,std::vector<Shape>,std::vector<int>,std::vector<uintptr_t>>())
     .def("run",&HostPlan::run);
 }

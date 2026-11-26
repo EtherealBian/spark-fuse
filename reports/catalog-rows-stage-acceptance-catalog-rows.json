@@ -1,0 +1,446 @@
+{
+ "smoke": true,
+ "torch": "2.13.0+cu130",
+ "cuda": "13.0",
+ "device": "NVIDIA GB10",
+ "provenance": {
+  "git_head_at_capture": "9d1113a8e42f68fa35d22290bc5144a1d4f0efa6",
+  "source_tree_sha256": "f6d7bca7e2c43a7a90cf60f3a7a71a164fb9a6f8cb9e0c7407794d57fcd8c3ac",
+  "archive": "sources/f6d7bca7e2c43a7a90cf60f3a7a71a164fb9a6f8cb9e0c7407794d57fcd8c3ac.tar.gz"
+ },
+ "cases": [
+  {
+   "config": [
+    "decomp",
+    768,
+    "float32"
+   ],
+   "seed": 4712111,
+   "rows": [
+    1,
+    32,
+    97
+   ],
+   "hints": [
+    1,
+    7,
+    32,
+    48
+   ],
+   "bounds": [
+    1,
+    129
+   ],
+   "variants": [
+    {
+     "rows": 1,
+     "signature": "98a820b987c7f92042bc74587beb0eb8d3fe2f9604c255792913505399d52d38",
+     "selected": {
+      "threads": 512,
+      "layout": "block",
+      "cache": false,
+      "vec": 4
+     },
+     "source_sha256": "bf4082da4e7843cb11bf98655453233b83b869d5e18f5e80aab7d6b67eeeb286"
+    },
+    {
+     "rows": 7,
+     "signature": "2a4119524393e562a30eb5ab412dfa2fc126761cc07652350763d25f0355c86d",
+     "selected": null,
+     "source_sha256": null
+    },
+    {
+     "rows": 32,
+     "signature": "28859e80085794f5011c72cec9c36143657e55e3ffff4738cb95b164853a815f",
+     "selected": {
+      "threads": 512,
+      "layout": "block",
+      "cache": false,
+      "vec": 2
+     },
+     "source_sha256": "113fad6ec5780808e35eb5fcf5e3be7e8cfbdd17644dd8c73b296d7978997907"
+    },
+    {
+     "rows": 48,
+     "signature": "93458646c131d1f16f0e12b4d53b7079478b3bd97e17c32f01ee215d1e26b087",
+     "selected": null,
+     "source_sha256": null
+    }
+   ],
+   "generic": {
+    "threads": 128,
+    "layout": "block",
+    "cache": true,
+    "vec": 1
+   },
+   "generic_source_sha256": "16f3707529b5663b21dd0a3c16b61fb168707e9e9c2e0f1c4a4e12d35430dad6",
+   "setup": {
+    "generic": {
+     "wall_ms": 31.763444,
+     "retained_allocator_delta_bytes": 0,
+     "peak_allocator_increase_bytes": 0
+    },
+    "table": {
+     "wall_ms": 2.420046,
+     "retained_allocator_delta_bytes": 0,
+     "peak_allocator_increase_bytes": 0
+    }
+   },
+   "inputs": [
+    [
+     "15db1c52221a661967ec6bcdb59de7e7f34eb1f129f6cd101299affcb5ec94c0",
+     "b37a4f371ff1035ad4dd45ae1d178727fea50db9d93d91676a6fb43bb915d6ea",
+     "ddbcf6b2da1ee38516de776e41b517283e0209324d81e424fdff0bb1571315eb"
+    ],
+    [
+     "eb3aac0c8ebba8ae829b08b61b4ce43e39c7859c0206fcae901fceabfe6271e6",
+     "314a5dbf23ac0742fb9feb4766924698ca539be489cde19669ace7d19ee31fce",
+     "d989ea1775c77432f7e18c0388c82db1271ad13fcf0202e2834af80f754d9fc1"
+    ],
+    [
+     "f75719d9af12fd2ce24756c5a477f36f9d7beb948fdc16ab4846028a7aae6b66",
+     "f69b0a95fa8377337e628a24ba106b00ca1605195fd43adbf08b974c413b29f5",
+     "e5ba722b9c6cb3a9d3a9166630c7212778f727cbddc3fbbba48da76aa8c7eb4c"
+    ]
+   ],
+   "inductor_backend_calls": 0,
+   "gates": {
+    "eager": {
+     "rows": [
+      {
+       "structure": true,
+       "outputs": [
+        "4a387571a25576f9f56785a00e59282eff64c6685711317be6e9d01c2c566d6b"
+       ],
+       "reference": [
+        "4a387571a25576f9f56785a00e59282eff64c6685711317be6e9d01c2c566d6b"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 0.0,
+         "mean_abs": 0.0,
+         "unequal": 0,
+         "finite_pairs": 768,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      },
+      {
+       "structure": true,
+       "outputs": [
+        "7612ad99d8d836a57b44bfab640d08d71487ea75ac9d5a03c920c128facd78a8"
+       ],
+       "reference": [
+        "7612ad99d8d836a57b44bfab640d08d71487ea75ac9d5a03c920c128facd78a8"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 0.0,
+         "mean_abs": 0.0,
+         "unequal": 0,
+         "finite_pairs": 24576,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      },
+      {
+       "structure": true,
+       "outputs": [
+        "775b867cdf843f33757b9ed0e12adc326177deb13595ebd47061da2550e000c5"
+       ],
+       "reference": [
+        "775b867cdf843f33757b9ed0e12adc326177deb13595ebd47061da2550e000c5"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 0.0,
+         "mean_abs": 0.0,
+         "unequal": 0,
+         "finite_pairs": 74496,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      }
+     ],
+     "ownership": true,
+     "admitted": true
+    },
+    "generic_native": {
+     "rows": [
+      {
+       "structure": true,
+       "outputs": [
+        "4a387571a25576f9f56785a00e59282eff64c6685711317be6e9d01c2c566d6b"
+       ],
+       "reference": [
+        "4a387571a25576f9f56785a00e59282eff64c6685711317be6e9d01c2c566d6b"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 0.0,
+         "mean_abs": 0.0,
+         "unequal": 0,
+         "finite_pairs": 768,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      },
+      {
+       "structure": true,
+       "outputs": [
+        "20bfe7e5d74e95f6ff5b00102b4639eccb43974ab67b70a6ea5b7878acc9887b"
+       ],
+       "reference": [
+        "7612ad99d8d836a57b44bfab640d08d71487ea75ac9d5a03c920c128facd78a8"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 9.5367431640625e-07,
+         "mean_abs": 1.119252424075512e-08,
+         "unequal": 4502,
+         "finite_pairs": 24576,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      },
+      {
+       "structure": true,
+       "outputs": [
+        "70735032b3108e79901840e6f6596428bf9f9da3e1bfef47ca76c3d8bbf8a54a"
+       ],
+       "reference": [
+        "775b867cdf843f33757b9ed0e12adc326177deb13595ebd47061da2550e000c5"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 9.5367431640625e-07,
+         "mean_abs": 4.893590076878816e-09,
+         "unequal": 5883,
+         "finite_pairs": 74496,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      }
+     ],
+     "ownership": true,
+     "admitted": true
+    },
+    "split_python": {
+     "rows": [
+      {
+       "structure": true,
+       "outputs": [
+        "4a387571a25576f9f56785a00e59282eff64c6685711317be6e9d01c2c566d6b"
+       ],
+       "reference": [
+        "4a387571a25576f9f56785a00e59282eff64c6685711317be6e9d01c2c566d6b"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 0.0,
+         "mean_abs": 0.0,
+         "unequal": 0,
+         "finite_pairs": 768,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      },
+      {
+       "structure": true,
+       "outputs": [
+        "0066d2baf6303065344e8e4a62304576dbcf39159ef34e6e6da8bd991153cc17"
+       ],
+       "reference": [
+        "7612ad99d8d836a57b44bfab640d08d71487ea75ac9d5a03c920c128facd78a8"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 4.76837158203125e-07,
+         "mean_abs": 9.868452129542977e-09,
+         "unequal": 3892,
+         "finite_pairs": 24576,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      },
+      {
+       "structure": true,
+       "outputs": [
+        "70735032b3108e79901840e6f6596428bf9f9da3e1bfef47ca76c3d8bbf8a54a"
+       ],
+       "reference": [
+        "775b867cdf843f33757b9ed0e12adc326177deb13595ebd47061da2550e000c5"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 9.5367431640625e-07,
+         "mean_abs": 4.893590076878816e-09,
+         "unequal": 5883,
+         "finite_pairs": 74496,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      }
+     ],
+     "ownership": true,
+     "admitted": true
+    },
+    "table_native": {
+     "rows": [
+      {
+       "structure": true,
+       "outputs": [
+        "4a387571a25576f9f56785a00e59282eff64c6685711317be6e9d01c2c566d6b"
+       ],
+       "reference": [
+        "4a387571a25576f9f56785a00e59282eff64c6685711317be6e9d01c2c566d6b"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 0.0,
+         "mean_abs": 0.0,
+         "unequal": 0,
+         "finite_pairs": 768,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      },
+      {
+       "structure": true,
+       "outputs": [
+        "0066d2baf6303065344e8e4a62304576dbcf39159ef34e6e6da8bd991153cc17"
+       ],
+       "reference": [
+        "7612ad99d8d836a57b44bfab640d08d71487ea75ac9d5a03c920c128facd78a8"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 4.76837158203125e-07,
+         "mean_abs": 9.868452129542977e-09,
+         "unequal": 3892,
+         "finite_pairs": 24576,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      },
+      {
+       "structure": true,
+       "outputs": [
+        "70735032b3108e79901840e6f6596428bf9f9da3e1bfef47ca76c3d8bbf8a54a"
+       ],
+       "reference": [
+        "775b867cdf843f33757b9ed0e12adc326177deb13595ebd47061da2550e000c5"
+       ],
+       "exact_bits": true,
+       "within_tolerance": true,
+       "errors": [
+        {
+         "max_abs": 9.5367431640625e-07,
+         "mean_abs": 4.893590076878816e-09,
+         "unequal": 5883,
+         "finite_pairs": 74496,
+         "matched_nan": 0,
+         "matched_posinf": 0,
+         "matched_neginf": 0,
+         "rtol": 2e-05,
+         "atol": 2e-06
+        }
+       ]
+      }
+     ],
+     "ownership": true,
+     "admitted": true
+    }
+   },
+   "hot": {},
+   "rotating": null
+  }
+ ],
+ "catalog": {
+  "format": "sparkfuse.measured-catalog.v1",
+  "compiler": "eb34728abd6aaae675f675ac5c1d6b1825d2d91ed36128f5710ad2c34eb71497",
+  "records_sha256": "cb2cb7c8c87ea248e015b6ba26990f778eac45226b3cc284f56fe0c01bf4aae8",
+  "bundle_sha256": "ad2062f7ec0c4fa59c52279919208b01abf17b279e537ed0959b99698c52d637",
+  "unique_keys": 10,
+  "counts": {
+   "default_retained": 1,
+   "failed_or_incomplete": 1,
+   "imported_records": 10
+  },
+  "verified": {
+   "run": "catalog-example",
+   "panel": "general",
+   "indexed": 12,
+   "passed": 11,
+   "distinct_sources_verified": 9,
+   "missing_source": 0,
+   "state": "index prefix; supervisor counts/last ID unavailable or do not match"
+  }
+ }
+}

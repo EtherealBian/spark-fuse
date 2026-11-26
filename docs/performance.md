@@ -1352,3 +1352,22 @@ Device replay medians in µs. The final column includes host submission and comp
 On the ten exact hits, the catalog had a lower device median than the compiled default in **10/10** eligible pairs, and than Inductor in **2/10**. On rotating synchronized requests the corresponding counts were **9/10** and **0/10**. A discovery win against the default is not an end-to-end latency guarantee. Baselines were checked independently; missing baselines are not wins.
 
 [Raw inputs, admission, binaries and seven timing windows](../reports/dispatch-replay-gb10.json) · [sanitizers](../reports/dispatch-replay-sanitizer-gb10.txt) · [regression gates](../reports/dispatch-replay-stage-acceptance.json). Rerun `python tools/dispatch_replay_panel.py --output /tmp/dispatch-replay.json`.
+
+<a id="catalog-rows"></a>
+### One bounded export, exact static kernels at selected row counts
+
+At setup, `compile_catalog_rows` reconstructs the static graph signature for each requested row count and compiles only catalog hits. A C++ entry dispatches by the actual validated leading dimension; every other in-bound count runs the generic kernel. No SQLite access, Python routing, compilation, input copy, or host synchronization is needed to select a kernel during a request. Out-of-range shapes are rejected. The actual compiled static CUDA source hashes are checked against `compile_tuned`, not just the schedule names.
+
+Seed 4670017; eight different lengths per rotating window. Times are synchronized per-request medians in µs. The Python control uses the very same specialized and fallback kernels.
+
+| graph / width / dtype | exact rows | generic native | Python routing | native table | eager | dynamic Inductor |
+|---|---|---:|---:|---:|---:|---:|
+| decomp / 768 / float32 | 1, 32 | 9.70 | 9.99 | 9.71 | 41.42 | 25.89 |
+| resnorm2 / 768 / bfloat16 | 32 | 11.06 | 11.26 | 11.01 | 16.62 | 27.19 |
+| gate / 768 / float16 | 1 | 8.28 | 8.49 | 8.28 | 13.82 | 25.31 |
+| mean / 768 / float16 | 32 | 8.88 | 9.04 | 8.86 | 15.24 | 23.82 |
+| gate / 1024 / float32 | none | 8.35 | 8.47 | 8.30 | 13.76 | 25.33 |
+
+Across both seeds, native table routing beat the generic path in 4/10 rotating synchronized configurations and 5/10 eight-queued configurations. The 80 held-out calls include hints without an entry and unhinted lengths: for misses, table and generic outputs must agree byte-for-byte. A catalog hit need not improve latency on a changing request stream. These are subgraph requests, not server tokens/s.
+
+[All per-length device clocks, host windows and sources](../reports/catalog-rows-gb10.json) · [sanitizers](../reports/catalog-rows-sanitizer-gb10.txt) · [release gates](../reports/catalog-rows-stage-acceptance.json). Rerun `python tools/catalog_rows_panel.py --output /tmp/catalog-rows.json`.

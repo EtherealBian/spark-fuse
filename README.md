@@ -22,6 +22,8 @@ SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 
 
 [实测调度库](docs/performance.md#dispatch-replay)只复用图和运行环境都精确匹配的记录；未命中时使用默认实现。
 
+同一张[有界动态行数图](docs/performance.md#catalog-rows)可以在命中行数时运行静态特化 kernel，其余合法行数走通用路径。
+
 ### 复现
 
 Linux、CUDA 版 PyTorch；构建 CUDA kernel 需要 `nvcc`，原生主机入口还需要 C++17 编译器。实测环境：GB10 / CUDA 13.0 / PyTorch 2.13.0+cu130。从仓库根目录运行：
@@ -43,3 +45,5 @@ SparkFuse turns functional regions of a `torch.export` inference graph into read
 [Warp-register decode](docs/performance.md#warp-decode) avoids KV-head expansion; [physical-page decode](docs/performance.md#paged-decode) also avoids two dense cache gathers and can [skip inactive pages per row](docs/performance.md#ragged-page). A [native caller](docs/performance.md#page-host) reduces submission overhead without changing the CUDA kernels. [Dynamic decoder layers](docs/performance.md#decoder-families) cover Qwen2, Llama and Mistral. A [multi-layer cache contract](docs/performance.md#protected-stack) preserves all returned KV bytes when later layers depend on earlier attention results. These are random-weight inference experiments, not model quality measurements. See the commands above for reproducible CUDA generation and three-way timing; the [performance notes](docs/performance.md) include regressions as well as wins.
 
 An [exact-match schedule catalog](docs/performance.md#dispatch-replay) reuses admitted measurements; an unseen signature uses the default kernel.
+
+A [bounded symbolic export](docs/performance.md#catalog-rows) selects exact-row kernels in C++ and keeps a generic fallback for other in-range requests.
