@@ -9,13 +9,13 @@ SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 
 | 问题 | 同一台 DGX Spark 上的结果 |
 |---|---|
 | [编译器能省掉什么？](docs/performance.md#stacked-bert) | 四层 BERT 的 kernel 发射从 233 次降到 64 次。8 个返回值都与量化 eager 逐字节一致。该数字是发射次数，不是延迟加速比。 |
-| [共享前缀能让请求更快吗？](docs/qwen32b-fork.md) | 32B BF16，两个 2,048-token 请求共用前 1,536 个 token：两组提示的总耗时均从约 9.44 秒降到 7.66 秒（每条生成 8 个 token，计入快照准备），四个分支的全词表 logits 逐字节一致。短输入反而变慢，仍默认从头计算。 |
+| [共享前缀能让请求更快吗？](docs/prefix32-closeout.md) | 32B BF16，两个 2,048-token 请求共用前 1,536 个 token：两组提示的总耗时均从约 9.44 秒降到 7.66 秒（每条生成 8 个 token，计入快照准备），四个分支的全词表 logits 逐字节一致。短输入反而变慢，仍默认从头计算。 |
 | [并发能让谁更早收到答案？](docs/glm45-paired.md) | 355B 量化模型，两条 128-token 请求一起放行，两份完整响应收齐从 5.17 秒降到 4.34 秒；第一份完整响应却晚了 66%–69%，输出也有变化。保留原调度。 |
 
 ## 从哪里开始
 
 - **看编译器：**对照[只返回归一化结果](examples/generated/resnorm.cu)和[同时返回残差](examples/generated/resnorm2.cu)的 CUDA。调用方是否还需要残差，决定 kernel 是否多写一份结果。[快速上手](docs/quickstart.md)的第一个例子可以在 Linux CPU 上运行。
-- **核对实测：**在仓库根目录执行 `bash audit/replay-key-results.sh`，用仓库内的原始记录重建四组关键结果。需要 Bash、Python 3.11+ 和 `cmp`；无需 GPU 或模型权重。
+- **核对实测：**在仓库根目录执行 `bash audit/replay-key-results.sh`，用仓库内的原始记录重建关键结果；推送和 PR 都会运行这项检查。需要 Bash、Python 3.11+ 和 `cmp`；无需 GPU 或模型权重。
 - **重新测量：**[结论索引](docs/findings.md)列出每一项的模型、对照和复跑入口。[性能记录](docs/performance.md)区分设备时间、同步请求延迟和排队成本；[验收记录](docs/acceptance.md)保留各阶段的检查口径。
 
 ## English

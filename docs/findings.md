@@ -21,6 +21,8 @@
 
 长输入下，给第一条分支计入全部准备成本，仍比从头算多用 14–34 ms（不分摊外层循环的零碎开销）。第二条分支再次省去了前缀计算，两条请求合计才有净收益。短输入两个分支加起来也抵不了准备成本。以上都是同一份原始计时的分解，不是第三种调度或更高并发度的预测。[原始波次](../reports/qwen32b-fork/raw.json) · [分项核账](../reports/qwen32b-fork/paired-costs.json)。
 
+固定四条 2,048-token 输入，只换共享切点，**六个切点全部通过**。复用 511 和 1,536 个 token 时，各自最保守的分层节省率为 6.1% 和 19.0%，四条分支的全词表分数均保持一致。融合恢复两次独立加载均未达标；补齐 K/V 也没有修复完整分数。保留从头计算作为默认。[六个切点、两个对照与停止理由](prefix32-closeout.md)。
+
 ### 其余实测资料
 
 [32B 权重共享](qwen32b.md)、[72B 排队](qwen72b-fifo.md)、[120B 微批](gpt-oss-120b.md)、[235B 流式生成](qwen235b-natural.md)按各自的计时口径保存。单机容量见 [235B Q2_K](qwen235b.md) 与 [355B UD-IQ1_S](glm45-355b.md)；低比特模型能生成 token 不等于能以 BF16 运行同等规模，以上实验也没有测通用品质。
@@ -32,10 +34,10 @@
 bash audit/replay-key-results.sh
 ```
 
-脚本重建 32B 前缀、72B 排队、235B 流式响应和 355B 双请求的主报告，并分别校验二请求成本、排队、流式输出和并发四份独立账本。重建文件必须与已发布 JSON 逐字节一致。它不会重新测量耗时。要做一次新的 GPU 实验，请使用表中各方法页的真机命令、同一检查点与相同验收条件。
+脚本重建 32B 前缀、72B 排队、235B 流式响应和 355B 双请求的主报告，并分别校验二请求成本、排队、流式输出和并发四份独立账本。此外还核对六个共享切点的计时和逐对成本。重建文件必须与已发布 JSON 逐字节一致。它不会重新测量耗时。要做一次新的 GPU 实验，请使用表中各方法页的真机命令、同一检查点与相同验收条件。
 
 `benchmarks/` 保存实验驱动与审计程序，`reports/` 保存测量和验收记录，`examples/generated/` 保存生成的 CUDA。历史报告保留原有路径和口径。正在运行或未经复核的候选项不列为发布结论。
 
 ## English
 
-The compiler results report kernel or graph metrics. The dense 32B experiments add end-to-end timings and full-logit checks. Serving experiments use llama.cpp CUDA and compare native request traces on the same checkpoint. On the tested long prompts, 32B prefix reuse saved about 19% with exact logits; short prompts regressed. Across eight long-input pairs the second request paid back snapshot preparation; across eight short-input pairs it did not. The 355B two-slot experiment illustrates a separate tradeoff: a pair can finish earlier even though the first complete response arrives later. Neither result changes the default. The replay command above checks the published evidence on CPU; follow the individual methods to collect new GPU measurements.
+The compiler results report kernel or graph metrics. The dense 32B experiments add end-to-end timings and full-logit checks. Serving experiments use llama.cpp CUDA and compare native request traces on the same checkpoint. On the tested long prompts, 32B prefix reuse saved about 19% with exact logits; short prompts regressed. Across eight long-input pairs the second request paid back snapshot preparation; across eight short-input pairs it did not. The 355B two-slot experiment illustrates a separate tradeoff: a pair can finish earlier even though the first complete response arrives later. On the same four long inputs, 6/6 tested prefix cuts passed both gates. [Closeout and full-byte replay](prefix32-closeout.md#english). Neither result changes the default. The replay command above checks the published evidence on CPU; follow the individual methods to collect new GPU measurements.

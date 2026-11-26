@@ -14,6 +14,9 @@ check() {
 R=reports/qwen32b-fork
 check "$R/summary.json" benchmarks/pretrained_qwen/audit_fork32.py bundle "$R" reports
 check "$R/paired-costs.json" audit/prefix_pair_costs.py "$R/raw.json"
+R=reports/qwen32b-fork/cuts
+check "$R/timing.json" benchmarks/pretrained_qwen/prefix_cuts32/boundary_review.py timing "$R/raw.json" reports
+check "$R/paired-costs.json" audit/prefix_pair_costs.py "$R/raw.json"
 R=reports/qwen72b/fifo/live; REF=reports/qwen72b/assignment
 export PYTHONPATH="$PWD/$B/fifo72:$PWD/$B"
 check "$R/summary.json" "$B/fifo72/live/live72_review.py" "$R" "$REF"
