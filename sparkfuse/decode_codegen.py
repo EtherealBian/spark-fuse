@@ -19,6 +19,7 @@ def emit(
     narrow_bias=False,
     runtime_length=False,
     warp_heads=0,
+    page_pool=0,
 ):
     if not (
         all(type(i) is int for i in (b, h, g, s, d, tile, mask_batch, head_group))
@@ -32,12 +33,22 @@ def emit(
         and tile in (32, 64, 128, 256)
         and dtype in ("bf16", "f16")
         and mask_batch in (0, 1, b)
+        and type(page_pool) is int
+        and (
+            page_pool == 0
+            or (
+                page_pool > 0
+                and page_pool * g * tile * d < 2**29
+                and not runtime_length
+                and warp_heads in (1, 4)
+            )
+        )
         and type(warp_heads) is int
         and warp_heads in (0, 1, 4)
         and (
             not warp_heads
             or (
-                runtime_length
+                (runtime_length or page_pool)
                 and head_group == 1
                 and (not mask_batch or narrow_bias)
                 and tile in (32, 64)
@@ -94,7 +105,9 @@ __device__ __forceinline__ float sumwarp(float x){{
     if warp_heads:
         from .warp_decode_codegen import warp_partial
 
-        a = warp_partial(defines, b, h, g, d, s, tile, scale, mask_batch, warp_heads, dtype)
+        a = warp_partial(
+            defines, b, h, g, d, s, tile, scale, mask_batch, warp_heads, dtype, page_pool=page_pool
+        )
     elif head_group != 1:
         a = grouped_partial(defines, b, head_group, scale, mask_batch, mask, bias_type)
     else:

@@ -1271,3 +1271,19 @@ On GB10 we ran two actual HF Qwen2 decoder layers and three Llama layers (random
 | Llama ×3, rotating synchronized request (µs) | 3684.54 | 4420.94 | 2827.33 | 3984.80 | 1562.52 |
 
 On masked Qwen2, protecting 113 FX ancestors reduces the 348 HF launches to 294, not the unconstrained 116. Even with lower long-context device time the protected path is **slower than HF** on these rotating host requests. Choose the contract first, then compare timings among paths that meet it. [Raw per-output hashes and every window](../reports/protected-stack-gb10.json) · [sanitizers](../reports/protected-stack-sanitizer-gb10.txt) · [release gates](../reports/protected-stack-stage-acceptance.json). With the optional Transformers environment, run `python tools/protected_stack_panel.py --output /tmp/protected-stack.json` (`--smoke` for a short check).
+
+<a id="paged-decode"></a>
+### Read physical KV pages without building two dense caches
+
+`compile_paged_decode(ep, example, audit, warp_heads=4)` recognizes a *functional* exported program: saturate a CUDA `int32` table, gather K and V from `[physical_pages, kv_heads, page_tokens, head_dim]`, reconstruct logical order, narrow the tail and call one-token GQA. The generated partial follows the same table directly; a single page needs one launch, multiple pages need a second merge. The graph must already specify saturating indices; removing its clamp, exposing a gathered cache, or changing the output layout is not silently accepted. A table may repeat or share physical pages across rows. Banks and table are read-only; this is not a cache allocator or scheduler.
+
+Same-device end-to-end device medians in µs, seed 4093111. All methods start from **physical** banks and a device table; even the materialized control includes gathering, repacking and tail handling. Values are per single-token request, not model throughput.
+
+| B / H:G / D / logical S | eager | gather then same warp attention | direct one warp | direct four warps | static Inductor |
+|---|---:|---:|---:|---:|---:|
+| 2 / 8:2 / 64 / 31, BF16, bias | 29.21 | 10.34 | 4.03 | 4.03 | 9.65 |
+| 2 / 8:2 / 64 / 4093, BF16, bias | 574.79 | 43.11 | 13.07 | 11.70 | 264.81 |
+| 2 / 6:2 / 128 / 4093, BF16, bias | 969.21 | 101.02 | 17.17 | 14.43 | 453.02 |
+| 1 / 16:4 / 128 / 8193, FP16, no bias | 279.73 | 363.62 | 38.98 | 27.05 | not admitted |
+
+At 4093, H8:D64, the materialized/direct four-warp pair used 9/2 launches, 6,292,480/542,720 bytes of peak PyTorch allocator increase and 76.40/26.16 µs rotating synchronized latency. Those are allocator observations, not measured DRAM traffic. Four warps are not always better: at S64,H6:D128 device time is 8.45 µs with one warp and 8.53 µs with four. At S8193 their rotating latencies are 69.69/70.26 µs despite a clear hot-device win for four. Both generated paths matched the materialized warp result **byte for byte on all 96** held-out requests. Eager and Inductor need numerical rather than byte parity; the two unmasked Inductor configurations failed their admission gate and are not timed. [Inputs, CPU FP64 checks, binaries, all windows](../reports/paged-decode-gb10.json) · [sanitizers](../reports/paged-decode-sanitizer-gb10.txt) · [acceptance](../reports/paged-decode-stage-acceptance.json). Rerun `python tools/paged_decode_panel.py --output /tmp/paged-decode.json` (`--smoke` skips timing).

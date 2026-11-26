@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "direct_paged_decode",
+            [
+                sys.executable,
+                str(ROOT / "tools/paged_decode_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-paged-decode.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "warp_register_decode",
             [
                 sys.executable,
