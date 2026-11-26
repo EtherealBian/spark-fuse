@@ -1,0 +1,272 @@
+{
+  "schema": "glm355.paired-serving.v1",
+  "blocks": 2,
+  "measured_responses": 32,
+  "warmups_excluded": 4,
+  "baseline_sha256": "efd8f86414c75a38646bcd9423b277458819c029009f960341d612e96a29f81b",
+  "token_contract_sha256": "bb20002a4c22c93b48575fe0292ed4aca0345e5d64d9ba2a72f859bcc0e86015",
+  "evidence_sha256": {
+    "block-0": {
+      "runtime.json": "77c3637ec2a390eb37240858c71218a645573e0234e0c6b80c3dc3f39eabe28c",
+      "checkpoint.json": "9eb98de6191d6261d60dde57ae0a88874edc172d482c9cd317f69bc7b1b5e09a",
+      "admission-transfer.json": "0969423bd201454f7a556a8926dad4bba3037c5d1bfe8b932d6f3e6dc16a613e",
+      "admission.json": "9d60b00e8259ce0e1e6425f6bf6017951107978f70f921bd4afdbaed0a24a990",
+      "header-budget.json": "394727c7c7ac97cf9ad3454a19bb2d4914deb563e671f24fa79eb73916acfb21",
+      "memory-guard.json": "59ff409fe1776cc34f20a1258403df57ef3f2ad6dbf737d9ec4bc094d3cabdd7",
+      "rows.json": "b394967a2cb195fe76cf6c9803b69c609b745c24dbe018a876240c60caf5e15c"
+    },
+    "block-1": {
+      "runtime.json": "77c3637ec2a390eb37240858c71218a645573e0234e0c6b80c3dc3f39eabe28c",
+      "checkpoint.json": "9eb98de6191d6261d60dde57ae0a88874edc172d482c9cd317f69bc7b1b5e09a",
+      "admission-transfer.json": "0969423bd201454f7a556a8926dad4bba3037c5d1bfe8b932d6f3e6dc16a613e",
+      "admission.json": "650f354a4d17818effa5275f833b31d9f266f6dd8f1f43613ca6adb222f2310d",
+      "header-budget.json": "394727c7c7ac97cf9ad3454a19bb2d4914deb563e671f24fa79eb73916acfb21",
+      "memory-guard.json": "ee770c756aa3ec73d3d85ac1aac8ca4578f967f282ff992414b432dd2e02d383",
+      "rows.json": "d69e8568a38658766c7a1353e66328b60bf4d61e0b7de15820f324c13326f3b2"
+    }
+  },
+  "observations": [
+    {
+      "context": {
+        "n_seq_max": 2,
+        "n_ctx": 4096,
+        "n_ctx_seq": 2048,
+        "n_batch": 512,
+        "n_ubatch": 128
+      },
+      "backend_buffers": [
+        {
+          "device": "CPU_Mapped",
+          "kind": "model",
+          "reported_mib": 416.25
+        },
+        {
+          "device": "CUDA0",
+          "kind": "model",
+          "reported_mib": 90370.51
+        },
+        {
+          "device": "CUDA0",
+          "kind": "KV",
+          "reported_mib": 1472.0
+        },
+        {
+          "device": "CUDA0",
+          "kind": "compute",
+          "reported_mib": 81.5
+        },
+        {
+          "device": "CUDA_Host",
+          "kind": "compute",
+          "reported_mib": 6.0
+        }
+      ],
+      "minimum_sampled_mem_available": 28211146752
+    },
+    {
+      "context": {
+        "n_seq_max": 2,
+        "n_ctx": 4096,
+        "n_ctx_seq": 2048,
+        "n_batch": 512,
+        "n_ubatch": 128
+      },
+      "backend_buffers": [
+        {
+          "device": "CPU_Mapped",
+          "kind": "model",
+          "reported_mib": 416.25
+        },
+        {
+          "device": "CUDA0",
+          "kind": "model",
+          "reported_mib": 90370.51
+        },
+        {
+          "device": "CUDA0",
+          "kind": "KV",
+          "reported_mib": 1472.0
+        },
+        {
+          "device": "CUDA0",
+          "kind": "compute",
+          "reported_mib": 81.5
+        },
+        {
+          "device": "CUDA_Host",
+          "kind": "compute",
+          "reported_mib": 6.0
+        }
+      ],
+      "minimum_sampled_mem_available": 28091498496
+    }
+  ],
+  "lengths": {
+    "128": {
+      "pairs": [
+        {
+          "block": 0,
+          "rep": 0,
+          "first_mode": "serial",
+          "lead": 0,
+          "serial_pair_ms": 5160.46841,
+          "together_pair_ms": 4310.747533,
+          "pair_saving": 0.1646596412359398,
+          "first_completion_change": 0.6891545995016586,
+          "serial_decode_calls": 32,
+          "together_decode_calls": 16,
+          "together_excess_busy_slots": 16,
+          "equal_outputs": [
+            true,
+            false
+          ],
+          "all_match_one_slot": false
+        },
+        {
+          "block": 0,
+          "rep": 1,
+          "first_mode": "together",
+          "lead": 1,
+          "serial_pair_ms": 5158.126726,
+          "together_pair_ms": 4399.21392,
+          "pair_saving": 0.1471295387479784,
+          "first_completion_change": 0.666540183859331,
+          "serial_decode_calls": 32,
+          "together_decode_calls": 17,
+          "together_excess_busy_slots": 15,
+          "equal_outputs": [
+            true,
+            false
+          ],
+          "all_match_one_slot": false
+        },
+        {
+          "block": 1,
+          "rep": 0,
+          "first_mode": "together",
+          "lead": 1,
+          "serial_pair_ms": 5190.347526,
+          "together_pair_ms": 4365.670112,
+          "pair_saving": 0.15888674310707418,
+          "first_completion_change": 0.6770032563592057,
+          "serial_decode_calls": 32,
+          "together_decode_calls": 16,
+          "together_excess_busy_slots": 16,
+          "equal_outputs": [
+            true,
+            false
+          ],
+          "all_match_one_slot": false
+        },
+        {
+          "block": 1,
+          "rep": 1,
+          "first_mode": "serial",
+          "lead": 0,
+          "serial_pair_ms": 5170.442291,
+          "together_pair_ms": 4304.749553,
+          "pair_saving": 0.167431080220522,
+          "first_completion_change": 0.6576321392351456,
+          "serial_decode_calls": 32,
+          "together_decode_calls": 16,
+          "together_excess_busy_slots": 16,
+          "equal_outputs": [
+            true,
+            false
+          ],
+          "all_match_one_slot": false
+        }
+      ],
+      "median_serial_pair_ms": 5165.4553505,
+      "median_together_pair_ms": 4338.2088225,
+      "all_four_pair_makespans_improve_at_least_5pct": true,
+      "first_completion_within_10pct_all_pairs": false,
+      "exact_outputs": false,
+      "joint_backend_occupancy_all_pairs": true
+    },
+    "1024": {
+      "pairs": [
+        {
+          "block": 0,
+          "rep": 0,
+          "first_mode": "together",
+          "lead": 0,
+          "serial_pair_ms": 19625.338594,
+          "together_pair_ms": 19202.960877,
+          "pair_saving": 0.021522060115137687,
+          "first_completion_change": 0.9194349359791136,
+          "serial_decode_calls": 34,
+          "together_decode_calls": 20,
+          "together_excess_busy_slots": 16,
+          "equal_outputs": [
+            true,
+            true
+          ],
+          "all_match_one_slot": true
+        },
+        {
+          "block": 0,
+          "rep": 1,
+          "first_mode": "serial",
+          "lead": 1,
+          "serial_pair_ms": 19711.711653,
+          "together_pair_ms": 19234.917579,
+          "pair_saving": 0.02418836488648779,
+          "first_completion_change": 0.9303656131849622,
+          "serial_decode_calls": 34,
+          "together_decode_calls": 20,
+          "together_excess_busy_slots": 17,
+          "equal_outputs": [
+            false,
+            true
+          ],
+          "all_match_one_slot": false
+        },
+        {
+          "block": 1,
+          "rep": 0,
+          "first_mode": "serial",
+          "lead": 1,
+          "serial_pair_ms": 19599.703773,
+          "together_pair_ms": 19113.586099,
+          "pair_saving": 0.02480229699540981,
+          "first_completion_change": 0.919838660374958,
+          "serial_decode_calls": 34,
+          "together_decode_calls": 20,
+          "together_excess_busy_slots": 17,
+          "equal_outputs": [
+            false,
+            true
+          ],
+          "all_match_one_slot": false
+        },
+        {
+          "block": 1,
+          "rep": 1,
+          "first_mode": "together",
+          "lead": 0,
+          "serial_pair_ms": 19731.403642,
+          "together_pair_ms": 19295.622971,
+          "pair_saving": 0.022085639668959156,
+          "first_completion_change": 0.9272135841891522,
+          "serial_decode_calls": 34,
+          "together_decode_calls": 20,
+          "together_excess_busy_slots": 17,
+          "equal_outputs": [
+            true,
+            true
+          ],
+          "all_match_one_slot": true
+        }
+      ],
+      "median_serial_pair_ms": 19668.5251235,
+      "median_together_pair_ms": 19218.939228000003,
+      "all_four_pair_makespans_improve_at_least_5pct": false,
+      "first_completion_within_10pct_all_pairs": false,
+      "exact_outputs": false,
+      "joint_backend_occupancy_all_pairs": true
+    }
+  },
+  "qualified_for_tested_workload": false,
+  "scope": "Paired requests only; burst makespan and first-completion latency are both reported. Native busy-slot counts prove simultaneous processing states at decode calls, not that every CUDA kernel served both tokens. A throughput win can still delay the first response. No long-context, natural-EOS, quality, or production SLA claim."
+}
