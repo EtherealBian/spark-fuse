@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "ragged_page_length_predicate",
+            [
+                sys.executable,
+                str(ROOT / "tools/ragged_page_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-ragged-page.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "direct_paged_decode",
             [
                 sys.executable,

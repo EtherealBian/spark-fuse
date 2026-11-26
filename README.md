@@ -18,7 +18,7 @@ SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 
 | [四层 BERT 编码器](docs/performance.md#stacked-bert)，33 个 token | 233 → 64 次 kernel 发射 | 仅 Q/K/V 使用 W8A8；逐层返回隐藏状态和注意力概率，8 个输出与量化 eager 逐字节一致 |
 | [21 输出诊断图](docs/performance.md#fused-slot-copy)，33 行 | 89.21 → 36.55 µs | 同步单请求，逐个写入预分配张量 → 一个 CUDA kernel 批量写入 |
 
-[单 token 解码](docs/performance.md#warp-decode)用 warp 寄存器计算分块注意力；[分页 KV](docs/performance.md#paged-decode)可直接查物理页，省去两次稠密缓存重建。[Qwen2、Llama、Mistral 单层](docs/performance.md#decoder-families)支持动态 KV 长度和[双缓存写回](docs/performance.md#dynamic-append)。若调用方要求**多层 KV 缓存逐字节一致**，可在导出图中[标记需要保护的输出](docs/performance.md#protected-stack)。模型实验使用随机权重，GEMM 仍交给 PyTorch。
+[单 token 解码](docs/performance.md#warp-decode)用 warp 寄存器计算分块注意力；[分页 KV](docs/performance.md#paged-decode)可直接查物理页，省去两次稠密缓存重建，并[按每行实际长度跳过空页](docs/performance.md#ragged-page)。[Qwen2、Llama、Mistral 单层](docs/performance.md#decoder-families)支持动态 KV 长度和[双缓存写回](docs/performance.md#dynamic-append)。若调用方要求**多层 KV 缓存逐字节一致**，可在导出图中[标记需要保护的输出](docs/performance.md#protected-stack)。模型实验使用随机权重，GEMM 仍交给 PyTorch。
 
 ### 复现
 
@@ -38,4 +38,4 @@ python -m pytest -q
 
 SparkFuse turns functional regions of a `torch.export` inference graph into readable CUDA C++ on NVIDIA DGX Spark. It uses values consumed outside a region to decide what a kernel must write. For example, compare [RMSNorm alone](examples/generated/resnorm.cu) with [RMSNorm that also returns the residual](examples/generated/resnorm2.cu). The mixed execution path leaves unsupported operators and matrix multiplications in PyTorch.
 
-[Warp-register decode](docs/performance.md#warp-decode) avoids KV-head expansion; [physical-page decode](docs/performance.md#paged-decode) also avoids two dense cache gathers. [Dynamic decoder layers](docs/performance.md#decoder-families) cover Qwen2, Llama and Mistral. A [multi-layer cache contract](docs/performance.md#protected-stack) preserves all returned KV bytes when later layers depend on earlier attention results. These are random-weight inference experiments, not model quality measurements. See the commands above for reproducible CUDA generation and three-way timing; the [performance notes](docs/performance.md) include regressions as well as wins.
+[Warp-register decode](docs/performance.md#warp-decode) avoids KV-head expansion; [physical-page decode](docs/performance.md#paged-decode) also avoids two dense cache gathers and can [skip inactive pages per row](docs/performance.md#ragged-page). [Dynamic decoder layers](docs/performance.md#decoder-families) cover Qwen2, Llama and Mistral. A [multi-layer cache contract](docs/performance.md#protected-stack) preserves all returned KV bytes when later layers depend on earlier attention results. These are random-weight inference experiments, not model quality measurements. See the commands above for reproducible CUDA generation and three-way timing; the [performance notes](docs/performance.md) include regressions as well as wins.

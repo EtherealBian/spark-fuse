@@ -1287,3 +1287,19 @@ Same-device end-to-end device medians in µs, seed 4093111. All methods start fr
 | 1 / 16:4 / 128 / 8193, FP16, no bias | 279.73 | 363.62 | 38.98 | 27.05 | not admitted |
 
 At 4093, H8:D64, the materialized/direct four-warp pair used 9/2 launches, 6,292,480/542,720 bytes of peak PyTorch allocator increase and 76.40/26.16 µs rotating synchronized latency. Those are allocator observations, not measured DRAM traffic. Four warps are not always better: at S64,H6:D128 device time is 8.45 µs with one warp and 8.53 µs with four. At S8193 their rotating latencies are 69.69/70.26 µs despite a clear hot-device win for four. Both generated paths matched the materialized warp result **byte for byte on all 96** held-out requests. Eager and Inductor need numerical rather than byte parity; the two unmasked Inductor configurations failed their admission gate and are not timed. [Inputs, CPU FP64 checks, binaries, all windows](../reports/paged-decode-gb10.json) · [sanitizers](../reports/paged-decode-sanitizer-gb10.txt) · [acceptance](../reports/paged-decode-stage-acceptance.json). Rerun `python tools/paged_decode_panel.py --output /tmp/paged-decode.json` (`--smoke` skips timing).
+
+<a id="ragged-page"></a>
+### Skip invalid physical pages using per-request row lengths
+
+A fixed-capacity paged export can have a different live length in each batch row. The matcher recognizes the exported position comparison, mask and gather and passes the CUDA `int32[B]` lengths straight to the generated kernels. Each partial skips pages outside its row's saturated length; the merge reads only initialized partials and returns positive zero for an empty row. Neither lengths nor the page table are copied to the host. This changes work performed, **not** the maximum scratch allocation or the launch grid.
+
+B4 / H8:G2 / D64, BF16, 4093 capacity and 32 tokens/page, seed 4211831. Device replay medians in µs; “explicit” builds the exported additive length mask before calling the same paged attention. The number of active logical pages is calculated from the supplied lengths, not a hardware traffic counter.
+
+| Live lengths | Active / 512 pages | eager | explicit mask + paged | fused lengths | static Inductor |
+|---|---:|---:|---:|---:|---:|
+| full: `[4093, 4093, 4093, 4093]` | 512 | 1208.93 | 20.38 | 16.48 | 734.22 |
+| mixed: `[4093, 1, 1364, 0]` | 172 | 1195.93 | 20.07 | 10.34 | 729.33 |
+| tiny: `[0, 1, 9, 17]` | 3 | 1174.37 | 19.21 | 5.40 | 530.46 |
+| empty: `[0, 0, 0, 0]` | 0 | 1176.32 | 19.88 | 2.67 | 526.05 |
+
+Both paged paths reserve **1,081,344 bytes** of partials. Across eight rotating profiles, synchronized request latency was 57.50 µs with an explicit mask and 24.45 µs with fused lengths. At capacity 257, one seed's mixed and full rows both took 10.34 µs despite 8 versus 20 active pages: latency does not scale linearly with live tokens. Across four configurations, two seeds and eight profiles, both paged paths agreed byte-for-byte on **64/64** requests; all four paths passed their output/CPU FP64 gates. [All windows and raw lengths](../reports/ragged-page-gb10.json) · [sanitizers](../reports/ragged-page-sanitizer-gb10.txt) · [release gates](../reports/ragged-page-stage-acceptance.json). Reproduce with `python tools/ragged_page_panel.py --output /tmp/ragged-page.json`.

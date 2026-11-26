@@ -22,6 +22,7 @@ class PagePlan:
     mask: int
     dtype: torch.dtype
     device: torch.device
+    ragged: bool = False
 
     @property
     def pages(self):
@@ -36,8 +37,10 @@ def recognize(ep):
     ns = list(ep.graph.nodes)
     ins = [n for n in ns if n.op == "placeholder"]
     n = len(ins)
+    ragged = n == 6
+    mi = 5 if ragged else 4
     _require(
-        n in (4, 5)
+        n in (4, 5, 6)
         and ns[:n] == ins
         and not ep.range_constraints
         and all(x.kind.name == "USER_INPUT" for x in ep.graph_signature.input_specs)
@@ -64,7 +67,7 @@ def recognize(ep):
     _require(
         ms[0].device.type == "cuda"
         and ms[0].dtype in (torch.float16, torch.bfloat16)
-        and all(m.dtype == ms[0].dtype for m in [ms[1], ms[2], *ms[4:]])
+        and all(m.dtype == ms[0].dtype for m in [ms[1], ms[2], *ms[mi:]])
         and ms[3].dtype == torch.int32,
         "expected CUDA half/BF16 inputs and an int32 page table",
     )
@@ -124,12 +127,25 @@ def recognize(ep):
         _require(seq in (None, a.args[3]), "K/V valid lengths differ")
         seq = a.args[3]
         dense.append(a)
-    mask = ms[4].shape[0] if n == 5 and ms[4].ndim == 4 else 0
+    mask = ms[mi].shape[0] if n > mi and ms[mi].ndim == 4 else 0
     _require(
-        n == 4 or (mask in (1, b) and ms[4].shape == (mask, 1, 1, seq)), "invalid additive mask"
+        n == 4 or (mask in (1, b) and ms[mi].shape == (mask, 1, 1, seq)), "invalid additive mask"
     )
+    bias = ins[mi:]
+    if ragged:
+        _require(
+            ms[4].shape == (b,) and ms[4].dtype == torch.int32, "per-row int32 lengths required"
+        )
+        pos = take(
+            aten.arange.default,
+            (seq,),
+            {"dtype": torch.int32, "device": ms[0].device, "pin_memory": False},
+        )
+        length = take(aten.reshape.default, (ins[4], [b, 1, 1, 1]))
+        inactive = take(aten.ge.Tensor, (pos, length))
+        bias = [take(aten.masked_fill.Scalar, (ins[5], inactive, -math.inf))]
     sd = take(
-        aten.scaled_dot_product_attention.default, (ins[0], *dense, *ins[4:]), {"enable_gqa": True}
+        aten.scaled_dot_product_attention.default, (ins[0], *dense, *bias), {"enable_gqa": True}
     )
     y = take(aten.clone.default, (sd,), {"memory_format": torch.contiguous_format})
     out = next(ops, None)
@@ -141,7 +157,7 @@ def recognize(ep):
         and next(ops, None) is None,
         "gather or auxiliary result escapes",
     )
-    return PagePlan(b, h, g, d, p, t, seq, mask, ms[0].dtype, ms[0].device), tuple(
+    return PagePlan(b, h, g, d, p, t, seq, mask, ms[0].dtype, ms[0].device, ragged), tuple(
         tuple(m.shape) for m in ms
     )
 
@@ -156,27 +172,32 @@ class PagedDecode:
         ):
             raise ValueError("qualified inference policy and operands required")
         # The partial loads 128 bits at a time. Check the actual storage offset every call.
+        integer = (3, 4) if p.ragged else (3,)
         for i, (x, sh) in enumerate(zip(xs, self.shapes, strict=True)):
             if (
                 type(x) is not torch.Tensor
                 or x.layout != torch.strided
                 or x.device != p.device
                 or x.shape != sh
-                or x.dtype != (torch.int32 if i == 3 else p.dtype)
+                or x.dtype != (torch.int32 if i in integer else p.dtype)
                 or x.is_conj()
                 or x.is_neg()
                 or not x.is_contiguous()
-                or x.data_ptr() % (4 if i == 3 else 16)
+                or x.data_ptr() % (4 if i in integer else 16)
             ):
                 raise ValueError("invalid page operand descriptor/alignment")
 
     def _run(self, xs):
         (z,) = self.first(*xs)
-        return self.merge(z)[0] if self.merge is not None else z
+        return (
+            self.merge(z, *((xs[4],) if self.plan.ragged else ()))[0]
+            if self.merge is not None
+            else z
+        )
 
     def __call__(self, *xs):
         self._guard(xs)
-        _bounded((*xs[:3], *xs[4:]))
+        _bounded((*xs[:3], *xs[4 + int(self.plan.ragged) :]))
         return self._run(xs)
 
     def run_bounded(self, *xs):
@@ -203,7 +224,7 @@ def compile_paged_decode(ep, example, audit, *, warp_heads=4, max_workspace_byte
     a, b = tuple(example), tuple(audit)
     for xs in (a, b):
         z._guard(xs)
-        _bounded((*xs[:3], *xs[4:]))
+        _bounded((*xs[:3], *xs[4 + int(p.ragged) :]))
     _require(
         {v.untyped_storage().data_ptr() for v in a}.isdisjoint(
             v.untyped_storage().data_ptr() for v in b
@@ -224,6 +245,7 @@ def compile_paged_decode(ep, example, audit, *, warp_heads=4, max_workspace_byte
         warp_heads=warp_heads,
         narrow_bias=bool(p.mask),
         page_pool=p.physical,
+        ragged=p.ragged,
     )
     scratch = (p.batch, p.heads, p.pages, p.width + 2)
     first = IndexProgram(
@@ -232,14 +254,21 @@ def compile_paged_decode(ep, example, audit, *, warp_heads=4, max_workspace_byte
         dt,
         p.device,
         code[0],
-        input_dtypes=[dt, dt, dt, "i32", *([dt] if p.mask else [])],
+        input_dtypes=[dt, dt, dt, "i32", *(["i32"] if p.ragged else []), *([dt] if p.mask else [])],
         output_dtypes=["f32" if p.pages > 1 else dt],
     )
     z.programs = [first]
     z.first = native_dispatch(first)
     z.merge = None
     if code[1]:
-        second = IndexProgram([scratch], [shapes[0]], dt, p.device, code[1], input_dtypes=["f32"])
+        second = IndexProgram(
+            [scratch, *([(p.batch,)] if p.ragged else [])],
+            [shapes[0]],
+            dt,
+            p.device,
+            code[1],
+            input_dtypes=["f32", *(["i32"] if p.ragged else [])],
+        )
         z.programs.append(second)
         z.merge = native_dispatch(second)
     m = ep.module()

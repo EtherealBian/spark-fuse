@@ -20,6 +20,7 @@ def emit(
     runtime_length=False,
     warp_heads=0,
     page_pool=0,
+    ragged=False,
 ):
     if not (
         all(type(i) is int for i in (b, h, g, s, d, tile, mask_batch, head_group))
@@ -33,6 +34,8 @@ def emit(
         and tile in (32, 64, 128, 256)
         and dtype in ("bf16", "f16")
         and mask_batch in (0, 1, b)
+        and type(ragged) is bool
+        and (not ragged or (page_pool and mask_batch))
         and type(page_pool) is int
         and (
             page_pool == 0
@@ -106,7 +109,19 @@ __device__ __forceinline__ float sumwarp(float x){{
         from .warp_decode_codegen import warp_partial
 
         a = warp_partial(
-            defines, b, h, g, d, s, tile, scale, mask_batch, warp_heads, dtype, page_pool=page_pool
+            defines,
+            b,
+            h,
+            g,
+            d,
+            s,
+            tile,
+            scale,
+            mask_batch,
+            warp_heads,
+            dtype,
+            page_pool=page_pool,
+            ragged=ragged,
         )
     elif head_group != 1:
         a = grouped_partial(defines, b, head_group, scale, mask_batch, mask, bias_type)
@@ -146,6 +161,10 @@ extern "C" int launch(void** p,int{host_s},void* stream){{{host_c}decode_partial
         )
     if chunks == 1:
         return a, None
+    if ragged:
+        from .ragged_merge import ragged_merge
+
+        return a, ragged_merge(defines, b, h)
     m = (
         defines
         + f"""__global__ void decode_merge(const float* partial,T* out{arg}){{{get_c}
