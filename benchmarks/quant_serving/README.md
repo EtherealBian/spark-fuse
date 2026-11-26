@@ -8,6 +8,7 @@
 |---|---|---|
 | 72B 单槽 | 同一提示、同一先行请求，关闭 / 开启槽内前缀复用；256 与 2,048 token 各四组 | 从原始输入 ID 重算最长前缀、核对后端实际处理量、24 个贪心输出 token 逐个比较 |
 | 72B 双槽 | 两个空闲槽的轮询 / 最长前缀选择，比较交替流量和折返流量；请求串行，不代表并发吞吐 | 两种策略处理同一批 1,024-token 请求；独立重放每次槽选择，逐对比较 16 个输出 token |
+| 72B 前缀预制 | 同一个新提示在两个冷对照、全长公共前缀与 128 / 512 对齐的前缀间比较；各臂独立准备 | 区分准备成本与命中延迟，核对实际命中边界、24 个输出及首个分歧；回本次数只是按该对请求估算 |
 | 120B MoE | 固定逻辑 batch=512，用 128 / 512 / 512 / 128 四次独立启动改变物理 microbatch | 关闭跨请求前缀复用，对同一提示核对 token 并保留各次预填充、解码与端到端时间 |
 
 固定输出长度时，所有实验臂显式屏蔽本次后端识别的 EOG token；验收拒绝提前停止或包含被屏蔽 ID 的输出。这是性能控制条件，不代表自然结束的对话行为。
@@ -26,13 +27,16 @@ cmake --build "$LLAMA_BUILD" --target llama-server -j 8
 export SERVER="$LLAMA_BUILD/bin/llama-server"
 ```
 
-从 SparkFuse 仓库根目录运行；`WEIGHTS` 指向 72B 的 12 个 GGUF 分片目录，`MODEL` 指向已下载的 120B MXFP4 GGUF。输出目录必须是新的；服务仅监听回环地址。两条 72B 命令可单独运行。
+从 SparkFuse 仓库根目录运行；`WEIGHTS` 指向 72B 的 12 个 GGUF 分片目录，`MODEL` 指向已下载的 120B MXFP4 GGUF。输出目录必须是新的；服务仅监听回环地址。前缀预制实验默认取已发布的基线；本机重新构建后，先跑 prefix，再把其目录设为 SOURCE_DIR，以匹配实际二进制。
 
 ```bash
 mkdir -p .runtime
 B=benchmarks/quant_serving
 WEIGHTS="$WEIGHTS" PANEL=prefix OUT=.runtime/prefix-01 bash "$B/run72.sh"
 WEIGHTS="$WEIGHTS" PANEL=routing OUT=.runtime/routing-01 bash "$B/run72.sh"
+# 使用同一构建的已验收 prefix 记录；也可显式取本机新跑的配对基线：
+SOURCE_DIR=.runtime/prefix-01 WEIGHTS="$WEIGHTS" PANEL=catalog OUT=.runtime/catalog-01 bash "$B/run72.sh"
+python3 "$B/audit_catalog.py" audit .runtime/catalog-01 .runtime/prefix-01
 MODEL="$MODEL" OUT=.runtime/moe-01 bash "$B/run120.sh"
 python3 "$B/audit_replay.py" .runtime/prefix-01/rows.json
 python3 "$B/audit_routes.py" .runtime/routing-01/rows.json .runtime/routing-01/trace-inputs.json

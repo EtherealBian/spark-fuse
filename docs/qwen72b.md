@@ -22,6 +22,29 @@ DGX Spark 运行 Qwen2.5-72B-Instruct 的 Q4_K_M 版本。12 个 GGUF 分片共 
 
 部分配对输出出现 token 分歧；即使有计时改善，也不能视为等价替换。单次请求走回环 HTTP，端到端时间含本机往返，不含权重加载或分词；后端预填充时间不等同于客户端流式首 token 延迟。所用提示为构造流量，不能推断其他任务的回答质量，也不能把这里的差异当作相对 32B BF16 的提速。
 
+<a id="prepared-prefix"></a>
+## 三、预先准备一段前缀，要命中几次才回本？
+
+同一台机器、同一构建，再对上面八条原始目标输入各做两个冷对照。另三种做法先在单槽中运行一次前缀（生成 1 个 token），再提交完整输入（生成 24 个 token）：准备完整公共部分，或把准备长度向下对齐到 128 / 512 的倍数。256-token 组没有非零的 512 对齐前缀。这里的「完整」只指公共部分，不是完整提示。每个目标单独准备，各实验臂按预先确定的顺序交错执行。
+
+| 输入 | 策略 | 准备往返中位数（ms） | 目标请求往返中位数（ms） | 与同组冷对照逐 token 一致 | 预计回本命中次数¹ |
+|---:|---|---:|---:|---:|---:|
+| 256 | 不复用 | — | 6,024 | 参照 | — |
+| 256 | 完整公共前缀 | 775 | 5,520 | 4/4 | 2 |
+| 256 | 128 对齐 | 405 | 5,630 | 4/4 | 2 |
+| 2,048 | 不复用 | — | 11,719 | 参照 | — |
+| 2,048 | 完整公共前缀 | 6,362 | 5,635 | 4/4 | 2 |
+| 2,048 | 128 对齐 | 5,981 | 5,758 | 4/4 | 2 |
+| 2,048 | 512 对齐 | 4,793 | 6,961 | 4/4 | 2 |
+
+¹ 按每条配对请求计算 `ceil(准备往返 / (冷请求往返 − 命中请求往返))`，表中给出组内范围。假设命中成本可重复、期间没有驱逐；本实验没有连续命中多次。冷对照的先行调用仅用于统一槽状态，不计入无缓存服务的准备成本。表中延迟含解码与本机 HTTP，所以不能拿它和第一节的预填充延迟直接相除。
+
+两次新冷对照在 256 / 2,048 组分别有 4/4、4/4 对输出相同；与第一节的原冷对照分别有 4/4、4/4 相同。这里的先行调用只发公共前缀，第一节则发送带不同后缀的完整先行请求。不能用其中一轮的命中结果抹掉另一轮的分歧，也不能外推到新提示。
+
+[原始前缀预制记录](../reports/qwen72b/catalog/) · [逐臂、逐案例回本估算](../reports/qwen72b/catalog/summary.json)。CPU 复核：`python3 benchmarks/quant_serving/audit_catalog.py audit reports/qwen72b/catalog reports/qwen72b`。
+
+**English.** The prepared-prefix panel measures one-time construction separately from each target request. It compares a full shared stem and shorter aligned stems against two cold controls on the same eight original prompts. The break-even hit counts are projections from paired wall times, not observed sustained hit rates. Each original and prepared request remains available for offline token and counter checks.
+
 ## 复核
 
 [原始输入、输出与运行回执](../reports/qwen72b/) · [复算汇总](../reports/qwen72b/summary.json) · [重新运行实验](../benchmarks/quant_serving/README.md)。用 Python 3.11+ 在 CPU 上运行 `python3 benchmarks/quant_serving/audit_bundle.py 72b reports/qwen72b`。汇总从原始记录重算，不读取发布的 summary；同时核对权重指纹、实际映射的推理库、槽位、逐请求 token 和计时。

@@ -1,0 +1,260 @@
+{
+  "schema": 1,
+  "model": "Qwen/Qwen2.5-72B-Instruct-GGUF",
+  "revision": "7ca3bc388f97b264c4283bc9bf1055e2abc38441",
+  "format": "Q4_K_M",
+  "verified_weight_bytes": 44010465472,
+  "runtime": {
+    "llama_cpp_revision": "66d65ec29ba7c440cbc31b6f63b74a17b536ba65",
+    "server_sha256": "364610626d8d25963f59ad4d90ed9d711b1d7a4b96da1fc1d8029b0925f57c22",
+    "runtime_lib_sha256": {
+      "libggml-base.so.0.9.7": "af69d39f55a6c30c83ebfb85b6f05627a4f5c755537c21ed79aa709bb7d45c9a",
+      "libggml-cpu.so.0.9.7": "0c287f06ed4f7ace8c8bd7894a52d584d686e790eae29542e4b54e68cf4cc29d",
+      "libggml-cuda.so.0.9.7": "dd471f6a5472b0a3b3b1417a28484b52dc0b2e99b4908c02fdaf1b48275e0445",
+      "libggml.so.0.9.7": "8d500db937531b588b1336fbba4b3e777f06465b4b227464babb7e20b143e5dc",
+      "libllama.so.0.0.8183": "6a56028354135da83f8bd6fd285ec4e22f6deeb788d41ec441d05ff75a843d70",
+      "libmtmd.so.0.0.8183": "58304190dbfae641c938c1a6cd6b28243e95650e61bd40cc3831faed9503dd81"
+    },
+    "driver": "580.173.02",
+    "eog_token_ids": [
+      128247,
+      151643,
+      151645,
+      151662,
+      151663,
+      151664
+    ],
+    "device": "NVIDIA GB10",
+    "gpu_layers_including_output": 81
+  },
+  "evidence_sha256": {
+    "reference_rows": "6f8aca8b6dc147a5be5fdc17544d1028821a19f057e92cac797361b20b404dce",
+    "reference_checkpoint": "21239699b39cc8ceb648a3966ae7a469b4dd02a010966ab8d0c64c921068ae1e",
+    "reference_runtime": "c041d5b14968f52fd596b00f8d5da01ba1c515b5d0c09487642c5ad0ddd047a6",
+    "prepared_checkpoint": "7511205e26fa0895b4485df9adb17c05f33f10edf1babb246b4f312706536c31",
+    "prepared_runtime": "834bb93a1c8b0ea3f78100f0f75f27f04211a1dc3b0603ebac7c226a1a258074",
+    "prepared_rows": "4c12eddfc4d24126606150be1eb7e146731bffeec2e62f8ecd814d6b6fe8a572"
+  },
+  "panel": {
+    "cases": {
+      "256": {
+        "cases": 4,
+        "two_new_cold_exact": 4,
+        "new_cold_matches_original": 4,
+        "arms": {
+          "cold-a": {
+            "exact": 4,
+            "first_divergent_steps": [],
+            "evaluated_p50": 256.0,
+            "prepare_wall_p50": 786.0698723234236,
+            "request_wall_p50": 6023.5368446446955,
+            "prompt_ms_p50": 793.924
+          },
+          "cold-b": {
+            "exact": 4,
+            "first_divergent_steps": [],
+            "evaluated_p50": 256.0,
+            "prepare_wall_p50": 775.8415499702096,
+            "request_wall_p50": 6027.456460054964,
+            "prompt_ms_p50": 793.1600000000001
+          },
+          "full": {
+            "exact": 4,
+            "first_divergent_steps": [],
+            "paired_estimates": [
+              {
+                "case": "antimony",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 493.6137953773141,
+                "break_even_hits": 2
+              },
+              {
+                "case": "indigo",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 497.48650938272476,
+                "break_even_hits": 2
+              },
+              {
+                "case": "cobalt",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 508.7712071835995,
+                "break_even_hits": 2
+              },
+              {
+                "case": "ochre",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 507.33722746372223,
+                "break_even_hits": 2
+              }
+            ],
+            "evaluated_p50": 17.0,
+            "prepare_wall_p50": 775.3511741757393,
+            "request_wall_p50": 5520.407986361533,
+            "prompt_ms_p50": 296.7445
+          },
+          "block-128": {
+            "exact": 4,
+            "first_divergent_steps": [],
+            "paired_estimates": [
+              {
+                "case": "antimony",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 383.491856046021,
+                "break_even_hits": 2
+              },
+              {
+                "case": "indigo",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 394.3719547241926,
+                "break_even_hits": 2
+              },
+              {
+                "case": "cobalt",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 393.0247835814953,
+                "break_even_hits": 2
+              },
+              {
+                "case": "ochre",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 386.27784606069326,
+                "break_even_hits": 2
+              }
+            ],
+            "evaluated_p50": 128.0,
+            "prepare_wall_p50": 405.19838500767946,
+            "request_wall_p50": 5629.838475491852,
+            "prompt_ms_p50": 401.483
+          }
+        }
+      },
+      "2048": {
+        "cases": 4,
+        "two_new_cold_exact": 4,
+        "new_cold_matches_original": 4,
+        "arms": {
+          "cold-a": {
+            "exact": 4,
+            "first_divergent_steps": [],
+            "evaluated_p50": 2048.0,
+            "prepare_wall_p50": 6373.854391276836,
+            "request_wall_p50": 11719.100333750248,
+            "prompt_ms_p50": 6380.494
+          },
+          "cold-b": {
+            "exact": 4,
+            "first_divergent_steps": [],
+            "evaluated_p50": 2048.0,
+            "prepare_wall_p50": 6372.562190052122,
+            "request_wall_p50": 11713.8660736382,
+            "prompt_ms_p50": 6371.414
+          },
+          "full": {
+            "exact": 4,
+            "first_divergent_steps": [],
+            "paired_estimates": [
+              {
+                "case": "antimony",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 6066.679324023426,
+                "break_even_hits": 2
+              },
+              {
+                "case": "indigo",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 6077.951991930604,
+                "break_even_hits": 2
+              },
+              {
+                "case": "cobalt",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 6071.025273762643,
+                "break_even_hits": 2
+              },
+              {
+                "case": "ochre",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 6095.494913868606,
+                "break_even_hits": 2
+              }
+            ],
+            "evaluated_p50": 17.0,
+            "prepare_wall_p50": 6361.803415231407,
+            "request_wall_p50": 5634.71238873899,
+            "prompt_ms_p50": 303.7345
+          },
+          "block-128": {
+            "exact": 4,
+            "first_divergent_steps": [],
+            "paired_estimates": [
+              {
+                "case": "antimony",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 5946.749321185052,
+                "break_even_hits": 2
+              },
+              {
+                "case": "indigo",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 5952.828425914049,
+                "break_even_hits": 2
+              },
+              {
+                "case": "cobalt",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 5969.648691825569,
+                "break_even_hits": 2
+              },
+              {
+                "case": "ochre",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 5968.683764338493,
+                "break_even_hits": 2
+              }
+            ],
+            "evaluated_p50": 128.0,
+            "prepare_wall_p50": 5980.513236951083,
+            "request_wall_p50": 5757.536137476563,
+            "prompt_ms_p50": 415.329
+          },
+          "block-512": {
+            "exact": 4,
+            "first_divergent_steps": [],
+            "paired_estimates": [
+              {
+                "case": "antimony",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 4738.0727948620915,
+                "break_even_hits": 2
+              },
+              {
+                "case": "indigo",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 4751.379488967359,
+                "break_even_hits": 2
+              },
+              {
+                "case": "cobalt",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 4763.2721196860075,
+                "break_even_hits": 2
+              },
+              {
+                "case": "ochre",
+                "equal_to_cold": true,
+                "saved_per_hit_ms": 4772.093635052443,
+                "break_even_hits": 2
+              }
+            ],
+            "evaluated_p50": 512.0,
+            "prepare_wall_p50": 4793.173070997,
+            "request_wall_p50": 6960.85551334545,
+            "prompt_ms_p50": 1620.426
+          }
+        }
+      }
+    },
+    "estimates": "Per-case break-even hits are projections, not repeated-hit measurements. Assumes the same hit cost, no eviction or reload; null means no positive target saving. Cold primer is not charged to the no-catalog baseline.",
+    "scope": "Fixed prepared-prefix lengths on the same eight original prompts; not arbitrary dynamic slot trimming or held-out validation."
+  }
+}
