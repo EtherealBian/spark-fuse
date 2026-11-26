@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "native_page_host",
+            [
+                sys.executable,
+                str(ROOT / "tools/page_host_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-page-host.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "ragged_page_length_predicate",
             [
                 sys.executable,

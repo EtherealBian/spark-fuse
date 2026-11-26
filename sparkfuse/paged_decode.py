@@ -1,13 +1,14 @@
 """Recognize and fuse an explicit read-only physical-page gather with canonical one-token GQA."""
 
 from dataclasses import dataclass
+import ctypes
 import math
 import torch
 from torch.utils import _pytree as tree
 from .decode_attention import _bounded, _policy, _require
 from .decode_codegen import emit
 from .index_program import IndexProgram
-from .native import native_dispatch
+from .native import native_dispatch, _extension
 
 
 @dataclass(frozen=True)
@@ -198,17 +199,25 @@ class PagedDecode:
     def __call__(self, *xs):
         self._guard(xs)
         _bounded((*xs[:3], *xs[4 + int(self.plan.ragged) :]))
-        return self._run(xs)
+        return self.page_io(*xs) if self.page_io is not None else self._run(xs)
 
     def run_bounded(self, *xs):
         """Caller asserts the documented Q/K/V and bias domain. All int32 page IDs are valid."""
+        if self.page_io is not None:
+            if _policy() != self.policy:
+                raise ValueError("qualified inference policy required")
+            return self.page_io(*xs)
         self._guard(xs)
         return self._run(xs)
 
 
-def compile_paged_decode(ep, example, audit, *, warp_heads=4, max_workspace_bytes=32 << 20):
+def compile_paged_decode(
+    ep, example, audit, *, warp_heads=4, max_workspace_bytes=32 << 20, host_backend="split"
+):
+    _require(host_backend in ("split", "native"), "unknown host backend")
     p, shapes = recognize(ep)
     z = PagedDecode()
+    z.page_io = None
     z.policy = _policy()
     z.plan = p
     z.shapes = shapes
@@ -271,6 +280,29 @@ def compile_paged_decode(ep, example, audit, *, warp_heads=4, max_workspace_byte
         )
         z.programs.append(second)
         z.merge = native_dispatch(second)
+    if host_backend == "native":
+        libs = tuple(k.lib for k in z.programs)
+        addr = [ctypes.cast(v.launch, ctypes.c_void_p).value for v in libs]
+        z.page_io = (
+            _extension()
+            ._PageIO(
+                libs,
+                addr[0],
+                addr[1] if len(addr) > 1 else 0,
+                p.device.index,
+                p.batch,
+                p.heads,
+                p.groups,
+                p.width,
+                p.physical,
+                p.page,
+                p.sequence,
+                p.mask,
+                p.ragged,
+                p.dtype == torch.bfloat16,
+            )
+            .run
+        )
     m = ep.module()
     for xs in (a, b):
         ref = m(*xs)

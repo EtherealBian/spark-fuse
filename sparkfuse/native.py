@@ -22,6 +22,7 @@ def _extension():
     resident_src = src.with_name("resident_io.cpp")
     length_src = src.with_name("length_io.cpp")
     append_src = src.with_name("append_io.cpp")
+    page_src = src.with_name("page_io.cpp")
     cxx = shutil.which(os.environ.get("CXX", "c++"))
     if cxx is None:
         raise RuntimeError("native dispatch requires a C++ compiler")
@@ -49,6 +50,8 @@ def _extension():
         + length_src.read_bytes()
         + b"\0"
         + append_src.read_bytes()
+        + b"\0"
+        + page_src.read_bytes()
         + repr(
             (
                 str(torch.__version__),
@@ -77,6 +80,7 @@ def _extension():
                     str(resident_src),
                     str(length_src),
                     str(append_src),
+                    str(page_src),
                     *links,
                     "-o",
                     str(tmp),
