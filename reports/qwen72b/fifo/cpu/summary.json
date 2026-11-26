@@ -1,0 +1,46 @@
+{
+  "pairs": 48,
+  "measured_batch_grants": 96,
+  "warmups_excluded": 2,
+  "matching_target_leases": 192,
+  "router_calls": {
+    "poll-1ms": 336,
+    "fifo": 48
+  },
+  "by_first_mode": {
+    "poll-1ms": {
+      "metrics": {
+        "poll-1ms": {
+          "waiter_cpu_median_us": 876.984,
+          "finisher_cpu_median_us": 2.344,
+          "release_to_grant_p95_us": 1285.48
+        },
+        "fifo": {
+          "waiter_cpu_median_us": 351.84,
+          "finisher_cpu_median_us": 6.256,
+          "release_to_grant_p95_us": 266.053
+        }
+      },
+      "paired_waiter_cpu_saving_median": 0.5568837407426924,
+      "meets_test_gate": true
+    },
+    "fifo": {
+      "metrics": {
+        "poll-1ms": {
+          "waiter_cpu_median_us": 887.064,
+          "finisher_cpu_median_us": 2.312,
+          "release_to_grant_p95_us": 1284.007
+        },
+        "fifo": {
+          "waiter_cpu_median_us": 352.472,
+          "finisher_cpu_median_us": 6.512,
+          "release_to_grant_p95_us": 258.389
+        }
+      },
+      "paired_waiter_cpu_saving_median": 0.5965405132014543,
+      "meets_test_gate": true
+    }
+  },
+  "tested_gate": true,
+  "scope": "Single pinned Spark CPU core, two slots, one waiting client, fixed 1ms polling comparator and controlled hold times. Real 72B input IDs and independently replayed historical slot decisions, not a new inference, model output or service latency benchmark. FIFO fairness can delay later smaller batches."
+}

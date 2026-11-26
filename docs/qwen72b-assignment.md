@@ -21,3 +21,5 @@ python3 benchmarks/quant_serving/audit_batch.py reports/qwen72b/assignment
 真机复跑：配置[后端和权重](../benchmarks/quant_serving/README.md)，用新的 `OUT` 并执行 `PANEL=assignment bash benchmarks/quant_serving/run72.sh`。
 
 **English.** Joint assignment maximizes the total eligible prefix across distinct slots. On a single Spark, the arrival-order trap required 320 fewer input tokens per two-request wave. Reversing the order or giving the requests distinct preferred slots removed the advantage. The raw artifact includes all 24 target responses and 24 preparation responses, not just the winning case.
+
+[72B 在线 FIFO：等待线程 CPU 与最后一个响应时间分别验收](qwen72b-fifo.md)。
