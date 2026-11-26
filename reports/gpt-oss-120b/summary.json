@@ -1,0 +1,189 @@
+{
+  "schema": 1,
+  "model": "ggml-org/gpt-oss-120b-GGUF",
+  "revision": "f59990363fbbb67f01bce03e5e7bf0929e3e320b",
+  "format": "MXFP4",
+  "verified_weight_bytes": 63387346208,
+  "runtime": {
+    "llama_cpp_revision": "66d65ec29ba7c440cbc31b6f63b74a17b536ba65",
+    "server_sha256": "364610626d8d25963f59ad4d90ed9d711b1d7a4b96da1fc1d8029b0925f57c22",
+    "runtime_lib_sha256": {
+      "libggml-base.so.0.9.7": "af69d39f55a6c30c83ebfb85b6f05627a4f5c755537c21ed79aa709bb7d45c9a",
+      "libggml-cpu.so.0.9.7": "0c287f06ed4f7ace8c8bd7894a52d584d686e790eae29542e4b54e68cf4cc29d",
+      "libggml-cuda.so.0.9.7": "dd471f6a5472b0a3b3b1417a28484b52dc0b2e99b4908c02fdaf1b48275e0445",
+      "libggml.so.0.9.7": "8d500db937531b588b1336fbba4b3e777f06465b4b227464babb7e20b143e5dc",
+      "libllama.so.0.0.8183": "6a56028354135da83f8bd6fd285ec4e22f6deeb788d41ec441d05ff75a843d70",
+      "libmtmd.so.0.0.8183": "58304190dbfae641c938c1a6cd6b28243e95650e61bd40cc3831faed9503dd81"
+    },
+    "driver": "580.173.02",
+    "eog_token_ids": [
+      199999,
+      200002,
+      200012
+    ],
+    "device": "NVIDIA GB10",
+    "gpu_layers_including_output": 37
+  },
+  "evidence_sha256": {
+    "block-0.json": "c2a4184e0a3f3cd6c3d86b38900e8b6169dbf7c3f3843750cd5872cd16d3503a",
+    "block-1.json": "e71be2db424f9142de71cb0f5620b315912f721f65cf3e76af52a9bc66268359",
+    "block-2.json": "578b5f551babb80caa39cbc2c7ae845f58ea5627062410a7c75afb32dc72b913",
+    "block-3.json": "8db607b8469800f0cb593781d043096ea0464a0470106c0c57876d11e81428f9",
+    "checkpoint.json": "cab2a2f6409f1a180df9d2f4f1fd348ab9e20246ca72ffc3a0030401171b9de0",
+    "runtime-0.json": "85f90237780a1eea5e0666f5cad446353a249d0a6f8838de8a1837dc7b73f131",
+    "runtime-1.json": "3509efac07a70fc05ece6392bc9bad6045ae99f1fc3311e072c1c84c09267db1",
+    "runtime-2.json": "3509efac07a70fc05ece6392bc9bad6045ae99f1fc3311e072c1c84c09267db1",
+    "runtime-3.json": "85f90237780a1eea5e0666f5cad446353a249d0a6f8838de8a1837dc7b73f131"
+  },
+  "panels": {
+    "microbatch": {
+      "schema": 1,
+      "order": [
+        128,
+        512,
+        512,
+        128
+      ],
+      "generated_tokens": 24,
+      "cases": {
+        "256": {
+          "cases": 2,
+          "all_four_blocks_identical": 0,
+          "within_setting_repeatable": 2,
+          "paired_order_changes": [
+            {
+              "input_sha256": "277960f351db7bd8e6149f9fb77063746c281f5ce17aa76d614bdc7429bfea2f",
+              "comparisons": [
+                {
+                  "order": "A_then_B",
+                  "first_divergent_token": 1,
+                  "saved_ms": {
+                    "prompt_ms": 24.350000000000023,
+                    "decode_ms": -22.39399999999995,
+                    "wall_ms": 11.909203603863716
+                  }
+                },
+                {
+                  "order": "B_then_A",
+                  "first_divergent_token": 1,
+                  "saved_ms": {
+                    "prompt_ms": 134.03999999999996,
+                    "decode_ms": -23.716000000000008,
+                    "wall_ms": 110.31404137611389
+                  }
+                }
+              ],
+              "wall_faster_in_both_orders": true,
+              "same_tokens_in_both_orders": false
+            },
+            {
+              "input_sha256": "42c8f075ea24b6871966deae025c8abe83f0e25962adbe4bd767ec46b5130e7e",
+              "comparisons": [
+                {
+                  "order": "A_then_B",
+                  "first_divergent_token": 1,
+                  "saved_ms": {
+                    "prompt_ms": 114.77300000000002,
+                    "decode_ms": -4.7900000000000205,
+                    "wall_ms": 96.68034594506025
+                  }
+                },
+                {
+                  "order": "B_then_A",
+                  "first_divergent_token": 1,
+                  "saved_ms": {
+                    "prompt_ms": 115.27000000000001,
+                    "decode_ms": -0.43899999999996453,
+                    "wall_ms": 115.20524602383375
+                  }
+                }
+              ],
+              "wall_faster_in_both_orders": true,
+              "same_tokens_in_both_orders": false
+            }
+          ],
+          "128": {
+            "prompt_ms": 527.202,
+            "decode_ms": 483.75750000000005,
+            "wall_ms": 1025.565667077899
+          },
+          "512": {
+            "prompt_ms": 427.755,
+            "decode_ms": 499.8745,
+            "wall_ms": 941.5708221495152
+          }
+        },
+        "2048": {
+          "cases": 2,
+          "all_four_blocks_identical": 1,
+          "within_setting_repeatable": 2,
+          "paired_order_changes": [
+            {
+              "input_sha256": "5f3b1e65a92425dffa7b3fb9918d25275cbfaef949592f4c2728717288a013d8",
+              "comparisons": [
+                {
+                  "order": "A_then_B",
+                  "first_divergent_token": null,
+                  "saved_ms": {
+                    "prompt_ms": 1180.721,
+                    "decode_ms": -9.653999999999996,
+                    "wall_ms": 1171.9140373170376
+                  }
+                },
+                {
+                  "order": "B_then_A",
+                  "first_divergent_token": null,
+                  "saved_ms": {
+                    "prompt_ms": 1166.5070000000003,
+                    "decode_ms": -37.84899999999999,
+                    "wall_ms": 1128.1754905357957
+                  }
+                }
+              ],
+              "wall_faster_in_both_orders": true,
+              "same_tokens_in_both_orders": true
+            },
+            {
+              "input_sha256": "d933c3d28d4d9bf202ec3a45bbbfbfee52eb5a375e133a66617a67b66566c23d",
+              "comparisons": [
+                {
+                  "order": "A_then_B",
+                  "first_divergent_token": 1,
+                  "saved_ms": {
+                    "prompt_ms": 1223.831,
+                    "decode_ms": -2.8100000000000023,
+                    "wall_ms": 1218.8819823786616
+                  }
+                },
+                {
+                  "order": "B_then_A",
+                  "first_divergent_token": 1,
+                  "saved_ms": {
+                    "prompt_ms": 1217.0669999999998,
+                    "decode_ms": -24.687999999999988,
+                    "wall_ms": 1192.4971854314208
+                  }
+                }
+              ],
+              "wall_faster_in_both_orders": true,
+              "same_tokens_in_both_orders": false
+            }
+          ],
+          "128": {
+            "prompt_ms": 2235.2195,
+            "decode_ms": 486.1055,
+            "wall_ms": 2740.695456508547
+          },
+          "512": {
+            "prompt_ms": 1035.159,
+            "decode_ms": 516.469,
+            "wall_ms": 1555.1550826057792
+          }
+        }
+      },
+      "all_tokens_exact": false
+    }
+  },
+  "excluded": {},
+  "all_tokens_exact": false
+}

@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "baseline_ubatch": 128,
+  "candidate_ubatch": 512,
+  "selected_ubatch": 128,
+  "min_weighted_wall_gain": 0.03,
+  "max_single_request_wall_regression": 0.02,
+  "request_counts": {
+    "277960f351db7bd8e6149f9fb77063746c281f5ce17aa76d614bdc7429bfea2f": 1,
+    "42c8f075ea24b6871966deae025c8abe83f0e25962adbe4bd767ec46b5130e7e": 1,
+    "5f3b1e65a92425dffa7b3fb9918d25275cbfaef949592f4c2728717288a013d8": 1,
+    "d933c3d28d4d9bf202ec3a45bbbfbfee52eb5a375e133a66617a67b66566c23d": 1
+  },
+  "total_requests": 4,
+  "scope": "Offline startup choice for this measured prompt-ID mix, pinned backend, warm single slot, cold prompt KV, 24 fixed output tokens. Weighted totals are projections, not traffic replay or a quality/SLO guarantee.",
+  "orders": {
+    "128_then_512": {
+      "projected_128_ms": 7535.271210595965,
+      "projected_512_ms": 5035.885641351342,
+      "projected_fraction_saved": 0.3316915210337793,
+      "individually_over_budget_sha256": []
+    },
+    "512_then_128": {
+      "projected_128_ms": 7511.930354870856,
+      "projected_512_ms": 4965.738391503692,
+      "projected_fraction_saved": 0.3389530843714722,
+      "individually_over_budget_sha256": []
+    }
+  },
+  "gates": {
+    "all_selected_prompts_have_identical_tokens_in_all_four_blocks": false,
+    "positive_gain_and_margin_in_both_orders": true,
+    "each_selected_prompt_within_regression_budget_in_both_orders": true
+  },
+  "different_token_sha256": [
+    "277960f351db7bd8e6149f9fb77063746c281f5ce17aa76d614bdc7429bfea2f",
+    "42c8f075ea24b6871966deae025c8abe83f0e25962adbe4bd767ec46b5130e7e",
+    "d933c3d28d4d9bf202ec3a45bbbfbfee52eb5a375e133a66617a67b66566c23d"
+  ],
+  "decision": "keep",
+  "reason": "one or more measured gates failed",
+  "all_measured_prompts_exact": false,
+  "model": "ggml-org/gpt-oss-120b-GGUF",
+  "revision": "f59990363fbbb67f01bce03e5e7bf0929e3e320b",
+  "runtime": {
+    "llama_cpp_revision": "66d65ec29ba7c440cbc31b6f63b74a17b536ba65",
+    "server_sha256": "364610626d8d25963f59ad4d90ed9d711b1d7a4b96da1fc1d8029b0925f57c22",
+    "runtime_lib_sha256": {
+      "libggml-base.so.0.9.7": "af69d39f55a6c30c83ebfb85b6f05627a4f5c755537c21ed79aa709bb7d45c9a",
+      "libggml-cpu.so.0.9.7": "0c287f06ed4f7ace8c8bd7894a52d584d686e790eae29542e4b54e68cf4cc29d",
+      "libggml-cuda.so.0.9.7": "dd471f6a5472b0a3b3b1417a28484b52dc0b2e99b4908c02fdaf1b48275e0445",
+      "libggml.so.0.9.7": "8d500db937531b588b1336fbba4b3e777f06465b4b227464babb7e20b143e5dc",
+      "libllama.so.0.0.8183": "6a56028354135da83f8bd6fd285ec4e22f6deeb788d41ec441d05ff75a843d70",
+      "libmtmd.so.0.0.8183": "58304190dbfae641c938c1a6cd6b28243e95650e61bd40cc3831faed9503dd81"
+    },
+    "driver": "580.173.02",
+    "eog_token_ids": [
+      199999,
+      200002,
+      200012
+    ],
+    "device": "NVIDIA GB10",
+    "gpu_layers_including_output": 37
+  },
+  "evidence_sha256": {
+    "block-0.json": "c2a4184e0a3f3cd6c3d86b38900e8b6169dbf7c3f3843750cd5872cd16d3503a",
+    "block-1.json": "e71be2db424f9142de71cb0f5620b315912f721f65cf3e76af52a9bc66268359",
+    "block-2.json": "578b5f551babb80caa39cbc2c7ae845f58ea5627062410a7c75afb32dc72b913",
+    "block-3.json": "8db607b8469800f0cb593781d043096ea0464a0470106c0c57876d11e81428f9",
+    "checkpoint.json": "cab2a2f6409f1a180df9d2f4f1fd348ab9e20246ca72ffc3a0030401171b9de0",
+    "runtime-0.json": "85f90237780a1eea5e0666f5cad446353a249d0a6f8838de8a1837dc7b73f131",
+    "runtime-1.json": "3509efac07a70fc05ece6392bc9bad6045ae99f1fc3311e072c1c84c09267db1",
+    "runtime-2.json": "3509efac07a70fc05ece6392bc9bad6045ae99f1fc3311e072c1c84c09267db1",
+    "runtime-3.json": "85f90237780a1eea5e0666f5cad446353a249d0a6f8838de8a1837dc7b73f131"
+  },
+  "separate_known_prompt_cohorts": {
+    "256": {
+      "schema": 1,
+      "baseline_ubatch": 128,
+      "candidate_ubatch": 512,
+      "selected_ubatch": 128,
+      "min_weighted_wall_gain": 0.03,
+      "max_single_request_wall_regression": 0.02,
+      "request_counts": {
+        "277960f351db7bd8e6149f9fb77063746c281f5ce17aa76d614bdc7429bfea2f": 1,
+        "42c8f075ea24b6871966deae025c8abe83f0e25962adbe4bd767ec46b5130e7e": 1
+      },
+      "total_requests": 2,
+      "scope": "Offline startup choice for this measured prompt-ID mix, pinned backend, warm single slot, cold prompt KV, 24 fixed output tokens. Weighted totals are projections, not traffic replay or a quality/SLO guarantee.",
+      "orders": {
+        "128_then_512": {
+          "projected_128_ms": 2051.131334155798,
+          "projected_512_ms": 1942.541784606874,
+          "projected_fraction_saved": 0.05294129524554171,
+          "individually_over_budget_sha256": []
+        },
+        "512_then_128": {
+          "projected_128_ms": 2080.947513692081,
+          "projected_512_ms": 1855.4282262921333,
+          "projected_fraction_saved": 0.10837336641894653,
+          "individually_over_budget_sha256": []
+        }
+      },
+      "gates": {
+        "all_selected_prompts_have_identical_tokens_in_all_four_blocks": false,
+        "positive_gain_and_margin_in_both_orders": true,
+        "each_selected_prompt_within_regression_budget_in_both_orders": true
+      },
+      "different_token_sha256": [
+        "277960f351db7bd8e6149f9fb77063746c281f5ce17aa76d614bdc7429bfea2f",
+        "42c8f075ea24b6871966deae025c8abe83f0e25962adbe4bd767ec46b5130e7e"
+      ],
+      "decision": "keep",
+      "reason": "one or more measured gates failed",
+      "all_measured_prompts_exact": false
+    },
+    "2048": {
+      "schema": 1,
+      "baseline_ubatch": 128,
+      "candidate_ubatch": 512,
+      "selected_ubatch": 128,
+      "min_weighted_wall_gain": 0.03,
+      "max_single_request_wall_regression": 0.02,
+      "request_counts": {
+        "5f3b1e65a92425dffa7b3fb9918d25275cbfaef949592f4c2728717288a013d8": 1,
+        "d933c3d28d4d9bf202ec3a45bbbfbfee52eb5a375e133a66617a67b66566c23d": 1
+      },
+      "total_requests": 2,
+      "scope": "Offline startup choice for this measured prompt-ID mix, pinned backend, warm single slot, cold prompt KV, 24 fixed output tokens. Weighted totals are projections, not traffic replay or a quality/SLO guarantee.",
+      "orders": {
+        "128_then_512": {
+          "projected_128_ms": 5484.139876440167,
+          "projected_512_ms": 3093.343856744468,
+          "projected_fraction_saved": 0.4359473087049703,
+          "individually_over_budget_sha256": []
+        },
+        "512_then_128": {
+          "projected_128_ms": 5430.982841178775,
+          "projected_512_ms": 3110.3101652115583,
+          "projected_fraction_saved": 0.42730252402409047,
+          "individually_over_budget_sha256": []
+        }
+      },
+      "gates": {
+        "all_selected_prompts_have_identical_tokens_in_all_four_blocks": false,
+        "positive_gain_and_margin_in_both_orders": true,
+        "each_selected_prompt_within_regression_budget_in_both_orders": true
+      },
+      "different_token_sha256": [
+        "d933c3d28d4d9bf202ec3a45bbbfbfee52eb5a375e133a66617a67b66566c23d"
+      ],
+      "decision": "keep",
+      "reason": "one or more measured gates failed",
+      "all_measured_prompts_exact": false
+    }
+  },
+  "target_receipts": null
+}

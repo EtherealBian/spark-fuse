@@ -47,19 +47,55 @@ def require(ok, msg):
         raise ValueError(msg)
 
 
+def paired_changes(records):
+    """Keep prompt identity and time direction; positive differences favor ubatch 512."""
+    assert len(records) == 4
+    pairs = []
+    for which, a, b in (("A_then_B", 0, 1), ("B_then_A", 3, 2)):
+        left, right = records[a], records[b]
+        first = next(
+            (
+                i
+                for i, (x, y) in enumerate(zip(left["ids"], right["ids"], strict=True), 1)
+                if x != y
+            ),
+            None,
+        )
+        pairs.append(
+            dict(
+                order=which,
+                first_divergent_token=first,
+                saved_ms={k: left[k] - right[k] for k in ("prompt_ms", "decode_ms", "wall_ms")},
+            )
+        )
+    return dict(
+        input_sha256=records[0]["input_hash"],
+        comparisons=pairs,
+        wall_faster_in_both_orders=all(v["saved_ms"]["wall_ms"] > 0 for v in pairs),
+        same_tokens_in_both_orders=all(v["first_divergent_token"] is None for v in pairs),
+    )
+
+
 def audit(blocks):
     require(len(blocks) == 4, "expected four independent server blocks")
     group = {}
     for i, b in enumerate(blocks):
         require(
-            b["block"] == i and b["ubatch"] == BLOCKS[i] and len(b["rows"]) == 4,
+            type(b["block"]) is int
+            and b["block"] == i
+            and type(b["ubatch"]) is int
+            and b["ubatch"] == BLOCKS[i]
+            and len(b["rows"]) == 4,
             "invalid block design",
         )
         for j, r in enumerate(b["rows"]):
             key = (LENGTHS[j // 2], j % 2)
             size, case = key
             require(
-                (r["size"], r["case"]) == key and r["processed"] == size and r["reused"] == 0,
+                all(type(r[k]) is int for k in ("size", "case", "reused", "processed", "predicted"))
+                and (r["size"], r["case"]) == key
+                and r["processed"] == size
+                and r["reused"] == 0,
                 "prompt accounting",
             )
             require(
@@ -85,6 +121,9 @@ def audit(blocks):
                 "invalid timing",
             )
             group.setdefault(key, []).append(r)
+    require(
+        len({rs[0]["input_hash"] for rs in group.values()}) == 4, "expected four distinct prompts"
+    )
     summary = {}
     for size in LENGTHS:
         exact = 0
@@ -99,7 +138,10 @@ def audit(blocks):
             "distinct prompts required",
         )
         summary[str(size)] = dict(
-            cases=2, all_four_blocks_identical=exact, within_setting_repeatable=stable
+            cases=2,
+            all_four_blocks_identical=exact,
+            within_setting_repeatable=stable,
+            paired_order_changes=[paired_changes(group[(size, case)]) for case in range(2)],
         )
         for ub in (128, 512):
             records = [r for c in (0, 1) for j, r in enumerate(group[(size, c)]) if BLOCKS[j] == ub]
