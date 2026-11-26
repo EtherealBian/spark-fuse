@@ -1,0 +1,55 @@
+{
+  "architecture": "gpt-oss",
+  "experts_per_layer": 128,
+  "format": "MXFP4",
+  "layers": 36,
+  "model": "ggml-org/gpt-oss-120b-GGUF",
+  "packed_bytes_by_group": {
+    "attention": 1016810496,
+    "embedding_or_output": 1230658560,
+    "other": 426240,
+    "routed_expert": 61073326080,
+    "router": 53102592
+  },
+  "packed_bytes_by_type": {
+    "f32": 214357248,
+    "mxfp4": 60914073600,
+    "q8_0": 2245893120
+  },
+  "packed_tensor_bytes": 63374323968,
+  "revision": "f59990363fbbb67f01bce03e5e7bf0929e3e320b",
+  "routed_expert_union_bounds": {
+    "1": {
+      "max_bytes": 1908541440,
+      "min_bytes": 1908541440
+    },
+    "2": {
+      "max_bytes": 3817082880,
+      "min_bytes": 1908541440
+    },
+    "32": {
+      "max_bytes": 61073326080,
+      "min_bytes": 1908541440
+    },
+    "8": {
+      "max_bytes": 15268331520,
+      "min_bytes": 1908541440
+    }
+  },
+  "schema": "sparkfuse.gguf.expert-ledger.v1",
+  "scope": "Directory accounting only: an expert union is packed weight/bias slices selected by a group of simultaneous tokens, assuming arbitrary top-k overlap at every layer. Not whole-file verification, measured RAM/VRAM, DRAM traffic, a router trace, or a latency/throughput prediction.",
+  "selected_per_token_per_layer": 4,
+  "shards": [
+    {
+      "aligned_directory_bytes": 13022240,
+      "declared_object_sha256": "582bd40f6886200101f4c4ed9f25f3fe80cc14c86e9e2b37746cd8904a0c622d",
+      "directory_sha256": "5d1bf05cad383dd565d59e3e37368e581d5066bc88abd14f204d4c842333ee1f",
+      "name": "gpt-oss-120b-MXFP4.gguf",
+      "object_bytes": 63387346208,
+      "padding_or_trailer_bytes": 0,
+      "tensors": 687
+    }
+  ],
+  "source_object_bytes": 63387346208,
+  "tensor_count": 687
+}

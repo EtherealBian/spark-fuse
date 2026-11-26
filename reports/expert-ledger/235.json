@@ -1,0 +1,66 @@
+{
+  "architecture": "qwen3moe",
+  "experts_per_layer": 128,
+  "format": "Q2_K",
+  "layers": 94,
+  "model": "unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF",
+  "packed_bytes_by_group": {
+    "attention": 2567436288,
+    "embedding_or_output": 714706944,
+    "other": 1556480,
+    "routed_expert": 82204164096,
+    "router": 197132288
+  },
+  "packed_bytes_by_type": {
+    "f32": 200325120,
+    "q2_K": 50981167104,
+    "q3_K": 33882112000,
+    "q4_K": 110886912,
+    "q6_K": 510504960
+  },
+  "packed_tensor_bytes": 85684996096,
+  "revision": "437d6915c5c512869e4cf8b16b840bbe3fb172bc",
+  "routed_expert_union_bounds": {
+    "1": {
+      "max_bytes": 5137760256,
+      "min_bytes": 5137760256
+    },
+    "2": {
+      "max_bytes": 10275520512,
+      "min_bytes": 5137760256
+    },
+    "32": {
+      "max_bytes": 82204164096,
+      "min_bytes": 5137760256
+    },
+    "8": {
+      "max_bytes": 41102082048,
+      "min_bytes": 5137760256
+    }
+  },
+  "schema": "sparkfuse.gguf.expert-ledger.v1",
+  "scope": "Directory accounting only: an expert union is packed weight/bias slices selected by a group of simultaneous tokens, assuming arbitrary top-k overlap at every layer. Not whole-file verification, measured RAM/VRAM, DRAM traffic, a router trace, or a latency/throughput prediction.",
+  "selected_per_token_per_layer": 8,
+  "shards": [
+    {
+      "aligned_directory_bytes": 5975456,
+      "declared_object_sha256": "7cb5dfd9d11f6297477f359439ad906eb92d62fc96b1783871159e7204d427ff",
+      "directory_sha256": "fb336776f31ee8e364d3880ef60b1301b20e0b4e5d6594a82656e3b0308bba0c",
+      "name": "Qwen3-235B-A22B-Instruct-2507-Q2_K-00001-of-00002.gguf",
+      "object_bytes": 49906751904,
+      "padding_or_trailer_bytes": 0,
+      "tensors": 659
+    },
+    {
+      "aligned_directory_bytes": 29920,
+      "declared_object_sha256": "73801de2867057497a7fb6d0f0350ef7832b98f25c264f3a9909313af785672d",
+      "directory_sha256": "56458562c8d8b025dd1a22858e6d24ddd0e019392a3de6dbe542ae9fcfa68de1",
+      "name": "Qwen3-235B-A22B-Instruct-2507-Q2_K-00002-of-00002.gguf",
+      "object_bytes": 35784249568,
+      "padding_or_trailer_bytes": 0,
+      "tensors": 472
+    }
+  ],
+  "source_object_bytes": 85691001472,
+  "tensor_count": 1131
+}

@@ -20,6 +20,8 @@
 
 完整分片清单固定在相应 `*.lock.json` 中，运行前逐一校验 SHA-256。计时区间不含权重下载、加载或分词；`prompt_ms`、`decode_ms` 取自后端，`wall_ms` 是本机 HTTP 请求往返。它们不等同于流式首 token 延迟。输出只对本实验的提示及生成长度有效；没有评估回答质量或与原始 BF16 权重的接近程度。
 
+[专家权重分布：72B / 120B / 235B 的逐张量核算](../../docs/gguf-expert-bytes.md)。
+
 ### 复现
 
 在同一台空闲 DGX Spark 上，用 CUDA 13.0 为 `sm_121` 编译 llama.cpp **b8183**（提交 `66d65ec29ba7c440cbc31b6f63b74a17b536ba65`）。从该提交的 GitHub 源码归档构建时，可核对归档 SHA-256 `42467a78960ed5eae1aa7a9231e9ce35bdb418f65eff5d7a9f266400fbf58f33`。指定版本标识可防止 CMake 误用外层项目的 Git 提交。
