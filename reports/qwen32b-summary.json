@@ -1,0 +1,87 @@
+{
+  "model": "Qwen/Qwen2.5-32B-Instruct",
+  "revision": "5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+  "bf16_parameters": 32763876352,
+  "raw_sha256": {
+    "qwen32b-eager.json": "c271a47061af2aced3c41520e7a3b0c772e9706a55387b3786949099b3c978d3",
+    "qwen32b-resident.json": "246c0657ed97aabd8d2d55faf01f95786a73cc8ecf64c8ad200b59ad49cf12c4"
+  },
+  "model_storage": {
+    "eager": {
+      "before": 65527752960,
+      "after": 65527752960,
+      "delta": 0
+    },
+    "resident": {
+      "before": 65527752960,
+      "after": 65527752960,
+      "delta": 0
+    }
+  },
+  "cases": {
+    "128": {
+      "eager": {
+        "eligible": true,
+        "windows": 4,
+        "decode_samples": 124,
+        "ttft_p50_ms": 351.5998888760805,
+        "decode_p50_ms": 284.5157980918884,
+        "decode_p95_ms": 285.2916158735752,
+        "warm_peak_allocated_bytes": 65698301952,
+        "warm_peak_reserved_bytes": 65745715200,
+        "max_abs_logit_error": 0.0,
+        "all_logits_byte_equal": true,
+        "all_tokens_exact": true
+      },
+      "resident": {
+        "eligible": true,
+        "windows": 4,
+        "decode_samples": 124,
+        "ttft_p50_ms": 367.6275908946991,
+        "decode_p50_ms": 284.5211629755795,
+        "decode_p95_ms": 303.5184293985367,
+        "warm_peak_allocated_bytes": 65698826240,
+        "warm_peak_reserved_bytes": 69065506816,
+        "max_abs_logit_error": 0.0,
+        "all_logits_byte_equal": true,
+        "all_tokens_exact": true
+      }
+    },
+    "2048": {
+      "eager": {
+        "eligible": true,
+        "windows": 4,
+        "decode_samples": 124,
+        "ttft_p50_ms": 2642.592465970665,
+        "decode_p50_ms": 310.83577452227473,
+        "decode_p95_ms": 311.881884932518,
+        "warm_peak_allocated_bytes": 66642827264,
+        "warm_peak_reserved_bytes": 66966257664,
+        "max_abs_logit_error": 0.0,
+        "all_logits_byte_equal": true,
+        "all_tokens_exact": true
+      },
+      "resident": {
+        "eligible": true,
+        "windows": 4,
+        "decode_samples": 124,
+        "ttft_p50_ms": 2521.4342367835343,
+        "decode_p50_ms": 310.3936677798629,
+        "decode_p95_ms": 311.37673929333687,
+        "warm_peak_allocated_bytes": 66641844224,
+        "warm_peak_reserved_bytes": 69084381184,
+        "max_abs_logit_error": 0.0,
+        "all_logits_byte_equal": true,
+        "all_tokens_exact": true
+      }
+    }
+  },
+  "runtime": {
+    "torch": "2.13.0+cu130",
+    "transformers": "4.51.3",
+    "accelerate": "1.6.0",
+    "cuda": "13.0",
+    "device": "NVIDIA GB10"
+  },
+  "strict_pilot_passed": true
+}
