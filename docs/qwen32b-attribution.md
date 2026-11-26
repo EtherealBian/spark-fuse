@@ -29,3 +29,5 @@ REFERENCE=reports/qwen32b-fork WEIGHTS="$WEIGHTS" OUT="$NEW_OUTPUT" PYTHON=pytho
 ```
 
 **English.** One short branch changed its sixth greedy ID under split prefill, even without a snapshot restore. With identical forced decode inputs, in-place splitting and restoring a dirty cache agreed bitwise in the full vocabulary and sampled KV at both lengths, for both run orders. This localizes the observed difference to the prefill split in this panel, not a specific kernel. The measured arrays are a separately downloadable, lossless release asset; the CPU replay does not load the model. No new speed or general equivalence claim is made.
+
+[首层投影实测：短输入拆分后，哪些 BF16 字发生变化？](qwen32b-layer0-shape.md)
