@@ -1,0 +1,112 @@
+{
+  "format": "sparkfuse.qwen2-7b.summary.v1",
+  "revision": "f2826a00ceef68f0f2b946d945ecc0477ce4450c",
+  "case_sha256": {
+    "qwen7b-128-eager.json": "80062225989456088a1daec4724169930ceb0bea3a7614f6e7769ad33c991235",
+    "qwen7b-128-resident.json": "23813978cb1f22c0f02da8d4d85456151b3089e784141548419300b1f5180528",
+    "qwen7b-128-inductor.json": "2c78c925cbf37bb7713e8a37929277a9a6f5714e4b3ad0de003cea02a0387cec",
+    "qwen7b-2048-eager.json": "22f03e9743b4cb7715261d0184c02d1f44d7d454fa76d30ce2f3ac6336fc5977",
+    "qwen7b-2048-resident.json": "b7bd30497cdafbc5f0e3a2c84c6253ac266ee7b1ac480495b64555fef45d4dad",
+    "qwen7b-2048-inductor.json": "f8c8c3428491daee75a027fea9b4b8a34a1d919c6b779310a7f539fce1419808"
+  },
+  "cases": {
+    "128": {
+      "eager": {
+        "eligible": true,
+        "ttft_p50_ms": 86.42009738832712,
+        "decode_p50_ms": 79.08871537074447,
+        "decode_p95_ms": 79.92378622293472,
+        "warm_peak_allocated_bytes": 15410328064,
+        "warm_peak_reserved_bytes": 15558770688,
+        "resident_model_storage_bytes": 15231233280,
+        "model_storage_delta_bytes": 0,
+        "setup_peak_allocated_bytes": 15410328064,
+        "first_token_mismatch": {
+          "1": null,
+          "2": null
+        }
+      },
+      "resident": {
+        "eligible": true,
+        "ttft_p50_ms": 86.45768975839019,
+        "decode_p50_ms": 78.3276236616075,
+        "decode_p95_ms": 79.19970247894526,
+        "warm_peak_allocated_bytes": 15410328064,
+        "warm_peak_reserved_bytes": 15594422272,
+        "resident_model_storage_bytes": 15231233280,
+        "model_storage_delta_bytes": 0,
+        "setup_peak_allocated_bytes": 15616925184,
+        "first_token_mismatch": {
+          "1": null,
+          "2": null
+        }
+      },
+      "inductor": {
+        "eligible": false,
+        "ttft_p50_ms": 79.08009318634868,
+        "decode_p50_ms": 78.28588970005512,
+        "decode_p95_ms": 79.1473463177681,
+        "warm_peak_allocated_bytes": 15410852352,
+        "warm_peak_reserved_bytes": 15556673536,
+        "resident_model_storage_bytes": 15231233280,
+        "model_storage_delta_bytes": 0,
+        "setup_peak_allocated_bytes": 15410852352,
+        "first_token_mismatch": {
+          "1": 10,
+          "2": null
+        }
+      }
+    },
+    "2048": {
+      "eager": {
+        "eligible": true,
+        "ttft_p50_ms": 532.0600541308522,
+        "decode_p50_ms": 87.02539699152112,
+        "decode_p95_ms": 87.9196198657155,
+        "warm_peak_allocated_bytes": 15811600896,
+        "warm_peak_reserved_bytes": 16047407104,
+        "resident_model_storage_bytes": 15231233280,
+        "model_storage_delta_bytes": 0,
+        "setup_peak_allocated_bytes": 15811600896,
+        "first_token_mismatch": {
+          "1": null,
+          "2": null
+        }
+      },
+      "resident": {
+        "eligible": true,
+        "ttft_p50_ms": 542.360803578049,
+        "decode_p50_ms": 86.14938240498304,
+        "decode_p95_ms": 86.96271199733019,
+        "warm_peak_allocated_bytes": 15808061952,
+        "warm_peak_reserved_bytes": 16080961536,
+        "resident_model_storage_bytes": 15231233280,
+        "model_storage_delta_bytes": 0,
+        "setup_peak_allocated_bytes": 15808061952,
+        "first_token_mismatch": {
+          "1": null,
+          "2": null
+        }
+      },
+      "inductor": {
+        "eligible": false,
+        "ttft_p50_ms": 453.08473659679294,
+        "decode_p50_ms": 85.72245063260198,
+        "decode_p95_ms": 86.6086008027196,
+        "warm_peak_allocated_bytes": 15813435904,
+        "warm_peak_reserved_bytes": 15980298240,
+        "resident_model_storage_bytes": 15231233280,
+        "model_storage_delta_bytes": 0,
+        "setup_peak_allocated_bytes": 15813435904,
+        "first_token_mismatch": {
+          "1": 38,
+          "2": 89
+        }
+      }
+    }
+  },
+  "windows_per_case": 4,
+  "generated_tokens_per_request": 128,
+  "distinct_measured_prompts_per_length": 2,
+  "default_changed": false
+}

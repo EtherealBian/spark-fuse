@@ -28,6 +28,8 @@ SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 
 
 [完整预训练 Qwen2 的逐 token 解码](docs/pretrained-qwen.md)：合并 24 层 MLP 的两次投影后，32 / 128 token 提示的中位延迟从 7.04 / 7.20 降至 6.93 / 7.08 ms。两边都使用 CUDA Graph；额外权重占 399 MiB，未设为默认。
 
+[预训练 Qwen2-7B 实测](docs/qwen7b.md)：28 层预填充和解码共享一份投影权重，避免常驻第二份 7.08 GiB 权重。对照 128 / 2,048 token 输入和 128-token 生成；同时列出延迟、峰值内存和未通过的对照。
+
 ### 复现
 
 Linux、CUDA 版 PyTorch；构建 CUDA kernel 需要 `nvcc`，原生主机入口还需要 C++17 编译器。实测环境：GB10 / CUDA 13.0 / PyTorch 2.13.0+cu130。从仓库根目录运行：
@@ -46,7 +48,7 @@ python -m pytest -q
 
 SparkFuse turns functional regions of a `torch.export` inference graph into readable CUDA C++ on NVIDIA DGX Spark. It uses values consumed outside a region to decide what a kernel must write. For example, compare [RMSNorm alone](examples/generated/resnorm.cu) with [RMSNorm that also returns the residual](examples/generated/resnorm2.cu). The same [output visibility rule for KV-slot writes](docs/performance.md#slot-forward) avoids building cache banks that no caller reads. The mixed execution path leaves unsupported operators and matrix multiplications in PyTorch.
 
-[Warp-register decode](docs/performance.md#warp-decode) avoids KV-head expansion; [physical-page decode](docs/performance.md#paged-decode) also avoids two dense cache gathers and can [skip inactive pages per row](docs/performance.md#ragged-page). A [native caller](docs/performance.md#page-host) reduces submission overhead without changing the CUDA kernels. [Dynamic decoder layers](docs/performance.md#decoder-families) cover Qwen2, Llama and Mistral. A [multi-layer cache contract](docs/performance.md#protected-stack) preserves all returned KV bytes when later layers depend on earlier attention results. These layer-level experiments use random weights. A separate [pretrained Qwen2 generation benchmark](docs/pretrained-qwen.md) includes full-model Inductor, matched CUDA Graph replay, exact token checks and P95 latency. See the commands above for reproducible CUDA generation and three-way timing; the [performance notes](docs/performance.md) include regressions as well as wins.
+[Warp-register decode](docs/performance.md#warp-decode) avoids KV-head expansion; [physical-page decode](docs/performance.md#paged-decode) also avoids two dense cache gathers and can [skip inactive pages per row](docs/performance.md#ragged-page). A [native caller](docs/performance.md#page-host) reduces submission overhead without changing the CUDA kernels. [Dynamic decoder layers](docs/performance.md#decoder-families) cover Qwen2, Llama and Mistral. A [multi-layer cache contract](docs/performance.md#protected-stack) preserves all returned KV bytes when later layers depend on earlier attention results. These layer-level experiments use random weights. A separate [pretrained Qwen2 generation benchmark](docs/pretrained-qwen.md) includes full-model Inductor, matched CUDA Graph replay, exact token checks and P95 latency. The [7B pilot](docs/qwen7b.md) shares projection storage between prefill and decode and reports 128-token generation, memory peaks, and token/logit agreement at two input lengths. See the commands above for reproducible CUDA generation and three-way timing; the [performance notes](docs/performance.md) include regressions as well as wins.
 
 An [exact-match schedule catalog](docs/performance.md#dispatch-replay) reuses admitted measurements; an unseen signature uses the default kernel.
 
