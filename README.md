@@ -1,6 +1,6 @@
 # SparkFuse
 
-[English](#english) · [生成的 CUDA](examples/generated/) · [性能记录](docs/performance.md) · [验收方法](docs/acceptance.md)
+[English](#english) · [上手示例](docs/quickstart.md) · [生成的 CUDA](examples/generated/) · [性能记录](docs/performance.md) · [验收方法](docs/acceptance.md)
 
 SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 推理子图编译器。它读取 `torch.export` 图，把能融合的算子编译成 CUDA C++，其余算子交给 PyTorch。例如，残差只被 RMSNorm 读取时，融合 kernel 不单独写回残差；模型还要返回残差时，同一个 kernel 多写一个输出。可以直接对照[两份 CUDA 源码](examples/generated/)。
 
@@ -23,6 +23,8 @@ SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 
 [实测调度库](docs/performance.md#dispatch-replay)只复用图和运行环境都精确匹配的记录；未命中时使用默认实现。
 
 同一张[有界动态行数图](docs/performance.md#catalog-rows)可以在命中行数时运行静态特化 kernel，其余合法行数走通用路径。
+
+[09:00 截止验收](docs/acceptance.md#final-gb10-release)：1,183 项测试、63 道检查通过。截止后的动态行特化另有 64 道检查，单独计数。[通用搜索](reports/campaign-final-general.md)保留 2,490 个工单及负例；无 GPU 也可重建 1,237 个通过筛选的精确调度键。
 
 ### 复现
 
@@ -47,3 +49,5 @@ SparkFuse turns functional regions of a `torch.export` inference graph into read
 An [exact-match schedule catalog](docs/performance.md#dispatch-replay) reuses admitted measurements; an unseen signature uses the default kernel.
 
 A [bounded symbolic export](docs/performance.md#catalog-rows) selects exact-row kernels in C++ and keeps a generic fallback for other in-range requests.
+
+[09:00 cutoff audit](docs/acceptance.md#final-gb10-release): 63 checks passed; the later bounded-row supplement is audited separately. Rebuild both campaign summaries and the 1,237-key measured catalog on a CPU with `python3 -I -S audit/release.py`.

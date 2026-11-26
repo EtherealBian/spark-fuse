@@ -6,6 +6,29 @@
 4. **Search**: training, schedule confirmation and three-way comparison use different seeds. A candidate replaces the default only if it wins at least 4 of 5 paired holdout rounds and has at least 3% median gain. This is a heuristic, not a confidence interval. Never drop losing or failed workload cases from the denominator. Inductor compilation/first call and our source build/load are different operations; caches can be warm.
 5. **Real module check**: with `transformers==4.51.3` installed, run `python tools/qwen_integration.py --output /tmp/qwen.json`. Hidden size 1536, intermediate size 8960. The test uses the package's actual classes; no checkpoint is downloaded. See `reports/qwen-integration.json` for both before/after graphs.
 
+## Final GB10 release
+
+The campaign stopped at its Beijing deadline of **2026-11-26 09:00**. The independent deadline rerun used the **exact-key dispatch-replay** source tree, and completed 63 gates, including 1183 passing tests. [GPU release log](../reports/gb10-overnight-acceptance.json) · [stage, sanitizer and source manifest](../reports/final-evidence-verification.json).
+
+**After the deadline**, bounded-row kernel selection was measured against a new source tree: 1189 tests and 64 gates. It is not part of the 09:00 result. [Supplement results](../reports/catalog-rows-gb10.json) · [supplement acceptance](../reports/catalog-rows-stage-acceptance.json).
+
+| Evidence | What the denominator means |
+|---|---|
+| [General subgraphs](../reports/campaign-final-general.md) | 2433 / 2490 indexed cases passed; errors and any deadline interruption are included in the denominator. Compare device/host timings **within a compiler version**, not across the whole search history. |
+| [Attention scores](../reports/campaign-final-attention.md) | 290 / 300 indexed cases passed. The worklist finished earlier and independently. This is a score subgraph, not an end-to-end decoder. |
+| [Measured dispatch catalog](../reports/final-dispatch-qualification.json) | 1237 exact schedule keys rebuilt for the measured backend. Explicit three-way parity, archived sources and successful holdout required; missing or conflicting evidence does not qualify. |
+
+通用搜索中，55 个工单数值比对未通过，1 个在候选发现阶段报错，另有 1 个缺少工作进程结果。审计核验了 193 份不同的源码归档；87 条历史记录未注明源码版本，计入搜索覆盖数，但不能用来选调度方案。
+
+From a clean checkout, **no PyTorch, network or GPU is required** for these two commands:
+
+```bash
+python3 -I -S audit/test_release.py   # tampered records and boundary conditions
+python3 -I -S audit/release.py        # recompute and compare the two published manifests
+```
+
+The audit recomputes both campaigns from worker records, verifies their source archives, regenerates the general comparison table, and reimports the exact catalog into a temporary SQLite database. It hashes sorted logical rows, not SQLite file bytes, so page layout does not affect verification. It also reconciles the final gate list and smoke artifacts with the measured dispatch-replay source tree, then checks the later checkout, extra gate and completion time separately. These operations **do not re-execute GPU kernels** or certify provenance beyond the supplied measurements. For a GPU rerun, use the per-panel commands in the [performance notes](performance.md). For an application that rotates the eight measured input shapes, the [request-objective holdout](../reports/row-objectives-gb10.json) asks a separate question: should setup choose the exact-row table or keep the generic native path? The rule uses only the first seed (at least five of seven paired windows and a 3% median gain); the second seed is evaluation only. The two objectives are synchronized latency and eight-queued cost. This five-configuration diagnostic does not select a universal serving default. Recompute it with `python3 -I -S audit/row_objectives.py reports/catalog-rows-gb10.json`. Historical live snapshots below remain available for comparison.
+
 ## Overnight campaign
 
 From the repository root, set `SPARKFUSE_PYTHON` to an existing CUDA-enabled Python interpreter. Run `tools/start-campaign.sh --run RUN-ID --until 2026-11-26T09:00:00+08:00`. It serializes GPU workload cases, validates candidates, stores a SQLite dispatcher, benches the selected candidate with new inputs, and writes each successful full JSON atomically. The supervisor bounds each worker and enforces the absolute deadline, including terminating an unfinished worker. Five consecutive worker failures or a low-disk guard stop the search early with a recorded reason.
