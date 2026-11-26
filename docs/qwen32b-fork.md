@@ -21,3 +21,5 @@ WEIGHTS="$WEIGHTS" OUT="$NEW_OUTPUT_DIRECTORY" PYTHON=python3 bash "$B/run_fork3
 ```
 
 **English.** Two related requests pay the entire snapshot preparation and restore cost. Both long-input groups improve, but the short-input panel includes a changed greedy token. Timings and per-trajectory digests come from the full model; the short-input failure is retained. No default or quality claim changes.
+
+[第 6 步为什么变了：三路预填充与完整 BF16 输出复核](qwen32b-attribution.md)。
