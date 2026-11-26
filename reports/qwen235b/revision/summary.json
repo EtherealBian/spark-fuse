@@ -1,0 +1,302 @@
+{
+  "schema": 1,
+  "model": "unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF",
+  "revision": "437d6915c5c512869e4cf8b16b840bbe3fb172bc",
+  "verified_weight_bytes": 85691001472,
+  "runtime": {
+    "llama_cpp_revision": "66d65ec29ba7c440cbc31b6f63b74a17b536ba65",
+    "server_sha256": "364610626d8d25963f59ad4d90ed9d711b1d7a4b96da1fc1d8029b0925f57c22",
+    "runtime_lib_sha256": {
+      "libggml-base.so.0.9.7": "af69d39f55a6c30c83ebfb85b6f05627a4f5c755537c21ed79aa709bb7d45c9a",
+      "libggml-cpu.so.0.9.7": "0c287f06ed4f7ace8c8bd7894a52d584d686e790eae29542e4b54e68cf4cc29d",
+      "libggml-cuda.so.0.9.7": "dd471f6a5472b0a3b3b1417a28484b52dc0b2e99b4908c02fdaf1b48275e0445",
+      "libggml.so.0.9.7": "8d500db937531b588b1336fbba4b3e777f06465b4b227464babb7e20b143e5dc",
+      "libllama.so.0.0.8183": "6a56028354135da83f8bd6fd285ec4e22f6deeb788d41ec441d05ff75a843d70",
+      "libmtmd.so.0.0.8183": "58304190dbfae641c938c1a6cd6b28243e95650e61bd40cc3831faed9503dd81"
+    },
+    "driver": "580.173.02",
+    "eog_token_ids": [
+      128247,
+      151643,
+      151645,
+      151662,
+      151663,
+      151664
+    ],
+    "device": "NVIDIA GB10",
+    "gpu_layers_including_output": 95
+  },
+  "backend_cuda_model_mib": 81520.84,
+  "system_memory_observations": {
+    "schema": 2,
+    "source": "Linux /proc/meminfo MemAvailable (system-wide, sampled once per second; not GPU peak)",
+    "floor_bytes": 6442450944,
+    "reason": "workload-finished",
+    "samples": 400,
+    "min_available_bytes": 38394290176,
+    "below": 0,
+    "phases": {
+      "loading": {
+        "samples": 300,
+        "min_available_bytes": 38549123072
+      },
+      "requests": {
+        "samples": 100,
+        "min_available_bytes": 38394290176
+      }
+    }
+  },
+  "serving": {
+    "cases": {
+      "16:early:0": {
+        "expected": "MAPLE",
+        "stale": "TEAL",
+        "input_tokens": 201,
+        "first_changed_token_1based": 60,
+        "matched_output_ids": true,
+        "arms": {
+          "cold": {
+            "verdict": "correct",
+            "prompt_ms": 1467.658,
+            "target_wall_ms": 1617.194427,
+            "primer_and_target_wall_ms": 4070.266339,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": true
+          },
+          "reuse": {
+            "verdict": "correct",
+            "prompt_ms": 966.059,
+            "target_wall_ms": 1092.231733,
+            "primer_and_target_wall_ms": 2686.936527,
+            "actual_cached": 59,
+            "natural_eos": true,
+            "primer_correct": true
+          }
+        }
+      },
+      "16:early:1": {
+        "expected": "TEAL",
+        "stale": "MAPLE",
+        "input_tokens": 201,
+        "first_changed_token_1based": 60,
+        "matched_output_ids": true,
+        "arms": {
+          "reuse": {
+            "verdict": "correct",
+            "prompt_ms": 958.969,
+            "target_wall_ms": 1084.7283,
+            "primer_and_target_wall_ms": 2685.168671,
+            "actual_cached": 59,
+            "natural_eos": true,
+            "primer_correct": true
+          },
+          "cold": {
+            "verdict": "correct",
+            "prompt_ms": 1469.416,
+            "target_wall_ms": 1596.467035,
+            "primer_and_target_wall_ms": 3195.346206,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": true
+          }
+        }
+      },
+      "16:late:0": {
+        "expected": "COBALT",
+        "stale": "PEARL",
+        "input_tokens": 201,
+        "first_changed_token_1based": 163,
+        "matched_output_ids": true,
+        "arms": {
+          "reuse": {
+            "verdict": "correct",
+            "prompt_ms": 388.488,
+            "target_wall_ms": 588.868288,
+            "primer_and_target_wall_ms": 2207.216197,
+            "actual_cached": 162,
+            "natural_eos": true,
+            "primer_correct": true
+          },
+          "cold": {
+            "verdict": "correct",
+            "prompt_ms": 1468.697,
+            "target_wall_ms": 1660.14744,
+            "primer_and_target_wall_ms": 3255.018295,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": true
+          }
+        }
+      },
+      "16:late:1": {
+        "expected": "PEARL",
+        "stale": "COBALT",
+        "input_tokens": 201,
+        "first_changed_token_1based": 163,
+        "matched_output_ids": true,
+        "arms": {
+          "cold": {
+            "verdict": "correct",
+            "prompt_ms": 1472.178,
+            "target_wall_ms": 1603.108398,
+            "primer_and_target_wall_ms": 3267.722996,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": true
+          },
+          "reuse": {
+            "verdict": "correct",
+            "prompt_ms": 383.282,
+            "target_wall_ms": 510.611238,
+            "primer_and_target_wall_ms": 2169.636979,
+            "actual_cached": 162,
+            "natural_eos": true,
+            "primer_correct": true
+          }
+        }
+      },
+      "96:early:0": {
+        "expected": "VIOLET",
+        "stale": "CORAL",
+        "input_tokens": 956,
+        "first_changed_token_1based": 60,
+        "matched_output_ids": true,
+        "arms": {
+          "reuse": {
+            "verdict": "correct",
+            "prompt_ms": 4718.65,
+            "target_wall_ms": 4909.529866,
+            "primer_and_target_wall_ms": 10339.736031,
+            "actual_cached": 59,
+            "natural_eos": true,
+            "primer_correct": true
+          },
+          "cold": {
+            "verdict": "correct",
+            "prompt_ms": 5244.844,
+            "target_wall_ms": 5439.050694,
+            "primer_and_target_wall_ms": 10789.273782,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": true
+          }
+        }
+      },
+      "96:early:1": {
+        "expected": "CORAL",
+        "stale": "VIOLET",
+        "input_tokens": 955,
+        "first_changed_token_1based": 60,
+        "matched_output_ids": true,
+        "arms": {
+          "cold": {
+            "verdict": "correct",
+            "prompt_ms": 5246.132,
+            "target_wall_ms": 5376.893702,
+            "primer_and_target_wall_ms": 10813.550049000001,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": true
+          },
+          "reuse": {
+            "verdict": "correct",
+            "prompt_ms": 4663.651,
+            "target_wall_ms": 4794.243299,
+            "primer_and_target_wall_ms": 10271.681681999999,
+            "actual_cached": 59,
+            "natural_eos": true,
+            "primer_correct": true
+          }
+        }
+      },
+      "96:late:0": {
+        "expected": "JADE",
+        "stale": "MAPLE",
+        "input_tokens": 956,
+        "first_changed_token_1based": 919,
+        "matched_output_ids": true,
+        "arms": {
+          "cold": {
+            "verdict": "correct",
+            "prompt_ms": 5290.57,
+            "target_wall_ms": 5422.417821,
+            "primer_and_target_wall_ms": 10829.455687,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": true
+          },
+          "reuse": {
+            "verdict": "correct",
+            "prompt_ms": 392.332,
+            "target_wall_ms": 521.524258,
+            "primer_and_target_wall_ms": 5940.831163000001,
+            "actual_cached": 918,
+            "natural_eos": true,
+            "primer_correct": true
+          }
+        }
+      },
+      "96:late:1": {
+        "expected": "MAPLE",
+        "stale": "JADE",
+        "input_tokens": 956,
+        "first_changed_token_1based": 919,
+        "matched_output_ids": true,
+        "arms": {
+          "reuse": {
+            "verdict": "correct",
+            "prompt_ms": 391.144,
+            "target_wall_ms": 520.928221,
+            "primer_and_target_wall_ms": 5936.432744,
+            "actual_cached": 918,
+            "natural_eos": true,
+            "primer_correct": true
+          },
+          "cold": {
+            "verdict": "correct",
+            "prompt_ms": 5307.426,
+            "target_wall_ms": 5439.891751,
+            "primer_and_target_wall_ms": 10892.615918,
+            "actual_cached": 0,
+            "natural_eos": true,
+            "primer_correct": true
+          }
+        }
+      }
+    },
+    "totals": {
+      "cold": {
+        "correct": 8,
+        "stale": 0,
+        "other": 0,
+        "natural_eos": 8,
+        "primer_correct": 8,
+        "target_wall_median_ms": 3518.520571
+      },
+      "reuse": {
+        "correct": 8,
+        "stale": 0,
+        "other": 0,
+        "natural_eos": 8,
+        "primer_correct": 8,
+        "target_wall_median_ms": 836.7982939999999
+      }
+    },
+    "exact_token_pairs": 8,
+    "pairs": 8,
+    "scope": "Eight edited synthetic manifests in both cache policies: one paired observation per target, not an accuracy benchmark. Correct/stale/other score the entire whitespace-trimmed answer against this revision and its predecessor. Natural EOS, no forced answer or masked tokens. Target wall excludes tokenization and detokenization; primer+target is also reported. Upstream llama.cpp supplies inference."
+  },
+  "evidence_sha256": {
+    "header-budget.json": "a83aea09c21961532c26c22f2cb91647c53439d4dfa4088ee38e36903ef78c0a",
+    "checkpoint.json": "b9269e51a7fa3ec590de946bdb5ef479ab671404d757a39717e54e5f61b26e95",
+    "runtime.json": "2b396205c9d65dfc5ac469b29a2f863401289e0b4b57a9baa36cebc93046affd",
+    "memory-guard.json": "903da4e72551581b88ef66a0ade633203b22dea1b36be7066a89ceee1897b54c",
+    "admission-transfer.json": "fd493a6404a53a4f385f938018c531d8d738b7385b067894af24ea1ecdd0d3d6",
+    "admission.json": "e8d24c5d3d6db24d1146713c047f5bc7407564e14dc7a07bed69df771d0a71d1",
+    "rows.json": "9f5b479e9d541d94fef05bdd2cbdbd4c8f4a54bcc76ddcbdbe4fb5a1b51c405b"
+  },
+  "scope": "Single DGX Spark 235B Q2_K; eight counterfactual manifest lookups in a separately launched backend. Compare a cold target to reuse after its older revision. Not a general model-quality, BF16-equivalence or production latency claim.",
+  "panel": "edited-manifest-cache-canary",
+  "reference_summary_sha256": "7d98c3ff26440e3253fa9709893c48940c25f028fa1d81c5b4bd3559297c1677"
+}

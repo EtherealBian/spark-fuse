@@ -35,3 +35,5 @@ SERVER="$SERVER" WEIGHTS="$WEIGHTS" TRANSFER_RECEIPT=.runtime/before-fetch-235.j
 脚本在启动前再次检查资源，对完整权重重新哈希并比对分片目录。连续 3 次采样低于 6 GiB 时，看护程序只通知自己已验证身份的后端进程；缺少正常结束和两阶段观测就不验收。失败文件和部分请求不能替代整轮基线。
 
 **English.** This is a single-Spark feasibility and greedy repeatability run for one pinned two-shard Q2_K model. Raw input/output IDs, server and client timing, the mapped inference-library hashes, admissions, and sampled system memory are archived for independent review. The 16-token fixed-length test does not measure answer quality or GPU allocation peaks.
+
+[清单修改后的回答与缓存复核（八组配对）](qwen235b-revision.md)。
