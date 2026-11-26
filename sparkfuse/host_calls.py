@@ -9,13 +9,13 @@ from torch import fx
 from torch.nn import functional as F
 
 
-def specialize_host_calls(module: fx.GraphModule):
+def specialize_host_calls(module: fx.GraphModule, *, excluded=()):
     if not isinstance(module, fx.GraphModule):
         raise TypeError("expected a partitioned FX GraphModule")
     changed = []
     aten = torch.ops.aten
     for node in tuple(module.graph.nodes):
-        if node.op != "call_function":
+        if node in excluded or node.op != "call_function":
             continue
         args, kw, op = node.args, node.kwargs, node.target
         target = None

@@ -81,7 +81,7 @@ def _inputs(n):
     )
 
 
-def fuse_dynamic_appends(gm, sites, traces):
+def fuse_dynamic_appends(gm, sites, traces, *, excluded=()):
     from .hybrid_decode import _bits
 
     records = []
@@ -91,7 +91,7 @@ def fuse_dynamic_appends(gm, sites, traces):
         (att,) = [n for n in gm.graph.nodes if n.op == "call_module" and n.target == s["module"]]
         k, v = att.args[1:3]
         ka, va = _inputs(k), _inputs(v)
-        if not ka or not va or k is v:
+        if k in excluded or v in excluded or not ka or not va or k is v:
             continue
         args = (*ka, *va)
         pos = {n: i for i, n in enumerate(gm.graph.nodes)}

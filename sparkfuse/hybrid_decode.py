@@ -22,6 +22,7 @@ class HybridDecode:
     host_calls: list
     rotary: list = field(default_factory=list)
     appends: list = field(default_factory=list)
+    protection: dict = field(default_factory=dict)
 
 
 def _static(n):
@@ -37,11 +38,11 @@ def _static(n):
     )
 
 
-def _components(gm):
+def _components(gm, excluded=()):
     pos = {n: i for i, n in enumerate(gm.graph.nodes)}
     pot = set()
     for n in pos:
-        if not eligible(n) or not all(_static(v) for v in n.all_input_nodes):
+        if n in excluded or not eligible(n) or not all(_static(v) for v in n.all_input_nodes):
             continue
         # Assertions have no tensor output; lower() proves the literal dtype/device/layout
         # against the static boundary. Never fold dynamic export GuardsFn or shape arithmetic.
@@ -111,6 +112,7 @@ def partition_hybrid_decode(
     split_barriers=True,
     paired_rotary=False,
     paired_append=False,
+    exact_outputs=(),
     tile=32,
     warp_heads=0,
     max_workspace_bytes=32 << 20,
@@ -135,13 +137,18 @@ def partition_hybrid_decode(
         audit,
         domain=domain,
         host_backend=host_backend,
+        exact_outputs=exact_outputs,
         tile=tile,
         warp_heads=warp_heads,
         max_workspace_bytes=max_workspace_bytes,
     )
     gm = p.module
+    from .observable import OutputSlice
+
+    locked = OutputSlice.capture(gm, exact_outputs)
+    audit_slice = locked.describe(p.skipped)
     if not p.sites:
-        return HybridDecode(gm, [], [], [])
+        return HybridDecode(gm, [], [], [], protection=audit_slice)
     batches = tuple(map(tuple, (example, audit)))
     traces, refs = _trace(gm, batches)
     rotary = []
@@ -149,6 +156,8 @@ def partition_hybrid_decode(
         from .rotary import fuse_pairs
 
         def qualify(region, q, k):
+            if locked.nodes & (q.members | k.members):
+                return False
             for env in traces:
                 if any(n not in env for n in (q.x, k.x, q.c, q.s, q.out, k.out)):
                     return False
@@ -183,13 +192,13 @@ def partition_hybrid_decode(
     if paired_append:
         from .dynamic_append import fuse_dynamic_appends
 
-        appends = fuse_dynamic_appends(gm, p.sites, traces)
+        appends = fuse_dynamic_appends(gm, p.sites, traces, excluded=locked.nodes)
         if any("module" in r for r in appends):
             traces, _ = _trace(gm, batches)
     records = []
     proposals = []
     pos = {n: i for i, n in enumerate(gm.graph.nodes)}
-    queue = deque((g, None) for g in _components(gm))
+    queue = deque((g, None) for g in _components(gm, locked.nodes))
     while queue:
         group, parent = queue.popleft()
         rec = dict(ops=[n.name for n in group])
@@ -251,7 +260,7 @@ def partition_hybrid_decode(
     if host_calls:
         from .host_calls import specialize_host_calls
 
-        special = specialize_host_calls(gm)
+        special = specialize_host_calls(gm, excluded=locked.nodes)
     gm.graph.lint()
     gm.recompile()
     for xs, ref in zip(batches, refs, strict=True):
@@ -264,4 +273,5 @@ def partition_hybrid_decode(
             ),
             "composition changed a public attention-only result",
         )
-    return HybridDecode(gm, p.sites, records, special, rotary, appends)
+    locked.verify(gm)
+    return HybridDecode(gm, p.sites, records, special, rotary, appends, audit_slice)

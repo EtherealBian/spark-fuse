@@ -1255,3 +1255,19 @@ Device replay medians on GB10, µs, seed 3921719, **8,193** KV entries. All algo
 For masked H8:D64 at tile 32, the partial goes from 40 to 44 registers per thread, 1,160 to zero static shared bytes and four to zero static barrier sites. The new kernel contains `LDG.E.128`; neither uses local memory. Both need 1,085,568 bytes of global partials at 8,193 entries; tile 64 halves the chunk count (544,896 bytes). Vectorization isn't a universal win: masked H6:D128 at length 2 takes 2.67 µs on CTA32 versus 3.34 µs on warp4/32. On an eight-length rotation the same pair takes 18.70 vs 19.80 µs synchronous wall time. The unmasked FP16 long case still loses to eager. Both seeds' unmasked Inductor runs stayed within FP64 error tolerances but failed the output structure gate; those times are omitted rather than ranked.
 
 [Raw windows, kernel resources, SHA-256s and all 192 held-out requests](../reports/warp-decode-gb10.json) · [Acceptance](../reports/warp-decode-stage-acceptance.json) · [Sanitizers](../reports/warp-decode-sanitizer-gb10.txt). Reproduce with `python tools/warp_decode_panel.py --output /tmp/warp-decode.json`; use `--smoke` for an untimed check. Qualification uses two separate lengths and storages; CPU FP64 is independent of SDPA. All six generated schedules pass the held-out gate in all eight cases.
+
+<a id="protected-stack"></a>
+### When later layers must return *exactly* the eager KV caches
+
+A decode step returns a hidden state and two caches per layer. Replacing an early attention with a numerically close implementation can change a later layer's K/V projection. `partition_hybrid_decode(..., exact_outputs=(...))` takes flat public output indices: the partitioner freezes their transitive FX dependencies, including arguments, target and wiring, before rewriting other regions. With all caches protected, the last attention is still fused; earlier attentions stay in PyTorch. Protection applies to the selected outputs, **not** the whole model. `exact_outputs=()` remains the unconstrained path.
+
+On GB10 we ran two actual HF Qwen2 decoder layers and three Llama layers (random weights), with/without bias, two weight seeds, eight initial context lengths and four sequential steps. Each path fed its **own** resulting K/V back to the next step. All five paths passed the ordinary numerical gate, but **768 of 1,280** unprotected cache tensors differed in at least one byte from HF; dynamic Inductor differed on **1,024**. Protected and exported ATen each differed on **zero**. The independent CPU FP64 check is for the last attention, not a claim of bit-exact model hidden states. The exported graph, weights, inputs, prefixes and output ownership were checked separately.
+
+| Masked stack, seed 3998173 | HF eager | exported ATen | unprotected | protected | dynamic Inductor |
+|---|---:|---:|---:|---:|---:|
+| Qwen2 ×2, 4-step device replay, initial past 2045 (µs) | 1705.75 | 1701.82 | 440.49 | 1218.04 | 1400.87 |
+| Qwen2 ×2, rotating synchronized request (µs) | 2514.11 | 3072.82 | 1219.19 | 2655.76 | 1200.86 |
+| Llama ×3, 4-step device replay, initial past 2045 (µs) | 2924.56 | 2922.14 | 1249.80 | 2434.84 | 2479.79 |
+| Llama ×3, rotating synchronized request (µs) | 3684.54 | 4420.94 | 2827.33 | 3984.80 | 1562.52 |
+
+On masked Qwen2, protecting 113 FX ancestors reduces the 348 HF launches to 294, not the unconstrained 116. Even with lower long-context device time the protected path is **slower than HF** on these rotating host requests. Choose the contract first, then compare timings among paths that meet it. [Raw per-output hashes and every window](../reports/protected-stack-gb10.json) · [sanitizers](../reports/protected-stack-sanitizer-gb10.txt) · [release gates](../reports/protected-stack-stage-acceptance.json). With the optional Transformers environment, run `python tools/protected_stack_panel.py --output /tmp/protected-stack.json` (`--smoke` for a short check).

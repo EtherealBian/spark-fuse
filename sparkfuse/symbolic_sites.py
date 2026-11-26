@@ -178,6 +178,7 @@ def partition_symbolic_decode(
     example,
     audit,
     *,
+    exact_outputs=(),
     tile=32,
     warp_heads=0,
     domain="checked",
@@ -206,6 +207,9 @@ def partition_symbolic_decode(
         "two independent CUDA traces required",
     )
     gm = ep.module()
+    from .observable import OutputSlice
+
+    locked = OutputSlice.capture(gm, exact_outputs)
     sites = []
     for n in gm.graph.nodes:
         if n.op in ("placeholder", "get_attr", "output"):
@@ -255,6 +259,9 @@ def partition_symbolic_decode(
     ready = []
     skip = []
     for n in sites:
+        if n in locked.nodes:
+            skip.append(dict(name=n.name, reason="feeds a protected public output"))
+            continue
         try:
             ins, opts = _options(n)
             k, kchain = _repeat(ins[1])
@@ -328,4 +335,5 @@ def partition_symbolic_decode(
                     torch.testing.assert_close(a, b, atol=at, rtol=rt, check_stride=True)
                 except AssertionError as exc:
                     raise Unsupported("whole graph failed numerical qualification") from exc
+    locked.verify(gm)
     return DecodePartition(gm, records, skip)

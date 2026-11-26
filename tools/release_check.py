@@ -222,6 +222,18 @@ def check(until, report):
     if opt:
         commands.append(
             (
+                "multilayer_protected_output_slice",
+                [
+                    opt,
+                    str(ROOT / "tools/protected_stack_panel.py"),
+                    "--smoke",
+                    "--output",
+                    str(report.with_name(report.stem + "-protected-stack.json")),
+                ],
+            )
+        )
+        commands.append(
+            (
                 "paired_dynamic_cache_append",
                 [
                     opt,
