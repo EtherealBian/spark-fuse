@@ -7,7 +7,7 @@ SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 
 ### 编译器做什么
 
 - **生成 CUDA**：融合逐元素计算和末轴归约，支持 mean、stable softmax、LayerNorm 以及门控子图。可比较每行一个线程块、每个 warp 一行等布局；支持非对齐输入和奇数宽度。
-- **保留模型语义**：根据图外使用者决定哪些值必须返回，区分视图与独占输出。BF16/FP16 的舍入顺序可能影响结果，因此会在独立输入上校验候选实现。
+- **保留模型语义**：根据图外使用者决定哪些值必须返回，区分视图与独占输出。[先写后读 KV 槽位](docs/performance.md#slot-forward)时，未被返回的缓存无需整块写回。BF16/FP16 的舍入顺序可能影响结果，因此会在独立输入上校验候选实现。
 - **衡量请求成本**：分别测量 CUDA Graph 设备时间、完整单请求延迟和八请求排队耗时。对冻结权重的量化投影，可以[按实际请求选型](docs/performance.md#whole-request-policy)，下次只重建胜出的方案。
 
 ### DGX Spark 上的三个对照
@@ -36,6 +36,6 @@ python -m pytest -q
 
 ## English
 
-SparkFuse turns functional regions of a `torch.export` inference graph into readable CUDA C++ on NVIDIA DGX Spark. It uses values consumed outside a region to decide what a kernel must write. For example, compare [RMSNorm alone](examples/generated/resnorm.cu) with [RMSNorm that also returns the residual](examples/generated/resnorm2.cu). The mixed execution path leaves unsupported operators and matrix multiplications in PyTorch.
+SparkFuse turns functional regions of a `torch.export` inference graph into readable CUDA C++ on NVIDIA DGX Spark. It uses values consumed outside a region to decide what a kernel must write. For example, compare [RMSNorm alone](examples/generated/resnorm.cu) with [RMSNorm that also returns the residual](examples/generated/resnorm2.cu). The same [output visibility rule for KV-slot writes](docs/performance.md#slot-forward) avoids building cache banks that no caller reads. The mixed execution path leaves unsupported operators and matrix multiplications in PyTorch.
 
 [Warp-register decode](docs/performance.md#warp-decode) avoids KV-head expansion; [physical-page decode](docs/performance.md#paged-decode) also avoids two dense cache gathers and can [skip inactive pages per row](docs/performance.md#ragged-page). A [native caller](docs/performance.md#page-host) reduces submission overhead without changing the CUDA kernels. [Dynamic decoder layers](docs/performance.md#decoder-families) cover Qwen2, Llama and Mistral. A [multi-layer cache contract](docs/performance.md#protected-stack) preserves all returned KV bytes when later layers depend on earlier attention results. These are random-weight inference experiments, not model quality measurements. See the commands above for reproducible CUDA generation and three-way timing; the [performance notes](docs/performance.md) include regressions as well as wins.

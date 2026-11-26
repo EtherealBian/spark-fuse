@@ -1310,3 +1310,19 @@ Both paged paths reserve **1,081,344 bytes** of partials. Across eight rotating 
 The split and native callers launch the **same CUDA binaries**. The native C++ entry validates the tensors and submits the one- or two-kernel page operation on the current stream in a single host call. No change to page traversal, accumulation, or output allocation is involved. Both callers passed the CPU FP64 checks and gave identical bytes on 64 held-out requests, including bounded row lengths.
 
 On B4 / H8:G2 / D64, BF16, capacity 31 (seed 4309823), rotating synchronized latency fell from **16.31 to 12.12 µs**, and eight queued requests cost **11.36 to 7.09 µs per request**. Hot device replay was 4.03 µs for both. At B2 / H6:G2 / D128, BF16, capacity 4093, rotating latency fell from 35.40 to 31.89 µs, but queued cost barely changed (32.11 to 32.01 µs); device replay was 13.75 µs on both paths. In another short ragged run native device replay was slightly slower (4.82 vs 4.78 µs). This is a host-overhead optimization, not a faster attention kernel. [All seven timing windows and both seeds](../reports/page-host-gb10.json) · [sanitizers](../reports/page-host-sanitizer-gb10.txt) · [regression gates](../reports/page-host-stage-acceptance.json). Rerun `python tools/page_host_panel.py --output /tmp/page-host.json`.
+
+<a id="slot-forward"></a>
+### Forward a read after a functional KV-slot write
+
+The export writes a new K token and V token at a per-row slot, then reads both banks at another slot. When the saturated indices match, the read uses the new token; otherwise it reads the old bank. A bank is materialized **only if the caller also returns that bank**. Inputs are never changed. A single CUDA launch copies unsigned 16-bit payloads, using aligned vector loads when possible, preserving signed zero and NaN payloads. This implements one exported scatter/read pattern, not in-place cache management.
+
+B4 / G2 / D64, BF16, 4093 slots, seed 4374611. The first three columns are hot-device medians (µs); the fourth is a separate rotating synchronized request measurement.
+
+| Banks returned alongside the two token reads | eager | Inductor | SparkFuse | SparkFuse rotating µs | output bytes |
+|---|---:|---:|---:|---:|---:|
+| neither | 33.04 | 15.81 | 2.12 | 10.70 | 2,048 |
+| K | 44.74 | 35.30 | 8.19 | 30.57 | 4,193,280 |
+| V | 43.10 | 37.73 | 9.00 | 29.32 | 4,193,280 |
+| both | 59.91 | 51.47 | 48.73 | 69.88 | 8,384,512 |
+
+Without returned banks, eager / Inductor / SparkFuse made 8 / 6 / 1 launches; peak allocator increases were 8,385,536 / 4,193,280 / 2,048 bytes. Returning both dense banks removes most of the timing advantage. Across both capacities, four visibility modes and two seeds, all three paths matched an independent CPU integer-storage oracle byte-for-byte on **128 requests**; the checks also verify storage ownership. [Raw windows and input/output hashes](../reports/slot-forward-gb10.json) · [sanitizer runs](../reports/slot-forward-sanitizer-gb10.txt) · [regression gates](../reports/slot-forward-stage-acceptance.json). Rerun `python tools/slot_forward_panel.py --output /tmp/slot-forward.json`.

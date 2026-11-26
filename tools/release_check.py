@@ -16,6 +16,18 @@ def check(until, report):
     commands = [("tests", [sys.executable, "-m", "pytest", "-q", "tests"])]
     commands.append(
         (
+            "functional_cache_slot_forward",
+            [
+                sys.executable,
+                str(ROOT / "tools/slot_forward_panel.py"),
+                "--smoke",
+                "--output",
+                str(report.with_name(report.stem + "-slot-forward.json")),
+            ],
+        )
+    )
+    commands.append(
+        (
             "native_page_host",
             [
                 sys.executable,
