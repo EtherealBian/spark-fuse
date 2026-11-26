@@ -17,6 +17,8 @@
 
 [设备端 token 反馈：CUDA 算子与整请求对照](qwen32b-feedback.md)。
 
+[两个请求共用 KV 前缀：含快照成本的实测](qwen32b-fork.md)。
+
 ### 复核与复现
 
 - [汇总](../reports/qwen32b-summary.json) · [eager 原始记录](../reports/qwen32b-eager.json) · [共享权重原始记录](../reports/qwen32b-resident.json) · [测试回执](../reports/qwen32b-validation.json)。汇总可用 Python 3.11+ 在 CPU 上复算：`python3 benchmarks/pretrained_qwen/audit32b.py reports`。

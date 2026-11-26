@@ -1,0 +1,126 @@
+{
+  "schema": "sparkfuse.fork32.summary.v1",
+  "cases": [
+    {
+      "length": 128,
+      "family": 1,
+      "prefix_tokens": 96,
+      "owned_kv_bytes": 25165824,
+      "matching_token_trajectories": 2,
+      "byte_identical_full_logit_trajectories": 0,
+      "trajectories_checked": 2,
+      "all_timed_rows_agree_with_own_diagnostic": true,
+      "median_wave_ms": {
+        "cold": 4703.778255499999,
+        "snapshot": 5002.368277
+      },
+      "median_prepared_target_ms": {
+        "cold": 2351.6515995,
+        "snapshot": 2326.4761665
+      },
+      "median_snapshot_prepare_ms": 347.449137,
+      "paired_wave_savings_by_first": {
+        "cold": -0.0638872997793335,
+        "snapshot": -0.06337834402324327
+      },
+      "paired_wave_savings_by_branch_order": {
+        "base_first": -0.06405233244779573,
+        "edited_first": -0.06321331135478103
+      },
+      "passes_timing_only": false,
+      "passes_strict_gate": false
+    },
+    {
+      "length": 128,
+      "family": 2,
+      "prefix_tokens": 96,
+      "owned_kv_bytes": 25165824,
+      "matching_token_trajectories": 1,
+      "byte_identical_full_logit_trajectories": 0,
+      "trajectories_checked": 2,
+      "all_timed_rows_agree_with_own_diagnostic": true,
+      "median_wave_ms": {
+        "cold": 4715.2201415,
+        "snapshot": 5015.458741
+      },
+      "median_prepared_target_ms": {
+        "cold": 2357.553621,
+        "snapshot": 2333.026086
+      },
+      "median_snapshot_prepare_ms": 348.0802255,
+      "paired_wave_savings_by_first": {
+        "cold": -0.063288058914306,
+        "snapshot": -0.0637477997840542
+      },
+      "paired_wave_savings_by_branch_order": {
+        "base_first": -0.06343310820049342,
+        "edited_first": -0.06360275049786679
+      },
+      "passes_timing_only": false,
+      "passes_strict_gate": false
+    },
+    {
+      "length": 2048,
+      "family": 1,
+      "prefix_tokens": 1536,
+      "owned_kv_bytes": 402653184,
+      "matching_token_trajectories": 2,
+      "byte_identical_full_logit_trajectories": 2,
+      "trajectories_checked": 2,
+      "all_timed_rows_agree_with_own_diagnostic": true,
+      "median_wave_ms": {
+        "cold": 9442.568061,
+        "snapshot": 7659.378531
+      },
+      "median_prepared_target_ms": {
+        "cold": 4721.0286985,
+        "snapshot": 2913.3938694999997
+      },
+      "median_snapshot_prepare_ms": 1832.9156555,
+      "paired_wave_savings_by_first": {
+        "cold": 0.18873841519928553,
+        "snapshot": 0.1893695795248947
+      },
+      "paired_wave_savings_by_branch_order": {
+        "base_first": 0.18958239573874414,
+        "edited_first": 0.18852559898543608
+      },
+      "passes_timing_only": true,
+      "passes_strict_gate": true
+    },
+    {
+      "length": 2048,
+      "family": 2,
+      "prefix_tokens": 1536,
+      "owned_kv_bytes": 402653184,
+      "matching_token_trajectories": 2,
+      "byte_identical_full_logit_trajectories": 2,
+      "trajectories_checked": 2,
+      "all_timed_rows_agree_with_own_diagnostic": true,
+      "median_wave_ms": {
+        "cold": 9440.5883605,
+        "snapshot": 7662.2199390000005
+      },
+      "median_prepared_target_ms": {
+        "cold": 4718.7922875,
+        "snapshot": 2914.0276445
+      },
+      "median_snapshot_prepare_ms": 1832.430044,
+      "paired_wave_savings_by_first": {
+        "cold": 0.18796446459636323,
+        "snapshot": 0.18917874818163422
+      },
+      "paired_wave_savings_by_branch_order": {
+        "base_first": 0.18863926361386646,
+        "edited_first": 0.188503949164131
+      },
+      "passes_timing_only": true,
+      "passes_strict_gate": true
+    }
+  ],
+  "timed_targets": 64,
+  "timed_snapshot_preparations": 16,
+  "diagnostic_trajectories": 16,
+  "all_strict_gates": false,
+  "boundary": "Batch-one, two related branches per wave, each returns eight host-visible greedy IDs; the snapshot arm pays prefix preparation, allocation, restore and reset. Device-resident BF16 KV storage is not a DRAM traffic counter or multi-tenant SLA."
+}
