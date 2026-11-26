@@ -7,6 +7,7 @@ No logits, text, KV tensors or generated continuations are retained here.
 
 from dataclasses import dataclass, field
 from threading import Lock
+from prefix_index import ordered, scoped
 
 
 def common_prefix(a, b):
@@ -90,7 +91,11 @@ class _Slot:
 class SlotRouter:
     """Choose the longest eligible idle prefix; cold misses take the least recent idle slot."""
 
-    def __init__(self, slots, context, min_prefix=16, policy="affinity"):
+    def __init__(self, slots, context, min_prefix=16, policy="affinity", *, batch_matcher="scan"):
+        # Safe default stays unchanged; ordered64 only applies to a full, ready joint batch.
+        if batch_matcher not in ("scan", "ordered64", "scoped16"):
+            raise ValueError("batch_matcher must be scan, ordered64 or scoped16")
+        self._batch_matcher = batch_matcher
         if (
             any(type(x) is not int or x < 1 for x in (slots, context, min_prefix))
             or min_prefix > context
@@ -169,32 +174,51 @@ class SlotRouter:
             )
             if len(free) < len(items):
                 return None
-            weights = []
-            for scope, ids in items:
-                line = []
-                for j in free:
-                    slot = self._slots[j]
-                    match = common_prefix(slot.ids, ids) if slot.scope == scope else 0
-                    line.append(match if match >= self._min else 0)
-                weights.append(line)
-            if strategy == "joint":
-                # All secondary rank terms together cannot outweigh one reused token.
-                scale = len(items) * len(free) + 1
-                choices = minimum_assignment(
-                    [[-w * scale + rank for rank, w in enumerate(row)] for row in weights]
-                )
+            can_index = (
+                self._batch_matcher in ("ordered64", "scoped16")
+                and strategy == "joint"
+                and len(items) == len(free) == 64
+                and self._min == 16
+                and all(len(ids) == 2048 for _, ids in items)
+                and all(len(self._slots[j].ids) in (0, 2048) for j in free)
+            )
+            if can_index:
+                available = [(self._slots[j].scope, self._slots[j].ids) for j in free]
+                if self._batch_matcher == "scoped16":
+                    weights = scoped(items, available, self._min)
+                else:
+                    tenants = {scope for scope, ids in available if ids}
+                    weights = None if tenants.isdisjoint(scope for scope, _ in items) else ordered(items, available, self._min)
+                if weights is None:
+                    choices = list(range(len(items)))
             else:
-                left = set(range(len(free)))
-                choices = []
-                for row in weights:
-                    j = min(left, key=lambda k: (-row[k], k))
-                    choices.append(j)
-                    left.remove(j)
+                weights = []
+                for scope, ids in items:
+                    line = []
+                    for j in free:
+                        slot = self._slots[j]
+                        match = common_prefix(slot.ids, ids) if slot.scope == scope else 0
+                        line.append(match if match >= self._min else 0)
+                    weights.append(line)
+            if weights is not None:
+                if strategy == "joint":
+                    # All secondary rank terms together cannot outweigh one reused token.
+                    scale = len(items) * len(free) + 1
+                    choices = minimum_assignment(
+                        [[-w * scale + rank for rank, w in enumerate(row)] for row in weights]
+                    )
+                else:
+                    left = set(range(len(free)))
+                    choices = []
+                    for row in weights:
+                        j = min(left, key=lambda k: (-row[k], k))
+                        choices.append(j)
+                        left.remove(j)
             leases = []
             for i, (scope, ids) in enumerate(items):
                 j = choices[i]
                 idx = free[j]
-                gain = weights[i][j]
+                gain = weights[i][j] if weights is not None else 0
                 lease = Lease(idx, gain, bool(gain))
                 leases.append(lease)
                 self._slots[idx].pending = (lease, scope, ids)

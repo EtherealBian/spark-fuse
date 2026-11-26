@@ -1,0 +1,25 @@
+{
+  "schema": "sparkfuse.slot-matcher.comparison.v1",
+  "panels": {
+    "ordered64": {
+      "pairs": 48,
+      "ten_percent_wins_on_64": 4,
+      "passes_opt_in_gate": false,
+      "outside_regression_bounds": [
+        "same-tenant-miss"
+      ],
+      "rows_sha256": "ff3f59ee06ea7789c1c0f459101e225f1e498ccafdad2a83e9f2c471d6b663e2",
+      "summary_sha256": "f9dd32791805b59d925a5acce0837cc851e90a37bb357a58ec6363b6470f38a2"
+    },
+    "scoped16": {
+      "pairs": 80,
+      "ten_percent_wins_on_64": 9,
+      "passes_opt_in_gate": true,
+      "outside_regression_bounds": [],
+      "rows_sha256": "69e6a140d4215778d6815be3afc48476e3ad15393f7b16924aece5cc4695b7a2",
+      "summary_sha256": "0c6a385d850812908e55ff8eb6160ae896edc78cc2fffab9048459cb0c89872a"
+    }
+  },
+  "default": "scan",
+  "scope": "Complete CPU reservation API on one pinned Spark core; synthetic 2048-token workloads. No GPU inference or end-to-end service claim. Both panels retained independently."
+}

@@ -1,0 +1,149 @@
+{
+  "cases": {
+    "empty": {
+      "slots": 64,
+      "scan_ms": 22.653724,
+      "scoped16_ms": 5.8649155,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.7415801577250923,
+        "scoped16": 0.7406945769651557
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -16.784937,
+        "scoped16": -16.776361
+      },
+      "within_regression_bounds": true
+    },
+    "tenant-switch": {
+      "slots": 64,
+      "scan_ms": 22.641572,
+      "scoped16_ms": 5.8697955,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.7414061679180526,
+        "scoped16": 0.7395392224226285
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -16.831369000000002,
+        "scoped16": -16.6710245
+      },
+      "within_regression_bounds": true
+    },
+    "same-tenant-miss": {
+      "slots": 64,
+      "scan_ms": 24.0704175,
+      "scoped16_ms": 5.923708,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.7538623929516353,
+        "scoped16": 0.7532568554951631
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -18.153069000000002,
+        "scoped16": -18.123469
+      },
+      "within_regression_bounds": true
+    },
+    "tied-prefixes": {
+      "slots": 64,
+      "scan_ms": 414.5033955,
+      "scoped16_ms": 37.627207,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.9089854866100402,
+        "scoped16": 0.9092762035838651
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -377.10294799999997,
+        "scoped16": -376.77912349999997
+      },
+      "within_regression_bounds": true
+    },
+    "clustered-hits": {
+      "slots": 64,
+      "scan_ms": 57.4014745,
+      "scoped16_ms": 22.6900205,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.6054636390941671,
+        "scoped16": 0.6036453143913432
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -34.8615735,
+        "scoped16": -34.588741999999996
+      },
+      "within_regression_bounds": true
+    },
+    "miss-after-one": {
+      "slots": 64,
+      "scan_ms": 24.2415385,
+      "scoped16_ms": 5.91538,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.7564331777159945,
+        "scoped16": 0.7553756112310037
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -18.367079,
+        "scoped16": -18.301206
+      },
+      "within_regression_bounds": true
+    },
+    "miss-after-fifteen": {
+      "slots": 64,
+      "scan_ms": 26.825555,
+      "scoped16_ms": 5.895068,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.7802911817828531,
+        "scoped16": 0.7802052345105654
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -20.915727,
+        "scoped16": -20.941285999999998
+      },
+      "within_regression_bounds": true
+    },
+    "one-eligible-edge": {
+      "slots": 64,
+      "scan_ms": 26.9972355,
+      "scoped16_ms": 22.4698605,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.16775300464365261,
+        "scoped16": 0.1661359980850003
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -4.5292069999999995,
+        "scoped16": -4.484799000000001
+      },
+      "within_regression_bounds": true
+    },
+    "dense-sixteen": {
+      "slots": 64,
+      "scan_ms": 11.93676,
+      "scoped16_ms": 8.923246,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.2520526262513133,
+        "scoped16": 0.2520274753523357
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -3.0156739999999997,
+        "scoped16": -3.0051615
+      },
+      "within_regression_bounds": true
+    },
+    "fallback-control": {
+      "slots": 2,
+      "scan_ms": 0.400033,
+      "scoped16_ms": 0.4028975,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.00324523452492201,
+        "scoped16": -0.011160198330017067
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -0.0012955,
+        "scoped16": 0.004456
+      },
+      "within_regression_bounds": true
+    }
+  },
+  "matched_pairs": 80,
+  "ten_percent_wins_on_64": 9,
+  "passes_opt_in_gate": true,
+  "scope": "One pinned Spark CPU core; 8 order-balanced paired repetitions of complete 2048-token batch reservation per synthetic holdout. No GPU, server queue or model-output latency. Default stays scan. Results do not establish benefit for an unmeasured workload.",
+  "rows_sha256": "69e6a140d4215778d6815be3afc48476e3ad15393f7b16924aece5cc4695b7a2"
+}

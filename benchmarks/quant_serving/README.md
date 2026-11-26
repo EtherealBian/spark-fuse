@@ -22,6 +22,8 @@
 
 [专家权重分布：72B / 120B / 235B 的逐张量核算](../../docs/gguf-expert-bytes.md)。
 
+[64 槽的 CPU 路由开销与回退对照](../../docs/slot-matchers.md)。
+
 ### 复现
 
 在同一台空闲 DGX Spark 上，用 CUDA 13.0 为 `sm_121` 编译 llama.cpp **b8183**（提交 `66d65ec29ba7c440cbc31b6f63b74a17b536ba65`）。从该提交的 GitHub 源码归档构建时，可核对归档 SHA-256 `42467a78960ed5eae1aa7a9231e9ce35bdb418f65eff5d7a9f266400fbf58f33`。指定版本标识可防止 CMake 误用外层项目的 Git 提交。

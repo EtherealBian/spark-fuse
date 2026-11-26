@@ -1,0 +1,93 @@
+{
+  "cases": {
+    "empty": {
+      "slots": 64,
+      "scan_ms": 22.6264825,
+      "profiled_ms": 5.8535135,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.7414129671478389,
+        "ordered64": 0.7412351520025302
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -16.769816499999997,
+        "ordered64": -16.766785499999997
+      },
+      "within_regression_bounds": true
+    },
+    "tenant-switch": {
+      "slots": 64,
+      "scan_ms": 22.611731,
+      "profiled_ms": 5.873577,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.740380146358089,
+        "ordered64": 0.7398421009928987
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -16.7617775,
+        "ordered64": -16.708242
+      },
+      "within_regression_bounds": true
+    },
+    "same-tenant-miss": {
+      "slots": 64,
+      "scan_ms": 23.985402,
+      "profiled_ms": 28.8940095,
+      "paired_fraction_saved_by_first": {
+        "scan": -0.20080117625512747,
+        "ordered64": -0.20768331543088922
+      },
+      "paired_increase_ms_by_first": {
+        "scan": 4.8233835,
+        "ordered64": 4.9730625
+      },
+      "within_regression_bounds": false
+    },
+    "tied-prefixes": {
+      "slots": 64,
+      "scan_ms": 414.7419465,
+      "profiled_ms": 37.34858,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.9094781866532736,
+        "ordered64": 0.9100161929824607
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -377.192021,
+        "ordered64": -377.461136
+      },
+      "within_regression_bounds": true
+    },
+    "clustered-hits": {
+      "slots": 64,
+      "scan_ms": 57.3945805,
+      "profiled_ms": 23.209154,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.595723839725543,
+        "ordered64": 0.5961754274190572
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -34.121923,
+        "ordered64": -34.324833
+      },
+      "within_regression_bounds": true
+    },
+    "fallback-control": {
+      "slots": 2,
+      "scan_ms": 0.4017415,
+      "profiled_ms": 0.4008535,
+      "paired_fraction_saved_by_first": {
+        "scan": 0.005025594894384615,
+        "ordered64": -0.003145185959923676
+      },
+      "paired_increase_ms_by_first": {
+        "scan": -0.0020234999999999997,
+        "ordered64": 0.0012645
+      },
+      "within_regression_bounds": true
+    }
+  },
+  "matched_pairs": 48,
+  "ten_percent_wins_on_64": 4,
+  "passes_opt_in_gate": false,
+  "scope": "One pinned Spark CPU core; 8 order-balanced paired repetitions of complete 2048-token batch reservation per synthetic holdout. No GPU, server queue or model-output latency. Default stays scan. Results do not establish benefit for an unmeasured workload.",
+  "rows_sha256": "ff3f59ee06ea7789c1c0f459101e225f1e498ccafdad2a83e9f2c471d6b663e2"
+}
