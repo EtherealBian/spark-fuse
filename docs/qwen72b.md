@@ -70,3 +70,5 @@ DGX Spark 运行 Qwen2.5-72B-Instruct 的 Q4_K_M 版本。12 个 GGUF 分片共 
 四组配对波次中，串行和并发的逐 token 输出共 6/8 对一致。 此结果不支持把并发发送当作保证逐 token 等价的默认策略。首轮采集因客户端错误地要求中间事件携带最终槽号而被排除；[采集记录](../reports/qwen72b/stream/collection.json)说明修正和排除范围。
 
 [四条后续请求什么时候收回预制成本？](qwen72b-bursts.md) 这组实测将预制请求计入总时间，并单独检查每条输出。
+
+[两条请求争同一槽时的联合分配与反序对照](qwen72b-assignment.md)。

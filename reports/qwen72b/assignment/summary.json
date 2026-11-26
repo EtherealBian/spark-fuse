@@ -1,0 +1,183 @@
+{
+  "schema": 1,
+  "model": "Qwen/Qwen2.5-72B-Instruct-GGUF",
+  "revision": "7ca3bc388f97b264c4283bc9bf1055e2abc38441",
+  "verified_weight_bytes": 44010465472,
+  "runtime": {
+    "llama_cpp_revision": "66d65ec29ba7c440cbc31b6f63b74a17b536ba65",
+    "server_sha256": "364610626d8d25963f59ad4d90ed9d711b1d7a4b96da1fc1d8029b0925f57c22",
+    "runtime_lib_sha256": {
+      "libggml-base.so.0.9.7": "af69d39f55a6c30c83ebfb85b6f05627a4f5c755537c21ed79aa709bb7d45c9a",
+      "libggml-cpu.so.0.9.7": "0c287f06ed4f7ace8c8bd7894a52d584d686e790eae29542e4b54e68cf4cc29d",
+      "libggml-cuda.so.0.9.7": "dd471f6a5472b0a3b3b1417a28484b52dc0b2e99b4908c02fdaf1b48275e0445",
+      "libggml.so.0.9.7": "8d500db937531b588b1336fbba4b3e777f06465b4b227464babb7e20b143e5dc",
+      "libllama.so.0.0.8183": "6a56028354135da83f8bd6fd285ec4e22f6deeb788d41ec441d05ff75a843d70",
+      "libmtmd.so.0.0.8183": "58304190dbfae641c938c1a6cd6b28243e95650e61bd40cc3831faed9503dd81"
+    },
+    "driver": "580.173.02",
+    "eog_token_ids": [
+      128247,
+      151643,
+      151645,
+      151662,
+      151663,
+      151664
+    ],
+    "device": "NVIDIA GB10",
+    "gpu_layers_including_output": 81
+  },
+  "evidence_sha256": {
+    "checkpoint.json": "7511205e26fa0895b4485df9adb17c05f33f10edf1babb246b4f312706536c31",
+    "runtime.json": "6e94ba6373d39164ed65ef2f469bdee8965dca1977c9923c007e17c30063bef2",
+    "rows.json": "8df5bf1fc2bdc824f3b8c4e95624d7319aae268616a9969ee1e0363a288e0634"
+  },
+  "panel": {
+    "groups": {
+      "contended": {
+        "repeats": [
+          {
+            "rep": 0,
+            "arms": {
+              "greedy": {
+                "processed": 1088,
+                "ready_to_finish_ms": 7028.144103,
+                "overlap_ms": 6790.753331,
+                "assignment_us": 163.921
+              },
+              "joint": {
+                "processed": 768,
+                "ready_to_finish_ms": 6001.208688,
+                "overlap_ms": 5766.392271,
+                "assignment_us": 148.4
+              }
+            },
+            "first_different_token": [
+              null,
+              null
+            ]
+          },
+          {
+            "rep": 1,
+            "arms": {
+              "joint": {
+                "processed": 768,
+                "ready_to_finish_ms": 5765.663424,
+                "overlap_ms": 5764.007739,
+                "assignment_us": 147.2
+              },
+              "greedy": {
+                "processed": 1088,
+                "ready_to_finish_ms": 7313.748226,
+                "overlap_ms": 6847.253903,
+                "assignment_us": 138.321
+              }
+            },
+            "first_different_token": [
+              null,
+              null
+            ]
+          }
+        ],
+        "exact_pairs": 4,
+        "median_paired_ms_saved": 1287.5101084999997
+      },
+      "contended-reversed": {
+        "repeats": [
+          {
+            "rep": 0,
+            "arms": {
+              "joint": {
+                "processed": 768,
+                "ready_to_finish_ms": 6468.236435,
+                "overlap_ms": 6001.538019,
+                "assignment_us": 151.057
+              },
+              "greedy": {
+                "processed": 768,
+                "ready_to_finish_ms": 6462.482897,
+                "overlap_ms": 5994.899266,
+                "assignment_us": 137.761
+              }
+            },
+            "first_different_token": [
+              null,
+              null
+            ]
+          },
+          {
+            "rep": 1,
+            "arms": {
+              "greedy": {
+                "processed": 768,
+                "ready_to_finish_ms": 5998.342175,
+                "overlap_ms": 5764.805555,
+                "assignment_us": 139.376
+              },
+              "joint": {
+                "processed": 768,
+                "ready_to_finish_ms": 6011.476963,
+                "overlap_ms": 5778.489124,
+                "assignment_us": 141.393
+              }
+            },
+            "first_different_token": [
+              null,
+              null
+            ]
+          }
+        ],
+        "exact_pairs": 4,
+        "median_paired_ms_saved": -9.444163000000117
+      },
+      "disjoint": {
+        "repeats": [
+          {
+            "rep": 0,
+            "arms": {
+              "greedy": {
+                "processed": 448,
+                "ready_to_finish_ms": 4927.646881,
+                "overlap_ms": 4925.60345,
+                "assignment_us": 137.281
+              },
+              "joint": {
+                "processed": 448,
+                "ready_to_finish_ms": 4931.051902,
+                "overlap_ms": 4929.454568,
+                "assignment_us": 164.096
+              }
+            },
+            "first_different_token": [
+              null,
+              null
+            ]
+          },
+          {
+            "rep": 1,
+            "arms": {
+              "joint": {
+                "processed": 448,
+                "ready_to_finish_ms": 5172.032038,
+                "overlap_ms": 4937.623252,
+                "assignment_us": 144.161
+              },
+              "greedy": {
+                "processed": 448,
+                "ready_to_finish_ms": 4929.526441,
+                "overlap_ms": 4928.066291,
+                "assignment_us": 139.281
+              }
+            },
+            "first_different_token": [
+              null,
+              null
+            ]
+          }
+        ],
+        "exact_pairs": 4,
+        "median_paired_ms_saved": -122.9553090000004
+      }
+    },
+    "scope": "Two ready, synthetic requests; matched slot preparation excluded from target wall time. Wave includes issuer work and local HTTP, not proof of GPU kernel overlap or production tail latency."
+  }
+}
