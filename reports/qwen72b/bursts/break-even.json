@@ -1,0 +1,1241 @@
+{
+  "schema": "sparkfuse.prefix-burst-break-even.v1",
+  "model": "Qwen/Qwen2.5-72B-Instruct-GGUF",
+  "revision": "7ca3bc388f97b264c4283bc9bf1055e2abc38441",
+  "verified_weight_bytes": 44010465472,
+  "runtime": {
+    "llama_cpp_revision": "66d65ec29ba7c440cbc31b6f63b74a17b536ba65",
+    "server_sha256": "364610626d8d25963f59ad4d90ed9d711b1d7a4b96da1fc1d8029b0925f57c22",
+    "runtime_lib_sha256": {
+      "libggml-base.so.0.9.7": "af69d39f55a6c30c83ebfb85b6f05627a4f5c755537c21ed79aa709bb7d45c9a",
+      "libggml-cpu.so.0.9.7": "0c287f06ed4f7ace8c8bd7894a52d584d686e790eae29542e4b54e68cf4cc29d",
+      "libggml-cuda.so.0.9.7": "dd471f6a5472b0a3b3b1417a28484b52dc0b2e99b4908c02fdaf1b48275e0445",
+      "libggml.so.0.9.7": "8d500db937531b588b1336fbba4b3e777f06465b4b227464babb7e20b143e5dc",
+      "libllama.so.0.0.8183": "6a56028354135da83f8bd6fd285ec4e22f6deeb788d41ec441d05ff75a843d70",
+      "libmtmd.so.0.0.8183": "58304190dbfae641c938c1a6cd6b28243e95650e61bd40cc3831faed9503dd81"
+    },
+    "driver": "580.173.02",
+    "eog_token_ids": [
+      128247,
+      151643,
+      151645,
+      151662,
+      151663,
+      151664
+    ],
+    "device": "NVIDIA GB10",
+    "gpu_layers_including_output": 81
+  },
+  "evidence_sha256": {
+    "reference_rows": "6f8aca8b6dc147a5be5fdc17544d1028821a19f057e92cac797361b20b404dce",
+    "reference_checkpoint": "21239699b39cc8ceb648a3966ae7a469b4dd02a010966ab8d0c64c921068ae1e",
+    "reference_runtime": "c041d5b14968f52fd596b00f8d5da01ba1c515b5d0c09487642c5ad0ddd047a6",
+    "burst_rows": "5d29a39c634502a64872887789bae200f099583b832c58860d8608ed9a03d89b",
+    "burst_checkpoint": "7511205e26fa0895b4485df9adb17c05f33f10edf1babb246b4f312706536c31",
+    "burst_runtime": "834bb93a1c8b0ea3f78100f0f75f27f04211a1dc3b0603ebac7c226a1a258074"
+  },
+  "minimum_fraction_saved_in_each_repeat": 0.03,
+  "target_requests": 144,
+  "actual_preparation_requests": 12,
+  "baseline_panel": {
+    "schema": 1,
+    "cases": [
+      {
+        "domain": "coast",
+        "length": 256,
+        "cold_repeat_exact_vs_first": 8,
+        "arms": {
+          "cold": {
+            "exact_vs_same_repeat_cold": 12,
+            "median_total_wall_ms": [
+              5952.503638342023,
+              11896.146055310965,
+              17843.391709960997,
+              23793.562567792833
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              -8.00040178000927,
+              -479.45461980998516,
+              -953.7759656086564,
+              -1423.3336225152016
+            ]
+          },
+          "on-demand": {
+            "exact_vs_same_repeat_cold": 9,
+            "median_total_wall_ms": [
+              5943.595876917243,
+              11410.509469918907,
+              16881.051180884242,
+              22358.4853829816
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "prepared": {
+            "exact_vs_same_repeat_cold": 6,
+            "median_total_wall_ms": [
+              6195.36881800741,
+              11669.908113777637,
+              17143.79529096186,
+              22618.285263888538
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              -248.13630525022745,
+              -248.24215285480022,
+              -260.512238368392,
+              -252.1216357126832
+            ]
+          }
+        }
+      },
+      {
+        "domain": "kiln",
+        "length": 256,
+        "cold_repeat_exact_vs_first": 8,
+        "arms": {
+          "cold": {
+            "exact_vs_same_repeat_cold": 12,
+            "median_total_wall_ms": [
+              5950.686381198466,
+              11902.97475643456,
+              17859.652753919363,
+              23810.716900974512
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              2.098667435348034,
+              -477.2532628849149,
+              -953.2673731446266,
+              -1430.2796386182308
+            ]
+          },
+          "on-demand": {
+            "exact_vs_same_repeat_cold": 9,
+            "median_total_wall_ms": [
+              5951.415676623583,
+              11425.721493549645,
+              16906.385380774736,
+              22380.43726235628
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "prepared": {
+            "exact_vs_same_repeat_cold": 9,
+            "median_total_wall_ms": [
+              6196.331706829369,
+              11671.088714152575,
+              17166.088555008173,
+              22642.466845922172
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              -244.91603020578623,
+              -245.3672206029296,
+              -258.30959156155586,
+              -261.6736739873886
+            ]
+          }
+        }
+      },
+      {
+        "domain": "coast",
+        "length": 2048,
+        "cold_repeat_exact_vs_first": 8,
+        "arms": {
+          "cold": {
+            "exact_vs_same_repeat_cold": 12,
+            "median_total_wall_ms": [
+              11326.321438886225,
+              22638.210153207183,
+              33966.80217329413,
+              45283.748023211956
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              8.13568476587534,
+              -5755.498045124114,
+              -11528.13995629549,
+              -17293.100897222757
+            ]
+          },
+          "on-demand": {
+            "exact_vs_same_repeat_cold": 12,
+            "median_total_wall_ms": [
+              11330.01942653209,
+              16882.71210808307,
+              22438.662216998637,
+              27990.6471259892
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "prepared": {
+            "exact_vs_same_repeat_cold": 9,
+            "median_total_wall_ms": [
+              11562.566854991019,
+              17122.569784522057,
+              22673.397003673017,
+              28224.857189692557
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              -231.13922029733658,
+              -238.97778801620007,
+              -235.18818989396095,
+              -234.40494388341904
+            ]
+          }
+        }
+      },
+      {
+        "domain": "kiln",
+        "length": 2048,
+        "cold_repeat_exact_vs_first": 8,
+        "arms": {
+          "cold": {
+            "exact_vs_same_repeat_cold": 12,
+            "median_total_wall_ms": [
+              11313.67805134505,
+              22650.19298158586,
+              33966.945458203554,
+              45294.49515230954
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              5.067020654678345,
+              -5777.58005913347,
+              -11535.410241223872,
+              -17306.77835829556
+            ]
+          },
+          "on-demand": {
+            "exact_vs_same_repeat_cold": 9,
+            "median_total_wall_ms": [
+              11319.478383287787,
+              16872.352996841073,
+              22431.535216979682,
+              27983.914056792855
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "prepared": {
+            "exact_vs_same_repeat_cold": 9,
+            "median_total_wall_ms": [
+              11573.323111981153,
+              17125.427316874266,
+              22678.529703058302,
+              28230.936241336167
+            ],
+            "median_paired_wall_saved_vs_on_demand_ms": [
+              -253.84472869336605,
+              -252.3690341040492,
+              -239.5944446325302,
+              -238.5727297514677
+            ]
+          }
+        }
+      }
+    ],
+    "scope": "Serial four-branch bursts; includes explicit primer wall time; 16 distinct synthetic held-out prompts, not natural traffic or a quality evaluation."
+  },
+  "cases": [
+    {
+      "domain": "coast",
+      "length": 256,
+      "comparisons": [
+        {
+          "baseline": "cold",
+          "contender": "on-demand",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                3.118818625807762,
+                8.907761424779892,
+                8.00040178000927
+              ],
+              "median_paired_ms_saved": 8.00040178000927,
+              "paired_fraction_saved": [
+                0.0005257525200728657,
+                0.0014964730751951308,
+                0.0013430396484066377
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                461.9819764047861,
+                485.6365853920579,
+                479.45461980998516
+              ],
+              "median_paired_ms_saved": 479.45461980998516,
+              "paired_fraction_saved": [
+                0.039005850369075064,
+                0.04082301807107087,
+                0.04028509899206922
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": true
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                934.8351713269949,
+                962.340529076755,
+                953.7759656086564
+              ],
+              "median_paired_ms_saved": 953.7759656086564,
+              "paired_fraction_saved": [
+                0.05260567874060127,
+                0.053932601195967274,
+                0.053434120483935865
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": true
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                1394.9018036946654,
+                1435.0771848112345,
+                1423.3336225152016
+              ],
+              "median_paired_ms_saved": 1423.3336225152016,
+              "paired_fraction_saved": [
+                0.05886941247961092,
+                0.060313674369796434,
+                0.05979859194436932
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            }
+          ],
+          "timing_only_first_sustained_request": 2,
+          "output_preserving_first_sustained_request": null
+        },
+        {
+          "baseline": "cold",
+          "contender": "prepared",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                -238.5332901030779,
+                -242.86517966538668,
+                -240.13590347021818
+              ],
+              "median_paired_ms_saved": -240.13590347021818,
+              "paired_fraction_saved": [
+                -0.04021057119359885,
+                -0.04080050923463744,
+                -0.04031198035232656
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                215.71377106010914,
+                226.2379415333271,
+                231.21246695518494
+              ],
+              "median_paired_ms_saved": 226.2379415333271,
+              "paired_fraction_saved": [
+                0.018213046192839227,
+                0.019017750831356386,
+                0.01942710891633831
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                679.0137896314263,
+                699.5964189991355,
+                693.2637272402644
+              ],
+              "median_paired_ms_saved": 693.2637272402644,
+              "paired_fraction_saved": [
+                0.03820992445875207,
+                0.03920759182844082,
+                0.0388392440827118
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                1142.7801679819822,
+                1175.277303904295,
+                1171.917611733079
+              ],
+              "median_paired_ms_saved": 1171.917611733079,
+              "paired_fraction_saved": [
+                0.04822905591222275,
+                0.04939475963532927,
+                0.04923583757728436
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            }
+          ],
+          "timing_only_first_sustained_request": 3,
+          "output_preserving_first_sustained_request": null
+        },
+        {
+          "baseline": "on-demand",
+          "contender": "prepared",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                -241.65210872888565,
+                -251.77294109016657,
+                -248.13630525022745
+              ],
+              "median_paired_ms_saved": -248.13630525022745,
+              "paired_fraction_saved": [
+                -0.04075775220460579,
+                -0.042360373468182916,
+                -0.04171103958066629
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                -246.26820534467697,
+                -259.3986438587308,
+                -248.24215285480022
+              ],
+              "median_paired_ms_saved": -248.24215285480022,
+              "paired_fraction_saved": [
+                -0.021636764577829558,
+                -0.02273330954613145,
+                -0.02173352737758371
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                -255.82138169556856,
+                -262.74411007761955,
+                -260.512238368392
+              ],
+              "median_paired_ms_saved": -260.512238368392,
+              "paired_fraction_saved": [
+                -0.015195102988069954,
+                -0.015564440108750195,
+                -0.015418764522428973
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                -252.1216357126832,
+                -259.7998809069395,
+                -251.4160107821226
+              ],
+              "median_paired_ms_saved": -252.1216357126832,
+              "paired_fraction_saved": [
+                -0.011305930025526519,
+                -0.011619744202560742,
+                -0.011234565569231712
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            }
+          ],
+          "timing_only_first_sustained_request": null,
+          "output_preserving_first_sustained_request": null
+        }
+      ]
+    },
+    {
+      "domain": "kiln",
+      "length": 256,
+      "comparisons": [
+        {
+          "baseline": "cold",
+          "contender": "on-demand",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                4.2454153299331665,
+                -4.875397309660912,
+                -2.098667435348034
+              ],
+              "median_paired_ms_saved": -2.098667435348034,
+              "paired_fraction_saved": [
+                0.0007131201952866283,
+                -0.0008192999928655304,
+                -0.0003527577085078528
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                478.45008224248886,
+                472.7700324729085,
+                477.2532628849149
+              ],
+              "median_paired_ms_saved": 477.2532628849149,
+              "paired_fraction_saved": [
+                0.04020156463154949,
+                0.039710670557950835,
+                0.040095293206172625
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                953.2673731446266,
+                948.9997327327728,
+                967.1970028430223
+              ],
+              "median_paired_ms_saved": 953.2673731446266,
+              "paired_fraction_saved": [
+                0.053375470748468434,
+                0.05314506882116534,
+                0.05413254542608483
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                1430.2796386182308,
+                1424.9118752777576,
+                1447.096399962902
+              ],
+              "median_paired_ms_saved": 1430.2796386182308,
+              "paired_fraction_saved": [
+                0.06006873478722067,
+                0.05985589893060544,
+                0.06074189265878779
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            }
+          ],
+          "timing_only_first_sustained_request": 2,
+          "output_preserving_first_sustained_request": null
+        },
+        {
+          "baseline": "cold",
+          "contender": "prepared",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                -246.51680141687393,
+                -241.29109270870686,
+                -247.01469764113426
+              ],
+              "median_paired_ms_saved": -246.51680141687393,
+              "paired_fraction_saved": [
+                -0.041408459692588793,
+                -0.040548447229731326,
+                -0.041519841228773016
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                221.17604408413172,
+                238.3283581584692,
+                231.88604228198528
+              ],
+              "median_paired_ms_saved": 231.88604228198528,
+              "paired_fraction_saved": [
+                0.01858422301763174,
+                0.0200185677293127,
+                0.01948135210121582
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                705.4922385141253,
+                690.690141171217,
+                669.1838009282947
+              ],
+              "median_paired_ms_saved": 690.690141171217,
+              "paired_fraction_saved": [
+                0.039502013182160144,
+                0.03867943669588043,
+                0.03745319970561399
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                1182.8372329473495,
+                1163.238201290369,
+                1151.0746348649263
+              ],
+              "median_paired_ms_saved": 1163.238201290369,
+              "paired_fraction_saved": [
+                0.0496766744935319,
+                0.048863841628860934,
+                0.04831637471768373
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            }
+          ],
+          "timing_only_first_sustained_request": 3,
+          "output_preserving_first_sustained_request": null
+        },
+        {
+          "baseline": "on-demand",
+          "contender": "prepared",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                -250.7622167468071,
+                -236.41569539904594,
+                -244.91603020578623
+              ],
+              "median_paired_ms_saved": -244.91603020578623,
+              "paired_fraction_saved": [
+                -0.042151639072962786,
+                -0.03969662379327518,
+                -0.04115256663515973
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                -257.27403815835714,
+                -234.4416743144393,
+                -245.3672206029296
+              ],
+              "median_paired_ms_saved": -245.3672206029296,
+              "paired_fraction_saved": [
+                -0.022522793137935482,
+                -0.020506426787101455,
+                -0.02147498700554279
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                -247.77513463050127,
+                -258.30959156155586,
+                -298.0132019147277
+              ],
+              "median_paired_ms_saved": -258.30959156155586,
+              "paired_fraction_saved": [
+                -0.01465571315511719,
+                -0.01527755905255222,
+                -0.01763391439235467
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                -247.44240567088127,
+                -261.6736739873886,
+                -296.02176509797573
+              ],
+              "median_paired_ms_saved": -261.6736739873886,
+              "paired_fraction_saved": [
+                -0.011056191743272034,
+                -0.011691885626087814,
+                -0.013229077123728394
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            }
+          ],
+          "timing_only_first_sustained_request": null,
+          "output_preserving_first_sustained_request": null
+        }
+      ]
+    },
+    {
+      "domain": "coast",
+      "length": 2048,
+      "comparisons": [
+        {
+          "baseline": "cold",
+          "contender": "on-demand",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                -0.3313366323709488,
+                -8.13568476587534,
+                -12.561092153191566
+              ],
+              "median_paired_ms_saved": -8.13568476587534,
+              "paired_fraction_saved": [
+                -2.9244991542735535e-05,
+                -0.0007182989472595581,
+                -0.0011110270951897694
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                5755.498045124114,
+                5777.083441615105,
+                5744.514956139028
+              ],
+              "median_paired_ms_saved": 5755.498045124114,
+              "paired_fraction_saved": [
+                0.2542382108025764,
+                0.2548864855576018,
+                0.25400872782479367
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": true
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                11528.13995629549,
+                11545.207775197923,
+                11502.280422486365
+              ],
+              "median_paired_ms_saved": 11528.13995629549,
+              "paired_fraction_saved": [
+                0.33939432677472686,
+                0.3396976541530035,
+                0.33904332385339647
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": true
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                17293.100897222757,
+                17327.404841780663,
+                17267.20500178635
+              ],
+              "median_paired_ms_saved": 17293.100897222757,
+              "paired_fraction_saved": [
+                0.38188316232919817,
+                0.3823351379935486,
+                0.3816599100247124
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": true
+            }
+          ],
+          "timing_only_first_sustained_request": 2,
+          "output_preserving_first_sustained_request": 2
+        },
+        {
+          "baseline": "cold",
+          "contender": "prepared",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                -231.47055692970753,
+                -236.24541610479355,
+                -264.20369278639555
+              ],
+              "median_paired_ms_saved": -236.24541610479355,
+              "paired_fraction_saved": [
+                -0.02043044390039835,
+                -0.020858088601803337,
+                -0.023368784955557883
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                5516.5202571079135,
+                5542.333919554949,
+                5492.853729985654
+              ],
+              "median_paired_ms_saved": 5516.5202571079135,
+              "paired_fraction_saved": [
+                0.24368182023994425,
+                0.2445292730871667,
+                0.24288086961811742
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": true
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                11294.137291610241,
+                11310.019585303962,
+                11252.298071980476
+              ],
+              "median_paired_ms_saved": 11294.137291610241,
+              "paired_fraction_saved": [
+                0.3325051688407124,
+                0.33277765081074234,
+                0.3316747983169724
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                17061.053255572915,
+                17092.999897897243,
+                17017.52889342606
+              ],
+              "median_paired_ms_saved": 17061.053255572915,
+              "paired_fraction_saved": [
+                0.3767588594218748,
+                0.377162912413066,
+                0.3761412773889007
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            }
+          ],
+          "timing_only_first_sustained_request": 2,
+          "output_preserving_first_sustained_request": null
+        },
+        {
+          "baseline": "on-demand",
+          "contender": "prepared",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                -231.13922029733658,
+                -228.1097313389182,
+                -251.64260063320398
+              ],
+              "median_paired_ms_saved": -231.13922029733658,
+              "paired_fraction_saved": [
+                -0.020400602293414075,
+                -0.020125333648570762,
+                -0.022233056332373966
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                -238.97778801620007,
+                -234.74952206015587,
+                -251.66122615337372
+              ],
+              "median_paired_ms_saved": -238.97778801620007,
+              "paired_fraction_saved": [
+                -0.014155177585583704,
+                -0.013900180670036327,
+                -0.014916874528878833
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                -234.00266468524933,
+                -235.18818989396095,
+                -249.98235050588846
+              ],
+              "median_paired_ms_saved": -235.18818989396095,
+              "paired_fraction_saved": [
+                -0.01042854794204167,
+                -0.01048005263919612,
+                -0.0111482731052552
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                -232.04764164984226,
+                -234.40494388341904,
+                -249.67610836029053
+              ],
+              "median_paired_ms_saved": -234.40494388341904,
+              "paired_fraction_saved": [
+                -0.008290184953758608,
+                -0.00837383814206455,
+                -0.008924914824837307
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            }
+          ],
+          "timing_only_first_sustained_request": null,
+          "output_preserving_first_sustained_request": null
+        }
+      ]
+    },
+    {
+      "domain": "kiln",
+      "length": 2048,
+      "comparisons": [
+        {
+          "baseline": "cold",
+          "contender": "on-demand",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                -5.067020654678345,
+                -5.8003319427371025,
+                21.837307140231133
+              ],
+              "median_paired_ms_saved": -5.067020654678345,
+              "paired_fraction_saved": [
+                -0.0004479171956932115,
+                -0.0005126831359716408,
+                0.0019254224853043022
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                5777.58005913347,
+                5777.134698815644,
+                5795.256981626153
+              ],
+              "median_paired_ms_saved": 5777.58005913347,
+              "paired_fraction_saved": [
+                0.25510969835705505,
+                0.2550589614628156,
+                0.2556624623033163
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": true
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                11550.227515399456,
+                11520.519853569567,
+                11535.410241223872
+              ],
+              "median_paired_ms_saved": 11535.410241223872,
+              "paired_fraction_saved": [
+                0.3399872378009429,
+                0.33923380301657796,
+                0.3396069350839402
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                17310.58109551668,
+                17306.77835829556,
+                17304.447071626782
+              ],
+              "median_paired_ms_saved": 17306.77835829556,
+              "paired_fraction_saved": [
+                0.38217847527182397,
+                0.38204950863143494,
+                0.3821009654657381
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            }
+          ],
+          "timing_only_first_sustained_request": 2,
+          "output_preserving_first_sustained_request": null
+        },
+        {
+          "baseline": "cold",
+          "contender": "prepared",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                -263.5925682261586,
+                -259.64506063610315,
+                -224.19908735901117
+              ],
+              "median_paired_ms_saved": -259.64506063610315,
+              "paired_fraction_saved": [
+                -0.02330119650418663,
+                -0.02294965964717678,
+                -0.019767911913940076
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                5519.466700963676,
+                5524.765664711595,
+                5547.648334875703
+              ],
+              "median_paired_ms_saved": 5524.765664711595,
+              "paired_fraction_saved": [
+                0.2437126739505255,
+                0.24391693568364362,
+                0.24473900601543844
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": true
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                11294.002884067595,
+                11281.513516791165,
+                11295.815796591341
+              ],
+              "median_paired_ms_saved": 11294.002884067595,
+              "paired_fraction_saved": [
+                0.33244512622375194,
+                0.3321960104862976,
+                0.3325531820484383
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                17063.55891097337,
+                17068.322768434882,
+                17065.874341875315
+              ],
+              "median_paired_ms_saved": 17065.874341875315,
+              "paired_fraction_saved": [
+                0.37672478418391886,
+                0.3767855687432221,
+                0.3768330207579698
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": false,
+              "all_repeats_save_margin": true,
+              "timing_and_outputs": false
+            }
+          ],
+          "timing_only_first_sustained_request": 2,
+          "output_preserving_first_sustained_request": null
+        },
+        {
+          "baseline": "on-demand",
+          "contender": "prepared",
+          "points": [
+            {
+              "completed_requests": 1,
+              "paired_ms_saved": [
+                -258.5255475714803,
+                -253.84472869336605,
+                -246.0363944992423
+              ],
+              "median_paired_ms_saved": -253.84472869336605,
+              "paired_fraction_saved": [
+                -0.022843047514709544,
+                -0.0224254793461283,
+                -0.02173518381087606
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 2,
+              "paired_ms_saved": [
+                -258.1133581697941,
+                -252.3690341040492,
+                -247.60864675045013
+              ],
+              "median_paired_ms_saved": -252.3690341040492,
+              "paired_fraction_saved": [
+                -0.015300272243298187,
+                -0.014956923035212517,
+                -0.0146754069688329
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 3,
+              "paired_ms_saved": [
+                -256.224631331861,
+                -239.00633677840233,
+                -239.5944446325302
+              ],
+              "median_paired_ms_saved": -239.5944446325302,
+              "paired_fraction_saved": [
+                -0.011427220819279157,
+                -0.010650957271134326,
+                -0.010681143413276849
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            },
+            {
+              "completed_requests": 4,
+              "paired_ms_saved": [
+                -247.0221845433116,
+                -238.45558986067772,
+                -238.5727297514677
+              ],
+              "median_paired_ms_saved": -238.5727297514677,
+              "paired_fraction_saved": [
+                -0.008827292137975569,
+                -0.008518384501248453,
+                -0.008525575236962384
+              ],
+              "baseline_repeated_exact": true,
+              "all_outputs_exact_in_each_pair": true,
+              "all_repeats_save_margin": false,
+              "timing_and_outputs": false
+            }
+          ],
+          "timing_only_first_sustained_request": null,
+          "output_preserving_first_sustained_request": null
+        }
+      ]
+    }
+  ],
+  "scope": "Serial warm backend, four branches, three matched repetitions. Preparation time is charged. A sustained crossing must meet the 3% margin in every repetition through the fourth observation. The protected result also requires all output token prefixes equal across arms and a repeatable baseline. Null means not demonstrated within four requests, not never. No extrapolation to other branches, natural traffic or longer bursts."
+}
