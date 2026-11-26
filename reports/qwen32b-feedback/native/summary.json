@@ -1,0 +1,43 @@
+{
+  "schema": "sparkfuse.native-feedback32.summary.v1",
+  "full_logit_checks": 8,
+  "timed_requests": 32,
+  "cases": [
+    {
+      "length": 128,
+      "pairs": 8,
+      "warm_wall_median_ms": {
+        "torch-graph": 9299.2072835,
+        "native-graph": 9306.1807165
+      },
+      "paired_saving_by_first": {
+        "torch-graph": -0.00011497848346853079,
+        "native-graph": 0.0002590922944757379
+      },
+      "paired_saving_by_prompt": {
+        "1": -0.0004756727482825296,
+        "2": 0.00020543161127856147
+      },
+      "passes": false
+    },
+    {
+      "length": 2048,
+      "pairs": 8,
+      "warm_wall_median_ms": {
+        "torch-graph": 12299.1355585,
+        "native-graph": 12308.5439205
+      },
+      "paired_saving_by_first": {
+        "torch-graph": -0.001443809721030087,
+        "native-graph": -0.00028271151284392504
+      },
+      "paired_saving_by_prompt": {
+        "1": -0.0007843553021739669,
+        "2": -0.0009421659317000453
+      },
+      "passes": false
+    }
+  ],
+  "recommend_for_tested_geometry": false,
+  "boundary": "Fixed-budget warm batch-one request: prefill to 32 host-visible IDs. No token streaming, early EOS, queue wait, or TTFT measurement."
+}

@@ -15,6 +15,8 @@
 
 **测量边界。** Batch=1，SDPA。eager 与 SparkFuse 在不同进程依次加载，均在 GPU 上使用 BF16 权重和静态 KV，均只对 decode 重放 CUDA Graph。每个后端先 128 后 2,048，两个长度分开建图；每请求首 token 来自 prefill，后面 31 个依赖上一步输出。逐 token 同步，含 argmax，不含权重加载、构图、分词和网络。显存列为 PyTorch CUDA allocator 的峰值分配，不等同于整机统一内存。提示以重复文本构造固定长度，不代表长文理解、多用户吞吐或服务端并发。此次没有测整模型 Inductor，也不把本轮 32-token 延迟与 7B 的 128-token 生成直接对比。
 
+[设备端 token 反馈：CUDA 算子与整请求对照](qwen32b-feedback.md)。
+
 ### 复核与复现
 
 - [汇总](../reports/qwen32b-summary.json) · [eager 原始记录](../reports/qwen32b-eager.json) · [共享权重原始记录](../reports/qwen32b-resident.json) · [测试回执](../reports/qwen32b-validation.json)。汇总可用 Python 3.11+ 在 CPU 上复算：`python3 benchmarks/pretrained_qwen/audit32b.py reports`。

@@ -1,0 +1,177 @@
+{
+  "schema": "sparkfuse.feedback-stack.v1",
+  "device": "NVIDIA GB10",
+  "checkpoint_revision": "5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+  "oracle_sha256": {
+    "eager": "c271a47061af2aced3c41520e7a3b0c772e9706a55387b3786949099b3c978d3",
+    "resident": "246c0657ed97aabd8d2d55faf01f95786a73cc8ecf64c8ad200b59ad49cf12c4"
+  },
+  "qualification": {
+    "isolated_feedback_gate": true,
+    "recurrent_vs_queued": "did_not_meet_gate",
+    "native_vs_torch_graph": "did_not_meet_gate",
+    "native_vs_queued": "not_directly_measured",
+    "recommend_default_change": false
+  },
+  "components": {
+    "feedback_only": {
+      "raw_sha256": "5eb0823228b72bc2db1315bc2b309073b2dba425898703ab8ef4faf327c04c5c",
+      "summary_sha256": "d15bfd11d7b4c3e6a0f85072b9e0b900315be3a31dcfcc6ebe8e588e7a44c62e",
+      "pairs": 48,
+      "units": "CUDA event microseconds per isolated feedback operation",
+      "cases": [
+        {
+          "width": 32768,
+          "logit_rows": 1,
+          "paired_reps": 12,
+          "device_us_per_feedback": {
+            "torch": 9.963500313460827,
+            "native": 2.66400002874434
+          },
+          "paired_fraction_saved_by_first": {
+            "torch": 0.7326345128973889,
+            "native": 0.7330558357309296
+          },
+          "passed": true
+        },
+        {
+          "width": 32768,
+          "logit_rows": 16,
+          "paired_reps": 12,
+          "device_us_per_feedback": {
+            "torch": 10.478000156581402,
+            "native": 2.8639999218285084
+          },
+          "paired_fraction_saved_by_first": {
+            "torch": 0.727168627777051,
+            "native": 0.7261182786024076
+          },
+          "passed": true
+        },
+        {
+          "width": 152064,
+          "logit_rows": 1,
+          "paired_reps": 12,
+          "device_us_per_feedback": {
+            "torch": 11.596000287681818,
+            "native": 3.42249998357147
+          },
+          "paired_fraction_saved_by_first": {
+            "torch": 0.7064147673409802,
+            "native": 0.7035870358690848
+          },
+          "passed": true
+        },
+        {
+          "width": 152064,
+          "logit_rows": 16,
+          "paired_reps": 12,
+          "device_us_per_feedback": {
+            "torch": 11.616999749094248,
+            "native": 3.4340000711381435
+          },
+          "paired_fraction_saved_by_first": {
+            "torch": 0.7053462522014584,
+            "native": 0.7031738119955664
+          },
+          "passed": true
+        }
+      ]
+    },
+    "queued_vs_recurrent": {
+      "evidence_sha256": {
+        "raw.json": "d78dcfa71f79619351f2a0caf77a668830c9c1c2aabfa83039eb1f66915b6263",
+        "admission.json": "ca0f5c67a1df7e522f625e376e8730d0be11d83476e5845cf5e1791989401499",
+        "memory-guard.json": "7baff79baa85ff7a19e167555013ba63e6c7bf6dd6d2ee974b34cb371844e475",
+        "summary.json": "6756d62e9d820b251ebfdeed052bdc5c609c118f7fb3203b9e319776a7c3f332"
+      },
+      "logits_checks": 8,
+      "timed_requests": 32,
+      "passes_matched_request_gate": false,
+      "cases": [
+        {
+          "length": 128,
+          "pairs": 8,
+          "warm_wall_median_ms": {
+            "queued": 9152.439749000001,
+            "recurrent": 9157.749422500001
+          },
+          "paired_saving_by_first": {
+            "queued": -0.00014515584156848949,
+            "recurrent": 0.000584771358074887
+          },
+          "paired_saving_by_prompt": {
+            "1": 0.000584771358074887,
+            "2": -0.00019679676480921504
+          },
+          "passes": false
+        },
+        {
+          "length": 2048,
+          "pairs": 8,
+          "warm_wall_median_ms": {
+            "queued": 12099.365048,
+            "recurrent": 12110.3901895
+          },
+          "paired_saving_by_first": {
+            "queued": -0.00063416443407871,
+            "recurrent": -0.0013078689925507536
+          },
+          "paired_saving_by_prompt": {
+            "1": -0.0011769948356387117,
+            "2": -0.0008811845947251928
+          },
+          "passes": false
+        }
+      ]
+    },
+    "torch_graph_vs_native_graph": {
+      "evidence_sha256": {
+        "raw.json": "96738b297c7dd2292732b6962a7ebe7cd12159b8b91496ff19cbfc4f3ce247cc",
+        "admission.json": "ae5441a92ec83e4444addf2a7df652d6ce95699dac4555271f3e6f77012e3be1",
+        "memory-guard.json": "d7c426cdc8846a7b4ad6aed49e53e9abc4f6dd9b9ca1886645216cece017d2ea",
+        "summary.json": "c2eed608270630101fe4602d981657b7bd6261d12c37534eec199c2d09012d3e"
+      },
+      "logits_checks": 8,
+      "timed_requests": 32,
+      "passes_matched_request_gate": false,
+      "cases": [
+        {
+          "length": 128,
+          "pairs": 8,
+          "warm_wall_median_ms": {
+            "torch-graph": 9299.2072835,
+            "native-graph": 9306.1807165
+          },
+          "paired_saving_by_first": {
+            "torch-graph": -0.00011497848346853079,
+            "native-graph": 0.0002590922944757379
+          },
+          "paired_saving_by_prompt": {
+            "1": -0.0004756727482825296,
+            "2": 0.00020543161127856147
+          },
+          "passes": false
+        },
+        {
+          "length": 2048,
+          "pairs": 8,
+          "warm_wall_median_ms": {
+            "torch-graph": 12299.1355585,
+            "native-graph": 12308.5439205
+          },
+          "paired_saving_by_first": {
+            "torch-graph": -0.001443809721030087,
+            "native-graph": -0.00028271151284392504
+          },
+          "paired_saving_by_prompt": {
+            "1": -0.0007843553021739669,
+            "2": -0.0009421659317000453
+          },
+          "passes": false
+        }
+      ]
+    }
+  },
+  "scope": "Whole requests start before prefill and end at 32 host-visible IDs. Isolated operator evidence is not a substitute for a full request. Comparisons have different baselines; never multiply their reported speedups. No general serving or default recommendation."
+}

@@ -1,0 +1,63 @@
+{
+  "scope": "Isolated fixed-address CUDA graph. Device events bracket 32 feedback operations on predetermined BF16 scores; includes state writes, not logits production, model inference, host request time or streaming. Hardware pilot only; not a default or an end-to-end speed claim.",
+  "matched_pairs": 48,
+  "cases": [
+    {
+      "width": 32768,
+      "logit_rows": 1,
+      "paired_reps": 12,
+      "device_us_per_feedback": {
+        "torch": 9.963500313460827,
+        "native": 2.66400002874434
+      },
+      "paired_fraction_saved_by_first": {
+        "torch": 0.7326345128973889,
+        "native": 0.7330558357309296
+      },
+      "passed": true
+    },
+    {
+      "width": 32768,
+      "logit_rows": 16,
+      "paired_reps": 12,
+      "device_us_per_feedback": {
+        "torch": 10.478000156581402,
+        "native": 2.8639999218285084
+      },
+      "paired_fraction_saved_by_first": {
+        "torch": 0.727168627777051,
+        "native": 0.7261182786024076
+      },
+      "passed": true
+    },
+    {
+      "width": 152064,
+      "logit_rows": 1,
+      "paired_reps": 12,
+      "device_us_per_feedback": {
+        "torch": 11.596000287681818,
+        "native": 3.42249998357147
+      },
+      "paired_fraction_saved_by_first": {
+        "torch": 0.7064147673409802,
+        "native": 0.7035870358690848
+      },
+      "passed": true
+    },
+    {
+      "width": 152064,
+      "logit_rows": 16,
+      "paired_reps": 12,
+      "device_us_per_feedback": {
+        "torch": 11.616999749094248,
+        "native": 3.4340000711381435
+      },
+      "paired_fraction_saved_by_first": {
+        "torch": 0.7053462522014584,
+        "native": 0.7031738119955664
+      },
+      "passed": true
+    }
+  ],
+  "eligible_for_model_experiment": true
+}
