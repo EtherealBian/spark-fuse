@@ -1,67 +1,25 @@
 # SparkFuse
 
-[English](#english) · [上手示例](docs/quickstart.md) · [生成的 CUDA](examples/generated/) · [性能记录](docs/performance.md) · [验收方法](docs/acceptance.md)
+[English](#english) · [快速上手](docs/quickstart.md) · [实测结论](docs/findings.md) · [生成的 CUDA 源码](examples/generated/)
 
-SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 推理子图编译器。它读取 `torch.export` 图，把能融合的算子编译成 CUDA C++，其余算子交给 PyTorch。例如，残差只被 RMSNorm 读取时，融合 kernel 不单独写回残差；模型还要返回残差时，同一个 kernel 多写一个输出。可以直接对照[两份 CUDA 源码](examples/generated/)。
+SparkFuse 是在 **NVIDIA DGX Spark（GB10）** 上开发的单 GPU Transformer 推理子图编译器。它从 `torch.export` 图生成 CUDA C++，把其余算子交给 PyTorch。仓库也包含真实模型的推理实验：32B 用来检查权重布局与 KV 前缀复用；72B–355B 通过 llama.cpp 的 CUDA 后端研究量化模型的服务行为。
 
-### 编译器做什么
+## 三项代表性结果
 
-- **生成 CUDA**：融合逐元素计算和末轴归约，支持 mean、stable softmax、LayerNorm 以及门控子图。可比较每行一个线程块、每个 warp 一行等布局；支持非对齐输入和奇数宽度。
-- **保留模型语义**：根据图外使用者决定哪些值必须返回，区分视图与独占输出。[先写后读 KV 槽位](docs/performance.md#slot-forward)时，未被返回的缓存无需整块写回。BF16/FP16 的舍入顺序可能影响结果，因此会在独立输入上校验候选实现。
-- **衡量请求成本**：分别测量 CUDA Graph 设备时间、完整单请求延迟和八请求排队耗时。对冻结权重的量化投影，可以[按实际请求选型](docs/performance.md#whole-request-policy)，下次只重建胜出的方案。
+| 问题 | 同一台 DGX Spark 上的结果 |
+|---|---|
+| [编译器能省掉什么？](docs/performance.md#stacked-bert) | 四层 BERT 的 kernel 发射从 233 次降到 64 次。8 个返回值都与量化 eager 逐字节一致。该数字是发射次数，不是延迟加速比。 |
+| [共享前缀能让请求更快吗？](docs/qwen32b-fork.md) | 32B BF16，两个 2,048-token 请求共用前 1,536 个 token：两组提示的总耗时均从约 9.44 秒降到 7.66 秒（每条生成 8 个 token，计入快照准备），四个分支的全词表 logits 逐字节一致。短输入反而变慢，仍默认从头计算。 |
+| [并发能让谁更早收到答案？](docs/glm45-paired.md) | 355B 量化模型，两条 128-token 请求一起放行，两份完整响应收齐从 5.17 秒降到 4.34 秒；第一份完整响应却晚了 66%–69%，输出也有变化。保留原调度。 |
 
-### DGX Spark 上的三个对照
+## 从哪里开始
 
-| 工作负载 | 同机结果 | 口径 |
-|---|---|---|
-| [可见残差 RMSNorm](reports/accepted-resnorm2-32x1536-bf16.json)，BF16，`32 × 1536` | eager 2.961、Inductor 1.827、SparkFuse 1.850 µs | 热地址、设备重放时间；这组 Inductor 略快 |
-| [四层 BERT 编码器](docs/performance.md#stacked-bert)，33 个 token | 233 → 64 次 kernel 发射 | 仅 Q/K/V 使用 W8A8；逐层返回隐藏状态和注意力概率，8 个输出与量化 eager 逐字节一致 |
-| [21 输出诊断图](docs/performance.md#fused-slot-copy)，33 行 | 89.21 → 36.55 µs | 同步单请求，逐个写入预分配张量 → 一个 CUDA kernel 批量写入 |
-
-[单 token 解码](docs/performance.md#warp-decode)用 warp 寄存器计算分块注意力；[分页 KV](docs/performance.md#paged-decode)可直接查物理页，省去两次稠密缓存重建，并[按每行实际长度跳过空页](docs/performance.md#ragged-page)；[原生主机入口](docs/performance.md#page-host)减少单请求提交开销。[Qwen2、Llama、Mistral 单层](docs/performance.md#decoder-families)支持动态 KV 长度和[双缓存写回](docs/performance.md#dynamic-append)。若调用方要求**多层 KV 缓存逐字节一致**，可在导出图中[标记需要保护的输出](docs/performance.md#protected-stack)。这些单层与堆叠实验使用随机权重，GEMM 仍交给 PyTorch。
-
-[实测调度库](docs/performance.md#dispatch-replay)只复用图和运行环境都精确匹配的记录；未命中时使用默认实现。
-
-同一张[有界动态行数图](docs/performance.md#catalog-rows)可以在命中行数时运行静态特化 kernel，其余合法行数走通用路径。
-
-[09:00 截止验收](docs/acceptance.md#final-gb10-release)：1,183 项测试、63 道检查通过。截止后的动态行特化另有 64 道检查，单独计数。[通用搜索](reports/campaign-final-general.md)保留 2,490 个工单及负例；无 GPU 也可重建 1,237 个通过筛选的精确调度键。
-
-[完整预训练 Qwen2 的逐 token 解码](docs/pretrained-qwen.md)：合并 24 层 MLP 的两次投影后，32 / 128 token 提示的中位延迟从 7.04 / 7.20 降至 6.93 / 7.08 ms。两边都使用 CUDA Graph；额外权重占 399 MiB，未设为默认。
-
-[预训练 Qwen2-7B 实测](docs/qwen7b.md)：28 层预填充和解码共享一份投影权重，避免常驻第二份 7.08 GiB 权重。对照 128 / 2,048 token 输入和 128-token 生成；同时列出延迟、峰值内存和未通过的对照。
-
-[Qwen2.5-32B 全模型实测](docs/qwen32b.md)：单台 DGX Spark 运行全部 64 层 BF16 权重。对比共享投影与 PyTorch 在 128 / 2,048 token 输入下的生成结果、首 token 延迟和逐 token 耗时。
-
-[72B 量化推理与请求路由](docs/qwen72b.md)：比较同一提示关闭与开启 KV 前缀复用，以及双槽路由在两种流量下的实测结果。
-
-[120B 稀疏模型实测](docs/gpt-oss-120b.md)：比较物理微批 128 与 512 的预填充时间和输出一致性。
-
-[235B 单机容量实测](docs/qwen235b.md)：两片 Q2_K 权重在一台 Spark 上运行；报告分开列出装载期间的系统可用内存和八个冷请求的耗时。
-
-[355B 单机容量实测](docs/glm45-355b.md)：用两片混合量化权重，在四条冷提示和倒序复跑中核对输出、请求耗时与整机可用内存。
-
-### 复现
-
-Linux、CUDA 版 PyTorch；构建 CUDA kernel 需要 `nvcc`，原生主机入口还需要 C++17 编译器。实测环境：GB10 / CUDA 13.0 / PyTorch 2.13.0+cu130。从仓库根目录运行：
-
-```bash
-source tools/env.sh
-out=$(mktemp -d)
-python examples/export_scores.py "$out/scores.pt2"
-python -m sparkfuse emit "$out/scores.pt2" --out "$out/cuda" --layout warp --vec 4 --cache
-# 实机三方对照；导出和查看 CUDA 源码可先单独完成
-python tools/bench.py --case resnorm2 --rows 32 --width 1536 --dtype bfloat16 --profile
-python -m pytest -q
-```
+- **看编译器：**对照[只返回归一化结果](examples/generated/resnorm.cu)和[同时返回残差](examples/generated/resnorm2.cu)的 CUDA。调用方是否还需要残差，决定 kernel 是否多写一份结果。[快速上手](docs/quickstart.md)的第一个例子可以在 Linux CPU 上运行。
+- **核对实测：**在仓库根目录执行 `bash audit/replay-key-results.sh`，用仓库内的原始记录重建四组关键结果。需要 Bash、Python 3.11+ 和 `cmp`；无需 GPU 或模型权重。
+- **重新测量：**[结论索引](docs/findings.md)列出每一项的模型、对照和复跑入口。[性能记录](docs/performance.md)区分设备时间、同步请求延迟和排队成本；[验收记录](docs/acceptance.md)保留各阶段的检查口径。
 
 ## English
 
-SparkFuse turns functional regions of a `torch.export` inference graph into readable CUDA C++ on NVIDIA DGX Spark. It uses values consumed outside a region to decide what a kernel must write. For example, compare [RMSNorm alone](examples/generated/resnorm.cu) with [RMSNorm that also returns the residual](examples/generated/resnorm2.cu). The same [output visibility rule for KV-slot writes](docs/performance.md#slot-forward) avoids building cache banks that no caller reads. The mixed execution path leaves unsupported operators and matrix multiplications in PyTorch.
+SparkFuse compiles regions of `torch.export` inference graphs to readable CUDA C++ on a single NVIDIA DGX Spark. PyTorch runs unsupported operators and GEMMs. The dense 32B studies measure model execution and cache reuse. The quantized 72B–355B studies use the llama.cpp CUDA backend and report serving results separately from compiler performance.
 
-[Warp-register decode](docs/performance.md#warp-decode) avoids KV-head expansion; [physical-page decode](docs/performance.md#paged-decode) also avoids two dense cache gathers and can [skip inactive pages per row](docs/performance.md#ragged-page). A [native caller](docs/performance.md#page-host) reduces submission overhead without changing the CUDA kernels. [Dynamic decoder layers](docs/performance.md#decoder-families) cover Qwen2, Llama and Mistral. A [multi-layer cache contract](docs/performance.md#protected-stack) preserves all returned KV bytes when later layers depend on earlier attention results. These layer-level experiments use random weights. A separate [pretrained Qwen2 generation benchmark](docs/pretrained-qwen.md) includes full-model Inductor, matched CUDA Graph replay, exact token checks and P95 latency. The [7B pilot](docs/qwen7b.md) shares projection storage between prefill and decode and reports 128-token generation, memory peaks, and token/logit agreement at two input lengths. The [dense 32B study](docs/qwen32b.md) measures the same storage strategy on all 64 BF16 layers, without CPU offload. The [72B serving study](docs/qwen72b.md) compares prefix reuse and two-slot dispatch on matched requests. The [120B MoE study](docs/gpt-oss-120b.md) compares two microbatch sizes across four independent runs. The [235B capacity study](docs/qwen235b.md) records all-layer placement and eight cold requests on one Spark. The [355B study](docs/glm45-355b.md) checks GLM-4.5 placement, request latency and repeatability on four fixed prompts. See the commands above for reproducible CUDA generation and three-way timing; the [performance notes](docs/performance.md) include regressions as well as wins.
-
-An [exact-match schedule catalog](docs/performance.md#dispatch-replay) reuses admitted measurements; an unseen signature uses the default kernel.
-
-A [bounded symbolic export](docs/performance.md#catalog-rows) selects exact-row kernels in C++ and keeps a generic fallback for other in-range requests.
-
-[09:00 cutoff audit](docs/acceptance.md#final-gb10-release): 63 checks passed; the later bounded-row supplement is audited separately. Rebuild both campaign summaries and the 1,237-key measured catalog on a CPU with `python3 -I -S audit/release.py`.
+Start with the [working example](docs/quickstart.md), inspect the [generated kernels](examples/generated/), or read the [findings and their limits](docs/findings.md#english). Run `bash audit/replay-key-results.sh` on Linux to reproduce the archived reports without downloading weights. Fresh GPU measurements use the instructions linked from each study.
