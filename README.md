@@ -1,10 +1,10 @@
 # PyTorch → CUDA 推理编译器 · SparkFuse
 
-[English](#english) · [项目图解](https://etherealbian.github.io/work/spark-fuse.html) · [实测与复现](docs/findings.md) · [图片来源](https://github.com/EtherealBian/etherealbian.github.io/blob/94bd5525d1e818a7f5a11e5d0691f27397a63ee7/ASSETS.md#sparkfuse-artwork)
+[English](#english) · [项目图解](https://etherealbian.github.io/work/spark-fuse.html) · [实测与复现](docs/findings.md) · [图片来源](https://github.com/EtherealBian/etherealbian.github.io/blob/7d1b94e76c3d4522bb069a1417ee2b14e7f9daee/ASSETS.md#sparkfuse-artwork)
 
 SparkFuse 在 NVIDIA DGX Spark（GB10）上把 PyTorch 导出的推理子图编译成 CUDA C++。它读取 `torch.export` 计算图，判断哪些算子可以共用一次 GPU 启动、哪些中间张量必须写回。未被接管的算子仍由 PyTorch 执行。
 
-[![DGX Spark 实测总览：四层 BERT 的 Q/K/V 投影打包、Qwen2.5-32B 长前缀复用与量化 GLM-4.5 355B 单机推理](https://raw.githubusercontent.com/EtherealBian/etherealbian.github.io/94bd5525d1e818a7f5a11e5d0691f27397a63ee7/assets/plates/sparkfuse-system.webp)](https://etherealbian.github.io/work/spark-fuse.html)
+[![DGX Spark 实测总览：四层 BERT 的 Q/K/V 投影打包、Qwen2.5-32B 长前缀复用与量化 GLM-4.5 355B 单机推理](https://raw.githubusercontent.com/EtherealBian/etherealbian.github.io/7d1b94e76c3d4522bb069a1417ee2b14e7f9daee/assets/plates/sparkfuse-system.webp)](https://etherealbian.github.io/work/spark-fuse.html)
 
 ## 一层 BERT，三次投影怎样变成一次？
 
